@@ -1,54 +1,72 @@
-# React + TypeScript + Vite
+# 🍽️ El Buen Sabor - Sistema Ecommerce y Gestión Interna
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Bienvenido al proyecto **El Buen Sabor**, una plataforma ecommerce desarrollada con **React + TypeScript + Vite**, diseñada para clientes y también para empleados del negocio gastronómico, incluyendo administración, cocina, delivery y caja.
 
-Currently, two official plugins are available:
+Este repositorio corresponde al **frontend** del sistema.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+---
 
-## Expanding the ESLint configuration
+## 🚀 Tecnologías principales
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- ⚛️ React 19
+- ⚡ Vite
+- 🎨 TailwindCSS
+- 🧠 Zustand o Context API
+- 🧭 React Router DOM
+- 💳 Integración con pasarelas de pago (Mercado Pago, Binance)
+- TypeScript
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+---
+
+## 📦 Clonación e instalación del proyecto
+
+### 1. Clonar el repositorio
+
+```bash
+git clone https://github.com/Juliorivasz/ElBuenSabor.git
+cd ElBuenSabor
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### 2. Cambiar a la rama develop
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
+```bash
+git checkout develop
 ```
+
+### 3. instalar dependencias
+
+```bash
+npm install
+```
+
+### 4. Crear archivo .env
+
+```bash
+backend_url
+```
+
+## Flujo de trabajo con ramas
+
+- La rama principal de desarrollo es develop
+- Cada nueva funcionalidad o corrección debe hacerse en una rama propia creada a partir de develop
+
+### Crear una nueva rama y subir rama
+
+```bash
+git checkout develop
+git pull origin develop
+git checkout -b feature/nombre-de-la-funcionalidad
+git push origin feature/nombre-de-la-funcionalidad
+```
+
+Luego, crea un Pull Request (PR) hacia develop desde el github (recomendado).
+
+## Recomendaciones para desarrollo
+
+- Utiliza nombres de ramas con prefijo claro: feature/, fix/, hotfix/, refactor/
+
+- Commits claros y descriptivos.
+
+- Realiza pull de develop antes de iniciar nuevas ramas.
+
+- Usa componentes reutilizables y mantén el código tipado.
