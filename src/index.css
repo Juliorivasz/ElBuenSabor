@@ -16,7 +16,8 @@
 
   --bg-primary: #dfd0be;
 }
-
+/*Bg color del formulario registro con tailwind
+var(--color-orange-200) */
 body {
   background-color: var(--bg-primary);
 }
