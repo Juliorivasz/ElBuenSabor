@@ -6,5 +6,3 @@ const Header: React.FC = () => (
     <NavBar />
   </header>
 )
-
-export default Header
