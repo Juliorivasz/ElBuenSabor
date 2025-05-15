@@ -1,12 +1,13 @@
 import { Home, HowFunction, AboutUs, Contact } from "../pages/Client";
 import { Login, Register, NotFound } from "../pages";
 import { routeType } from "./types/routes";
+import Landing from "../pages/Client/Landing";
 
 export const publicRoutes: routeType[] = [
   {
     name: "Home",
     path: "/",
-    element: Home,
+    element: Landing,
   },
   {
     name: "HowFunction",
