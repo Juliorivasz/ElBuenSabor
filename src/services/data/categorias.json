@@ -1,0 +1,88 @@
+[
+  {
+    "idCategoria": 1,
+    "nombre": "Hamburguesas",
+    "imagen": "/icons/burger.svg",
+    "margenGanancia": 25,
+    "fechaBaja": null,
+    "listaManufacturados": [],
+    "categoriaPadre": null
+  },
+  {
+    "idCategoria": 2,
+    "nombre": "Veganas",
+    "margenGanancia": 22,
+    "fechaBaja": null,
+    "listaManufacturados": [],
+    "imagen": null,
+    "categoriaPadre": {
+      "idCategoria": 1,
+      "nombre": "Hamburguesas",
+      "imagen": "/icons/burger.svg",
+      "margenGanancia": 25,
+      "fechaBaja": null,
+      "listaManufacturados": [],
+      "categoriaPadre": null
+    }
+  },
+  {
+    "idCategoria": 8,
+    "nombre": "mixtas",
+    "margenGanancia": 22,
+    "fechaBaja": null,
+    "listaManufacturados": [],
+    "imagen": null,
+    "categoriaPadre": {
+      "idCategoria": 1,
+      "nombre": "Hamburguesas",
+      "imagen": "/icons/burger.svg",
+      "margenGanancia": 25,
+      "fechaBaja": null,
+      "listaManufacturados": [],
+      "categoriaPadre": null
+    }
+  },
+  {
+    "idCategoria": 3,
+    "nombre": "Carne",
+    "margenGanancia": 23,
+    "fechaBaja": null,
+    "listaManufacturados": [],
+    "imagen": null,
+    "categoriaPadre": {
+      "idCategoria": 1,
+      "nombre": "Hamburguesas",
+      "imagen": "/icons/burger.svg",
+      "margenGanancia": 25,
+      "fechaBaja": null,
+      "listaManufacturados": [],
+      "categoriaPadre": null
+    }
+  },
+  {
+    "idCategoria": 4,
+    "nombre": "Pollo",
+    "margenGanancia": 23,
+    "fechaBaja": null,
+    "listaManufacturados": [],
+    "imagen": null,
+    "categoriaPadre": {
+      "idCategoria": 1,
+      "nombre": "Hamburguesas",
+      "imagen": "/icons/burger.svg",
+      "margenGanancia": 25,
+      "fechaBaja": null,
+      "listaManufacturados": [],
+      "categoriaPadre": null
+    }
+  },
+  {
+    "idCategoria": 5,
+    "nombre": "Bebidas",
+    "imagen": "/icons/bebida.svg",
+    "margenGanancia": 20,
+    "fechaBaja": null,
+    "listaManufacturados": [],
+    "categoriaPadre": null
+  }
+]
