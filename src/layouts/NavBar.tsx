@@ -6,7 +6,7 @@ const NavBar: React.FC = () => {
     <nav className="navbar-dark flex items-center justify-between py-2 px-5 w-full box-border">
       {/* Logo section */}
       <div className="flex items-center gap-2.5">
-        <div className="w-10 h-10 bg-gray-500 rounded-full"></div>
+        <div className="w-10 h-10 bg-gray-500 rounded-full overflow-hidden"><img src="public/logo.webp" alt="ElBuenSabor" /></div>
         <span className="text-white font-bangers text-2xl italic">LOGO</span>
       </div>
 
@@ -25,7 +25,7 @@ const NavBar: React.FC = () => {
 
       {/* Buttons */}
       <div className="flex gap-4">
-        <Link to="/registro" className="register-btn">
+        <Link to="/register" className="register-btn">
           REGISTRATE
         </Link>
         <Link
