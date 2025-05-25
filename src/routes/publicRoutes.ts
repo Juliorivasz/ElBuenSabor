@@ -1,32 +1,16 @@
-import { Login, Register, NotFound } from "../pages";
-import { routeType } from "./types/routes";
-import { Landing } from "../pages/client/Landing";
-import { Catalog } from "../pages/client/catalog/Catalog";
+import { lazy } from "react";
 
-export const publicRoutes: routeType[] = [
+export const publicRoutes = [
   {
-    name: "Home",
     path: "/",
-    element: Landing,
+    element: lazy(() => import("../pages/client/Landing").then((module) => ({ default: module.Landing }))),
   },
   {
-    name: "Login",
-    path: "/login",
-    element: Login,
-  },
-  {
-    name: "Register",
-    path: "/register",
-    element: Register,
-  },
-  {
-    name: "NotFound",
     path: "/notFound",
-    element: NotFound,
+    element: lazy(() => import("../pages/NotFound").then((module) => ({ default: module.NotFound }))),
   },
   {
-    name: "Catalog",
     path: "/catalog",
-    element: Catalog,
+    element: lazy(() => import("../pages/client/catalog/Catalog").then((module) => ({ default: module.Catalog }))),
   },
 ];

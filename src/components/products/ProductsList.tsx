@@ -1,8 +1,8 @@
 import React from "react";
-import { Product, ProductsListProps } from "./types/products";
-import { ProductsCard } from "./ProductsCard";
 import { motion, AnimatePresence } from "framer-motion";
 import { EmptyProducts } from "./EmptyProducts";
+import { ProductsCard } from "./ProductsCard";
+import { ProductsListProps } from "./types/products";
 
 export const ProductsList: React.FC<ProductsListProps> = ({ products, onSelectProduct, categoryKey }) => {
   return (
@@ -14,15 +14,15 @@ export const ProductsList: React.FC<ProductsListProps> = ({ products, onSelectPr
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -10 }}
           transition={{ duration: 0.3 }}
-          className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+          className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-6">
           {products.length === 0 ? (
             <div className="col-span-full">
               <EmptyProducts />
             </div>
           ) : (
-            products.map((product: Product) => (
+            products.map((product) => (
               <ProductsCard
-                key={product.id}
+                key={product.getIdArticulo()}
                 product={product}
                 onClick={() => onSelectProduct(product)}
               />

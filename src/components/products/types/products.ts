@@ -1,25 +1,17 @@
-export type Product = {
-  id: string;
-  title: string;
-  description: string;
-  price: number;
-  cookingTime: string;
-  stock: number;
-  category: "carne" | "pollo" | "veganas";
-  image: string;
-};
+import { ArticuloManufacturado } from "../../../models/ArticuloManufacturado";
 
 export interface ProductsListProps {
-  products: Product[];
-  onSelectProduct: (product: Product) => void;
+  products: ArticuloManufacturado[];
+  onSelectProduct: (product: ArticuloManufacturado) => void;
   categoryKey: string;
 }
 
 export interface ProductCardProps {
-  product: Product;
+  product: ArticuloManufacturado;
   onClick: () => void;
 }
-
-export type ProductProps = {
-  product: Product;
-};
+export interface ModalProductProps {
+  product: ArticuloManufacturado;
+  onClose: () => void;
+  onAddToCart: (product: ArticuloManufacturado, quantity: number) => void;
+}

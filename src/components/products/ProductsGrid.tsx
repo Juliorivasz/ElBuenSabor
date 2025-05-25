@@ -1,21 +1,30 @@
-import { useEffect, useState } from "react";
-import { products } from "./data/listProducts";
-import { CategoryFilters } from "./CategoryFilters";
-import { ProductsList } from "./ProductsList";
-import { Product } from "./types/products";
-import { ModalProduct } from "./modal/ModalProduct";
+import React, { useEffect, useState } from "react";
 import { Categoria } from "../../models/Categoria";
 import { fetchCategorias } from "../../services/categoriaServicio";
 import { Category } from "./category/Category";
+import { ArticuloManufacturado } from "../../models/ArticuloManufacturado";
+import { fetchArticulosManufacturados } from "../../services/articuloManufacturadoServicio";
+import { ModalProduct } from "./modal/ModalProduct";
+import { ProductsList } from "./ProductsList";
+import { CategoryFilters } from "./CategoryFilters";
+import { useCartStore } from "../../store/cart/useCartStore";
 
 export const ProductsGrid: React.FC = () => {
   const [selectedParentCategory, setSelectedParentCategory] = useState<string | null>(null);
   const [selectedSubCategory, setSelectedSubCategory] = useState<string>("Todos");
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<ArticuloManufacturado | null>(null);
   const [categorias, setCategorias] = useState<Categoria[]>([]);
+  const [productos, setProductos] = useState<ArticuloManufacturado[]>([]);
+
+  const addItemToCart = useCartStore((state) => state.addItem);
 
   useEffect(() => {
     fetchCategorias().then(setCategorias).catch(console.error);
+    fetchArticulosManufacturados()
+      .then((data) => {
+        setProductos(data);
+      })
+      .catch(console.error);
   }, []);
 
   // Categorías padre
@@ -24,7 +33,7 @@ export const ProductsGrid: React.FC = () => {
   // Subcategorías según el padre seleccionado
   const subcategorias =
     selectedParentCategory === null
-      ? []
+      ? ["Todos"]
       : categorias
           .filter(
             (cat) =>
@@ -32,10 +41,21 @@ export const ProductsGrid: React.FC = () => {
           )
           .map((cat) => cat.getcategoriaNombre());
 
-  const filteredProducts =
-    selectedSubCategory === "Todos"
-      ? products
-      : products.filter((p) => p.category === selectedSubCategory.toLowerCase());
+  // Agregamos "Todos" al inicio del array de subcategorias
+  const subcategoriasConTodos = ["Todos", ...subcategorias];
+
+  // Filtra los productos basados en la categoría padre y la subcategoría seleccionada.
+  const filteredProducts = productos.filter((producto) => {
+    const perteneceACategoriaPadre =
+      selectedParentCategory === null ||
+      producto.getCategoria()?.getcategoriaNombre() === selectedParentCategory ||
+      producto.getCategoria()?.getcategoriaPadre()?.getcategoriaNombre() === selectedParentCategory;
+
+    const perteneceASubcategoria =
+      selectedSubCategory === "Todos" || producto.getCategoria()?.getcategoriaNombre() === selectedSubCategory;
+
+    return perteneceACategoriaPadre && perteneceASubcategoria;
+  });
 
   return (
     <section className="flex flex-col sm:items-start w-full">
@@ -52,7 +72,7 @@ export const ProductsGrid: React.FC = () => {
       {/* Subcategorías */}
       {selectedParentCategory && (
         <CategoryFilters
-          categories={["Todos", ...subcategorias]}
+          categories={subcategoriasConTodos}
           selected={selectedSubCategory}
           onSelect={(cat) => setSelectedSubCategory(cat)}
         />
@@ -70,8 +90,10 @@ export const ProductsGrid: React.FC = () => {
         <ModalProduct
           product={selectedProduct}
           onClose={() => setSelectedProduct(null)}
-          onAddToCart={(p) => {
-            console.log("Agregar al carrito:", p);
+          onAddToCart={(p, quantity) => {
+            for (let i = 0; i < quantity; i++) {
+              addItemToCart(p, p.getUrlImagen()[0]);
+            }
             setSelectedProduct(null);
           }}
         />
