@@ -30,19 +30,3 @@ body {
   background-color: var(--bg-primary);
   scroll-behavior: smooth;
 }
-
-/* Custom class for navbar background */
-.navbar-dark {
-  background-color: #242424 !important;
-}
-
-/* Custom class for register button */
-.register-btn {
-  background-color: white !important;
-  color: #ff8c00 !important;
-  border: 2px solid #ff8c00;
-  border-radius: 5rem !important;
-  padding: 4px 20px !important;
-  text-decoration: none !important;
-  font-size: 18px !important;
-}

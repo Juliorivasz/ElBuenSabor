@@ -1,11 +1,5 @@
 import React from "react";
-import { Categoria } from "../../../models/Categoria";
-
-interface CategoryProps {
-  categorias: Categoria[];
-  selected: string | null;
-  onSelect: (cat: string) => void;
-}
+import { CategoryProps } from "../types/category";
 
 export const Category: React.FC<CategoryProps> = ({ categorias, selected, onSelect }) => {
   return (

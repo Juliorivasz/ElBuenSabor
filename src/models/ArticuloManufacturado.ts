@@ -10,6 +10,7 @@ export class ArticuloManufacturado {
   private tiempoDeCocina: number;
   private detalles: ArticuloManufacturadoDetalle[];
   private categoria: Categoria;
+  private urlImagen: string;
 
   constructor(
     idArticulo: number,
@@ -20,6 +21,7 @@ export class ArticuloManufacturado {
     tiempoDeCocina: number,
     detalles: ArticuloManufacturadoDetalle[],
     categoria: Categoria,
+    urlImagen: string,
   ) {
     this.idArticulo = idArticulo;
     this.nombre = nombre;
@@ -29,6 +31,7 @@ export class ArticuloManufacturado {
     this.tiempoDeCocina = tiempoDeCocina;
     this.detalles = detalles;
     this.categoria = categoria;
+    this.urlImagen = urlImagen;
   }
 
   public getIdArticulo(): number {
@@ -93,5 +96,11 @@ export class ArticuloManufacturado {
   }
   public setCategoria(categoria: Categoria): void {
     this.categoria = categoria;
+  }
+  public getUrlImagen(): string {
+    return this.urlImagen;
+  }
+  public setUrlImagen(urlImagen: string): void {
+    this.urlImagen = urlImagen;
   }
 }

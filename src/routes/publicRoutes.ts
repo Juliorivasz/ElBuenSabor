@@ -1,32 +1,48 @@
-import { Login, Register, NotFound } from "../pages";
-import { routeType } from "./types/routes";
-import { Landing } from "../pages/client/Landing";
-import { Catalog } from "../pages/client/catalog/Catalog";
+import { lazy } from "react";
 
-export const publicRoutes: routeType[] = [
+export const publicRoutes = [
   {
-    name: "Home",
     path: "/",
-    element: Landing,
+    element: lazy(() => import("../pages/client/Landing").then((module) => ({ default: module.Landing }))),
   },
   {
-    name: "Login",
-    path: "/login",
-    element: Login,
+    path: "/about",
+    element: lazy(() => import("../pages/client/AboutUs").then((module) => ({ default: module.AboutUs }))),
   },
   {
-    name: "Register",
-    path: "/register",
-    element: Register,
-  },
-  {
-    name: "NotFound",
-    path: "/notFound",
-    element: NotFound,
-  },
-  {
-    name: "Catalog",
     path: "/catalog",
-    element: Catalog,
+    element: lazy(() => import("../pages/client/catalog/Catalog").then((module) => ({ default: module.Catalog }))),
+  },
+  {
+    path: "/contact",
+    element: lazy(() => import("../pages/client/Contact").then((module) => ({ default: module.Contact }))),
+  },
+  {
+    path: "/delivery",
+    element: lazy(() => import("../pages/client/services/Delivery").then((module) => ({ default: module.Delivery }))),
+  },
+  {
+    path: "/help",
+    element: lazy(() => import("../pages/client/support/Help").then((module) => ({ default: module.Help }))),
+  },
+  {
+    path: "/faq",
+    element: lazy(() => import("../pages/client/support/FAQ").then((module) => ({ default: module.FAQ }))),
+  },
+  {
+    path: "/terms",
+    element: lazy(() => import("../pages/client/legal/Terms").then((module) => ({ default: module.Terms }))),
+  },
+  {
+    path: "/privacy",
+    element: lazy(() => import("../pages/client/legal/Privacy").then((module) => ({ default: module.Privacy }))),
+  },
+  {
+    path: "/cookies",
+    element: lazy(() => import("../pages/client/legal/Cookies").then((module) => ({ default: module.Cookies }))),
+  },
+  {
+    path: "/notFound",
+    element: lazy(() => import("../pages/NotFound").then((module) => ({ default: module.NotFound }))),
   },
 ];

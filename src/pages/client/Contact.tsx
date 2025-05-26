@@ -1,50 +1,74 @@
-export function Contact() {
-  return (
-    <section
-      id="contact"
-      className="text-black px-6 py-12">
-      <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-start gap-10">
-        <div>
-          <h2 className="text-4xl font-bold mb-8">CONTACTANOS</h2>
-          <ul className="text-xl space-y-4">
-            <li>
-              <a
-                href="#"
-                className="hover:underline">
-                Instagram
-              </a>
-            </li>
-            <li>
-              <a
-                href="#"
-                className="hover:underline">
-                Facebook
-              </a>
-            </li>
-            <li>
-              <a
-                href="#"
-                className="hover:underline">
-                Whatsapp
-              </a>
-            </li>
-            <li>
-              <p>elbuensabor2025@gmail.com</p>
-            </li>
-          </ul>
-        </div>
+import { motion } from "framer-motion";
+import { PhoneOutlined } from "@mui/icons-material";
+import { ContactForm } from "../../components/contact/ContactForm";
+import { ContactInfo } from "../../components/contact/ContactInfo";
 
-        <div className="w-full md:w-[600px] ml-auto">
-          <h2 className="text-4xl font-bold mb-8 text-center w-full">DÓNDE ESTAMOS</h2>
-          <div className="relative w-full aspect-[4/3] rounded overflow-hidden">
-            <iframe
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1612.0121732269854!2d-68.8559139724171!3d-32.88382960398096!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x967e08fe30dcf1d9%3A0xbbbe8e86f5e31fae!2sMonica%20S%20B%20D%20Rivas!5e1!3m2!1ses!2sar!4v1747252618638!5m2!1ses!2sar"
-              className="absolute top-0 left-0 w-full h-full border-0"
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"></iframe>
-          </div>
+export const Contact = () => {
+  return (
+    <section className="py-16 sm:py-24 bg-gradient-to-br from-orange-50 via-red-50 to-yellow-50 relative overflow-hidden">
+      {/* Background Elements */}
+      <div className="absolute inset-0 overflow-hidden">
+        <motion.div
+          className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-orange-400/10 to-red-500/10 rounded-full blur-3xl"
+          animate={{
+            scale: [1, 1.2, 1],
+            rotate: [0, 180, 360],
+          }}
+          transition={{
+            duration: 20,
+            repeat: Number.POSITIVE_INFINITY,
+            ease: "linear",
+          }}
+        />
+        <motion.div
+          className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-yellow-400/10 to-orange-500/10 rounded-full blur-3xl"
+          animate={{
+            scale: [1.2, 1, 1.2],
+            rotate: [360, 180, 0],
+          }}
+          transition={{
+            duration: 25,
+            repeat: Number.POSITIVE_INFINITY,
+            ease: "linear",
+          }}
+        />
+      </div>
+
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="text-center mb-16">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            className="inline-flex items-center space-x-2 bg-gradient-to-r from-orange-100 to-red-100 px-4 py-2 rounded-full mb-6">
+            <PhoneOutlined
+              className="text-orange-500"
+              sx={{ fontSize: 16 }}
+            />
+            <span className="text-sm font-medium text-orange-700">Contacto</span>
+          </motion.div>
+
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-800 mb-6">
+            ¡Estamos aquí{" "}
+            <span className="bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">para ti!</span>
+          </h1>
+          <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+            ¿Tienes alguna pregunta, sugerencia o simplemente quieres saludarnos? Nos encanta escuchar de nuestros
+            clientes.
+          </p>
+        </motion.div>
+
+        {/* Contact Content */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+          <ContactForm />
+          <ContactInfo />
         </div>
       </div>
     </section>
   );
-}
+};
