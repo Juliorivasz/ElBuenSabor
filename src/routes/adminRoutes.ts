@@ -16,4 +16,9 @@ export const adminRoutes = [
     element: lazy(() => import("../pages/admin/kitchen/Kitchen").then((module) => ({ default: module.Kitchen }))),
     allowedRoles: ["cocinero", "admin"],
   },
+  
+  {
+    path: "/abm",
+    element: lazy(() => import("../pages/admin/abm/AbmGeneric").then((module) => ({ default: module.AbmGeneric }))),
+  },
 ];

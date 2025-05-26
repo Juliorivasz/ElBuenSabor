@@ -45,7 +45,7 @@ export const AppRouter = () => {
               key={route.path}
               path={route.path}
               element={
-                <PrivateRoute requiredRole="ADMIN">
+                <PrivateRoute>
                   <route.element />
                 </PrivateRoute>
               }
