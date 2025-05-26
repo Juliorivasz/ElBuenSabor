@@ -1,32 +1,54 @@
-import React, { useEffect } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
-import { Outlet } from "react-router-dom";
+import type { ReactNode } from "react";
+import { Navigate } from "react-router-dom";
 
-export const PrivateRoute: React.FC = () => {
-  const { isAuthenticated, isLoading, loginWithRedirect } = useAuth0();
+interface PrivateRouteProps {
+  children: ReactNode;
+  requiredRole?: string;
+}
 
-  useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      loginWithRedirect({
-        appState: { returnTo: window.location.pathname },
-      });
-    }
-  }, [isAuthenticated, isLoading, loginWithRedirect]);
+export const PrivateRoute = ({ children, requiredRole }: PrivateRouteProps) => {
+  const { isAuthenticated, isLoading, user } = useAuth0();
 
   if (isLoading) {
     return (
-      <div style={{ padding: "20px", textAlign: "center" }}>
-        <h1>Cargando sesión...</h1>
-        <p>Verificando su autenticación.</p>
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-lg">Verificando autenticación...</div>
       </div>
     );
   }
 
-  // Si el usuario está autenticado, renderizamos el contenido de las rutas anidadas.
-  // Outlet es crucial para que las rutas hijas se muestren dentro de este layout/wrapper.
-  if (isAuthenticated) {
-    return <Outlet />;
+  if (user?.role === "ADMIN" && requiredRole === "CLIENT") {
+    return (
+      <Navigate
+        to="/catalog"
+        replace
+      />
+    );
   }
 
-  return null;
+  if (!isAuthenticated) {
+    return (
+      <Navigate
+        to="/"
+        replace
+      />
+    );
+  }
+  console.log(user);
+
+  // Si se requiere un rol específico, verificarlo
+  if (requiredRole) {
+    const userRole = user?.["https://elbuensabor.com/roles"]?.[0] || user?.role;
+    if (userRole !== requiredRole) {
+      return (
+        <Navigate
+          to="/"
+          replace
+        />
+      );
+    }
+  }
+
+  return <>{children}</>;
 };

@@ -1,10 +1,13 @@
-import React from "react";
+import type React from "react";
+import { memo, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { EmptyProducts } from "./EmptyProducts";
 import { ProductsCard } from "./ProductsCard";
-import { ProductsListProps } from "./types/products";
+import type { ProductsListProps } from "./types/products";
 
-export const ProductsList: React.FC<ProductsListProps> = ({ products, onSelectProduct, categoryKey }) => {
+export const ProductsList: React.FC<ProductsListProps> = memo(({ products, onSelectProduct, categoryKey }) => {
+  const memoizedProducts = useMemo(() => products, [products]);
+
   return (
     <div className="w-full">
       <AnimatePresence mode="wait">
@@ -15,12 +18,12 @@ export const ProductsList: React.FC<ProductsListProps> = ({ products, onSelectPr
           exit={{ opacity: 0, y: -10 }}
           transition={{ duration: 0.3 }}
           className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-6">
-          {products.length === 0 ? (
+          {memoizedProducts.length === 0 ? (
             <div className="col-span-full">
               <EmptyProducts />
             </div>
           ) : (
-            products.map((product) => (
+            memoizedProducts.map((product) => (
               <ProductsCard
                 key={product.getIdArticulo()}
                 product={product}
@@ -32,4 +35,6 @@ export const ProductsList: React.FC<ProductsListProps> = ({ products, onSelectPr
       </AnimatePresence>
     </div>
   );
-};
+});
+
+ProductsList.displayName = "ProductsList";
