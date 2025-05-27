@@ -1,3 +1,5 @@
+"use client";
+
 import type React from "react";
 import { useEffect, useState, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -10,15 +12,19 @@ import { ModalProduct } from "./modal/ModalProduct";
 import { ProductsList } from "./ProductsList";
 import { CategoryFilters } from "./CategoryFilters";
 import { useCartStore } from "../../store/cart/useCartStore";
-import { RestaurantMenuOutlined, FilterListOutlined, SearchOutlined } from "@mui/icons-material";
+import { RestaurantMenuOutlined, FilterListOutlined } from "@mui/icons-material";
 
-export const ProductsGrid: React.FC = () => {
+interface ProductsGridProps {
+  searchTerm?: string;
+  onProductsLoad?: (products: ArticuloManufacturado[]) => void;
+}
+
+export const ProductsGrid: React.FC<ProductsGridProps> = ({ searchTerm = "", onProductsLoad }) => {
   const [selectedParentCategory, setSelectedParentCategory] = useState<string | null>(null);
   const [selectedSubCategory, setSelectedSubCategory] = useState<string>("Todos");
   const [selectedProduct, setSelectedProduct] = useState<ArticuloManufacturado | null>(null);
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [productos, setProductos] = useState<ArticuloManufacturado[]>([]);
-  const [searchTerm, setSearchTerm] = useState<string>("");
 
   const addItemToCart = useCartStore((state) => state.addItem);
 
@@ -28,13 +34,18 @@ export const ProductsGrid: React.FC = () => {
         const [categoriasData, productosData] = await Promise.all([fetchCategorias(), fetchArticulosManufacturados()]);
         setCategorias(categoriasData);
         setProductos(productosData);
+
+        // Notificar al componente padre sobre los productos cargados
+        if (onProductsLoad) {
+          onProductsLoad(productosData);
+        }
       } catch (error) {
         console.error("Error loading data:", error);
       }
     };
 
     loadData();
-  }, []);
+  }, [onProductsLoad]);
 
   // Memoizar categorías padre
   const categoriasPadre = useMemo(() => categorias.filter((cat) => !cat.getcategoriaPadre()), [categorias]);
@@ -57,6 +68,7 @@ export const ProductsGrid: React.FC = () => {
     return productos.filter((producto) => {
       const perteneceACategoriaPadre =
         selectedParentCategory === null ||
+        selectedParentCategory === "todos" ||
         producto.getCategoria()?.getcategoriaNombre() === selectedParentCategory ||
         producto.getCategoria()?.getcategoriaPadre()?.getcategoriaNombre() === selectedParentCategory;
 
@@ -96,61 +108,19 @@ export const ProductsGrid: React.FC = () => {
     [addItemToCart],
   );
 
-  const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value);
-  }, []);
-
   return (
-    <section className="flex flex-col w-full space-y-4 sm:space-y-6 lg:space-y-8">
-      {/* Header Section - Mobile First */}
+    <section className="flex flex-col w-full space-y-6">
+      {/* Categories Section */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="text-center mb-4 sm:mb-6 lg:mb-8">
-        <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ type: "spring", stiffness: 200, delay: 0.2 }}
-          className="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-br from-orange-500 to-red-500 rounded-full mb-3 shadow-lg sm:w-14 sm:h-14 lg:w-16 lg:h-16 sm:mb-4">
-          <RestaurantMenuOutlined className="text-white text-xl sm:text-2xl lg:text-3xl" />
-        </motion.div>
-        <h2 className="text-2xl font-bold mb-2 sm:text-3xl lg:text-4xl sm:mb-4">
-          <span className="bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
-            Explora Nuestros Sabores
-          </span>
-        </h2>
-        <p className="text-gray-600 text-sm max-w-xl mx-auto sm:text-base lg:text-lg lg:max-w-2xl">
-          Descubre una experiencia culinaria única con ingredientes frescos y recetas tradicionales
-        </p>
-      </motion.div>
-
-      {/* Search Bar - Mobile First */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
-        className="relative max-w-full mx-auto mb-4 sm:max-w-md sm:mb-6 lg:mb-8">
-        <div className="relative">
-          <SearchOutlined className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-lg sm:left-4 sm:text-xl" />
-          <input
-            type="text"
-            placeholder="Buscar productos..."
-            value={searchTerm}
-            onChange={handleSearchChange}
-            className="w-full pl-10 pr-4 py-2.5 text-black bg-white/80 backdrop-blur-sm border border-orange-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-300 shadow-lg text-sm sm:pl-12 sm:py-3 sm:rounded-xl sm:text-base"
-          />
-        </div>
-      </motion.div>
-
-      {/* Categories Section - Mobile First */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.4 }}
-        className="bg-white/80 backdrop-blur-sm rounded-xl shadow-xl border border-orange-100 p-4 sm:rounded-2xl sm:p-6">
+        className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-orange-100 p-4 sm:p-6">
         <div className="flex items-center mb-4 sm:mb-6">
           <div className="w-6 h-6 bg-gradient-to-br from-orange-500 to-red-500 rounded-md flex items-center justify-center mr-2 sm:w-8 sm:h-8 sm:rounded-lg sm:mr-3">
-            <FilterListOutlined className="text-white text-sm sm:text-base lg:text-lg" />
+            <FilterListOutlined
+              className="text-white"
+              sx={{ fontSize: { xs: 14, sm: 16, lg: 18 } }}
+            />
           </div>
           <h3 className="text-lg font-bold sm:text-xl">
             <span className="bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
@@ -183,16 +153,19 @@ export const ProductsGrid: React.FC = () => {
         </AnimatePresence>
       </motion.div>
 
-      {/* Products Section - Mobile First */}
+      {/* Products Section */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.5 }}
-        className="bg-white/80 backdrop-blur-sm rounded-xl shadow-xl border border-orange-100 p-4 sm:rounded-2xl sm:p-6">
+        transition={{ delay: 0.2 }}
+        className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-orange-100 p-4 sm:p-6">
         <div className="flex flex-col space-y-3 mb-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 sm:mb-6">
           <div className="flex items-center">
             <div className="w-6 h-6 bg-gradient-to-br from-orange-500 to-red-500 rounded-md flex items-center justify-center mr-2 sm:w-8 sm:h-8 sm:rounded-lg sm:mr-3">
-              <RestaurantMenuOutlined className="text-white text-sm sm:text-base lg:text-lg" />
+              <RestaurantMenuOutlined
+                className="text-white"
+                sx={{ fontSize: { xs: 14, sm: 16, lg: 18 } }}
+              />
             </div>
             <h3 className="text-lg font-bold sm:text-xl">
               <span className="bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">

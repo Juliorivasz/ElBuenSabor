@@ -39,8 +39,6 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
 }) => {
   const navigate = useNavigate();
 
-  console.log(isAuthenticated);
-
   const handleNavigation = (path: string) => {
     navigate(path);
     onClose();

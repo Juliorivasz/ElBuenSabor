@@ -20,7 +20,6 @@ export const Logo = ({ size = "md", showText = true, className = "", linkTo }: L
 
   // Determinar la ruta según el estado de autenticación
   const logoLink = linkTo || (isAuthenticated ? "/catalog" : "/");
-  console.log(isAuthenticated, logoLink);
 
   const LogoContent = () => (
     <motion.div
