@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
+import { useAuth0 } from "@auth0/auth0-react";
 
 interface LogoProps {
   size?: "sm" | "md" | "lg";
@@ -9,11 +10,17 @@ interface LogoProps {
 }
 
 export const Logo = ({ size = "md", showText = true, className = "", linkTo }: LogoProps) => {
+  const { isAuthenticated } = useAuth0();
+
   const sizes = {
     sm: { logo: "w-8 h-8", text: "text-lg", subtitle: "text-xs" },
     md: { logo: "w-10 h-10 sm:w-12 sm:h-12", text: "text-xl sm:text-2xl", subtitle: "text-xs" },
     lg: { logo: "w-16 h-16", text: "text-3xl", subtitle: "text-sm" },
   };
+
+  // Determinar la ruta según el estado de autenticación
+  const logoLink = linkTo || (isAuthenticated ? "/catalog" : "/");
+  console.log(isAuthenticated, logoLink);
 
   const LogoContent = () => (
     <motion.div
@@ -24,10 +31,9 @@ export const Logo = ({ size = "md", showText = true, className = "", linkTo }: L
         animate={{ rotate: [0, 5, -5, 0] }}
         transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY, repeatDelay: 3 }}
         className="relative">
-        <div
-          className={`${sizes[size].logo} bg-gradient-to-br from-orange-400 to-red-500 rounded-full flex items-center justify-center overflow-hidden shadow-lg`}>
+        <div className={`${sizes[size].logo} bg-white rounded-full flex items-center justify-center overflow-hidden`}>
           <img
-            src="https://i.imgur.com/j1N7XpC.jpeg"
+            src="/logo-t.png"
             alt="ElBuenSabor"
             className="w-full h-full object-cover"
           />
@@ -57,16 +63,11 @@ export const Logo = ({ size = "md", showText = true, className = "", linkTo }: L
     </motion.div>
   );
 
-  // Si se proporciona linkTo, envolver en Link, sino devolver solo el contenido
-  if (linkTo) {
-    return (
-      <Link
-        to={linkTo}
-        className="block">
-        <LogoContent />
-      </Link>
-    );
-  }
-
-  return <LogoContent />;
+  return (
+    <Link
+      to={logoLink}
+      className="block">
+      <LogoContent />
+    </Link>
+  );
 };

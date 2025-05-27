@@ -13,4 +13,8 @@ export const clientPrivateRoutes = [
     path: "/address",
     element: lazy(() => import("../pages/client/address/Address").then((module) => ({ default: module.Address }))),
   },
+  {
+    path: "/orders",
+    element: lazy(() => import("../pages/client/orders/Orders").then((module) => ({ default: module.Orders }))),
+  },
 ];

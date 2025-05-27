@@ -1,5 +1,3 @@
-"use client";
-
 import type React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MenuOutlined, CloseOutlined } from "@mui/icons-material";
@@ -65,7 +63,6 @@ export const NavBar: React.FC = () => {
               <Logo
                 size="md"
                 showText={true}
-                linkTo="/"
               />
             </motion.div>
 

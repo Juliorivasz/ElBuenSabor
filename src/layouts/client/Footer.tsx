@@ -119,9 +119,9 @@ export const Footer = () => {
                     animate={{ rotate: [0, 5, -5, 0] }}
                     transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY, repeatDelay: 3 }}
                     className="relative">
-                    <div className="w-12 h-12 bg-gradient-to-br from-orange-400 to-red-500 rounded-full flex items-center justify-center overflow-hidden shadow-lg">
+                    <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center overflow-hidden shadow-lg">
                       <img
-                        src="https://i.imgur.com/j1N7XpC.jpeg"
+                        src="/logo-t.png"
                         alt="ElBuenSabor"
                         className="w-full h-full object-cover"
                       />
