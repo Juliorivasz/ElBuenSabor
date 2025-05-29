@@ -1,30 +1,38 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { motion } from "framer-motion";
 import type { ArticuloManufacturado } from "../../../models/ArticuloManufacturado";
 import { ProductsGrid } from "../../../components/products/ProductsGrid";
 import { SearchSection } from "../../../components/catalog/SearchSection";
 import { AdvertisementCarousel } from "../../../components/catalog/AdvertisementCarousel";
-import { PopularProduct, PopularProductsCarousel } from "../../../components/catalog/PopularProductsCarousel";
+import { PopularProductsCarousel } from "../../../components/catalog/PopularProductsCarousel";
+import { useCartStore } from "../../../store/cart/useCartStore";
+import { useAuth0 } from "@auth0/auth0-react";
 
 export const Catalog = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [products, setProducts] = useState<ArticuloManufacturado[]>([]);
+  const { addItem } = useCartStore();
+  const { isAuthenticated, loginWithRedirect } = useAuth0();
 
   const handleProductSelect = (product: ArticuloManufacturado) => {
     console.log("Producto seleccionado desde búsqueda:", product.getNombre());
     // El modal se abre automáticamente desde SearchSection
   };
 
-  const handleAddToCart = (product: PopularProduct) => {
-    console.log("Agregando al carrito:", product);
+  const handleAddToCart = (product: ArticuloManufacturado) => {
+    if (!isAuthenticated) {
+      loginWithRedirect({ appState: { returnTo: window.location.pathname } });
+      return;
+    }
+    addItem(product, product.getUrlImagen());
     // Aquí puedes implementar la lógica para agregar al carrito
   };
 
-  const handleProductsLoad = (loadedProducts: ArticuloManufacturado[]) => {
+  const handleProductsLoad = useCallback((loadedProducts: ArticuloManufacturado[]) => {
     setProducts(loadedProducts);
-  };
+  }, []);
 
   const handleSearchChange = (term: string) => {
     setSearchTerm(term);

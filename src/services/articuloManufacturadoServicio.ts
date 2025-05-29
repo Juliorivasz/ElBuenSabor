@@ -58,6 +58,16 @@ type ArticuloManufacturadoApi = {
   urlImagen: string;
 };
 
+type ArticuloManufacturadoPaginadoApi = {
+  content: ArticuloManufacturadoApi[];
+  totalPages: number;
+};
+
+type ArticuloManufacturadoPaginado = {
+  content: ArticuloManufacturado[];
+  totalPages: number;
+};
+
 // Función para parsear UnidadMedida
 const parseUnidadMedida = (data: UnidadMedidaApi): UnidadDeMedida => {
   return new UnidadDeMedida(data.idUnidadMedida, data.nombre);
@@ -170,4 +180,27 @@ export const fetchArticulosManufacturados = async (): Promise<ArticuloManufactur
   }
   const data: ArticuloManufacturadoApi[] = await response.json();
   return data.map(parseArticuloManufacturado);
+};
+
+// Función para obtener los ArticulosManufacturados con paginación desde el backend
+export const fetchArticulosManufacturadosPaginados = async (page: number): Promise<ArticuloManufacturadoPaginado> => {
+  const pagina = page;
+  console.log(pagina);
+  try {
+    const response = await fetch(`/src/services/data/articulosPaginados${page}.json`);
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data: ArticuloManufacturadoPaginadoApi = await response.json();
+
+    return {
+      content: data.content.map(parseArticuloManufacturado),
+      totalPages: data.totalPages,
+    };
+  } catch (error) {
+    console.error("Error fetching paginated products:", error);
+    throw error;
+  }
 };

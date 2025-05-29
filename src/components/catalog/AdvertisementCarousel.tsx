@@ -28,8 +28,8 @@ const advertisements: Advertisement[] = [
   {
     id: "2",
     title: "Envío Gratis",
-    description: "En pedidos mayores a $25.000",
-    image: "/src/assets/orden.jpg",
+    description: "En productos seleccionados",
+    image: "/src/assets/adverts/envio-gratis.png",
     backgroundColor: "from-green-500 to-emerald-500",
     textColor: "text-white",
   },
@@ -37,7 +37,7 @@ const advertisements: Advertisement[] = [
     id: "3",
     title: "Combo Familiar",
     description: "4 hamburguesas + papas + bebidas",
-    image: "/src/assets/elegi.jpg",
+    image: "/src/assets/adverts/hamburguesas-papas-bebidas.png",
     discount: 30,
     backgroundColor: "from-purple-500 to-pink-500",
     textColor: "text-white",
@@ -46,7 +46,7 @@ const advertisements: Advertisement[] = [
     id: "4",
     title: "Happy Hour",
     description: "2x1 en bebidas de 17:00 a 19:00",
-    image: "/src/assets/recibe.jpg",
+    image: "/src/assets/adverts/happy-hour.png",
     backgroundColor: "from-blue-500 to-cyan-500",
     textColor: "text-white",
   },
@@ -83,7 +83,7 @@ export const AdvertisementCarousel: React.FC = () => {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="relative h-48 sm:h-64 lg:h-80 rounded-2xl overflow-hidden shadow-xl"
+        className="relative h-80 sm:h-64 lg:h-80 rounded-2xl overflow-hidden shadow-xl"
         onMouseEnter={() => setIsAutoPlaying(false)}
         onMouseLeave={() => setIsAutoPlaying(true)}>
         <AnimatePresence mode="wait">
@@ -93,7 +93,7 @@ export const AdvertisementCarousel: React.FC = () => {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -300 }}
             transition={{ duration: 0.5, ease: "easeInOut" }}
-            className={`absolute inset-0 bg-gradient-to-r ${advertisements[currentIndex].backgroundColor}`}>
+            className={`absolute inset-0 bg-gradient-to-r px-10 sm:pr-0 ${advertisements[currentIndex].backgroundColor}`}>
             <div className="relative h-full flex items-center">
               {/* Content */}
               <div className="flex-1 p-6 sm:p-8 lg:p-12">
@@ -149,12 +149,12 @@ export const AdvertisementCarousel: React.FC = () => {
         {/* Navigation Arrows */}
         <button
           onClick={goToPrevious}
-          className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white p-2 rounded-full transition-all duration-200">
+          className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black/50 backdrop-blur-sm hover:bg-black/30 text-white p-2 rounded-full transition-all duration-200 cursor-pointer">
           <ChevronLeft sx={{ fontSize: 24 }} />
         </button>
         <button
           onClick={goToNext}
-          className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white p-2 rounded-full transition-all duration-200">
+          className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black/50 backdrop-blur-sm hover:bg-black/30 text-white p-2 rounded-full transition-all duration-200 cursor-pointer">
           <ChevronRight sx={{ fontSize: 24 }} />
         </button>
 

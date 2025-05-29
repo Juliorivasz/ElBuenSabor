@@ -19,8 +19,15 @@ export const useNavigation = () => {
   const [cartAnimation, setCartAnimation] = useState(false);
 
   const location = useLocation();
-  const { isLoading, isAuthenticated, user, loginWithRedirect, logout } = useAuth0();
+  const { isLoading, isAuthenticated, user, loginWithRedirect, logout, getAccessTokenSilently } = useAuth0();
   const userMenuRef = useRef<HTMLDivElement>(null);
+
+  const token = async () => {
+    const data = await getAccessTokenSilently();
+    console.log(data);
+    return data;
+  };
+  console.log(token());
 
   // Get cart items count from store
   const cartItems = useCartStore((state) => state.items);
