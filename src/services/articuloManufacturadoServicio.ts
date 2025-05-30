@@ -4,6 +4,9 @@ import { ArticuloInsumo } from "../models/ArticuloInsumo";
 import { RubroInsumo } from "../models/RubroInsumo";
 import { ArticuloManufacturadoDetalle } from "../models/ArticuloManufacturadoDetalle";
 import { UnidadDeMedida } from "../models/UnidadDeMedida";
+import { ImagenDTO } from "../models/dto/ImagenDTO";
+import { InformacionArticuloManufacturadoDto } from "../models/dto/InformacionArticuloManufacturadoDto";
+import { InformacionDetalleDto } from "../models/dto/InformacionDetalleDto";
 
 // Definimos los tipos para la API, anidando los tipos para mantener la estructura del JSON.
 type UnidadMedidaApi = {
@@ -56,6 +59,50 @@ type ArticuloManufacturadoApi = {
   detalles: ArticuloManufacturadoDetalleApi[];
   categoria: CategoriaApi;
   urlImagen: string;
+};
+
+export type ImagenApi = {
+  url: string;
+};
+
+type InformacionDetalleDTOApi = {
+  idArticuloInsumo: number;
+  cantidad: number;
+};
+
+type InformacionArticuloManufacturadoDtoApi = {
+  idArticuloManufacturado: number;
+  nombre: string;
+  descripcion: string;
+  receta: string;
+  tiempoDeCocina: number;
+  imagenDto: ImagenApi;
+  idCategoria: number;
+  dadoDeAlta: boolean;
+  precioVenta: number;
+  detalles: InformacionDetalleDTOApi[];
+};
+
+type PaginatedResponseApi = {
+  totalPages: number;
+  totalElements: number;
+  size: number;
+  number: number;
+  content: InformacionArticuloManufacturadoDtoApi[];
+  first: boolean;
+  last: boolean;
+  empty: boolean;
+};
+
+type PaginatedResponse = {
+  totalPages: number;
+  totalElements: number;
+  size: number;
+  number: number; // número de página actual (0-based)
+  content: InformacionArticuloManufacturadoDto[];
+  first: boolean;
+  last: boolean;
+  empty: boolean;
 };
 
 // Función para parsear UnidadMedida
@@ -162,12 +209,50 @@ const parseArticuloManufacturado = (data: ArticuloManufacturadoApi): ArticuloMan
   );
 };
 
+const parseDetallesDTO = (data: InformacionDetalleDTOApi) => {
+  return new InformacionDetalleDto(data.idArticuloInsumo, data.cantidad);
+};
+
+const parseArticuloManufacturadoDTO = (data: InformacionArticuloManufacturadoDtoApi) => {
+  const detalles = data.detalles.map(parseDetallesDTO);
+  const imagenDto = new ImagenDTO(data.imagenDto.url);
+
+  return new InformacionArticuloManufacturadoDto(
+    data.idArticuloManufacturado,
+    data.nombre,
+    data.descripcion,
+    data.receta,
+    data.tiempoDeCocina,
+    imagenDto,
+    data.idCategoria,
+    data.dadoDeAlta,
+    data.precioVenta,
+    detalles,
+  );
+};
+
 // Función para obtener los ArticulosManufacturados
-export const fetchArticulosManufacturados = async (): Promise<ArticuloManufacturado[]> => {
-  const response = await fetch("/src/services/data/articulosManufacturados.json"); // Ajusta la ruta si es necesario
+export const fetchArticulosManufacturados = async (page: number): Promise<ArticuloManufacturado[]> => {
+  const response = await fetch(`localhost:8080/articuloManufacturado/abm?page=${page}`); // Ajusta la ruta si es necesario
   if (!response.ok) {
     throw new Error(`HTTP error! status: ${response.status}`);
   }
   const data: ArticuloManufacturadoApi[] = await response.json();
   return data.map(parseArticuloManufacturado);
+};
+
+export const fetchArticulosManufacturadosAbm = async (
+  page: number,
+  itemsPerPage: number,
+): Promise<PaginatedResponse> => {
+  const response = await fetch(
+    `http://localhost:8080/articuloManufacturado/abm?page=${page}${itemsPerPage ? `&size=${itemsPerPage}` : ""}`,
+  );
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+  const data: PaginatedResponseApi = await response.json();
+  const content = data.content.map(parseArticuloManufacturadoDTO);
+
+  return { ...data, content: content };
 };

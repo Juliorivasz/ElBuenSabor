@@ -1,80 +1,40 @@
-"use client"
+"use client";
 
-import React from "react"
-import type { ArticuloManufacturado } from "../../../models/ArticuloManufacturado"
-import VisibilityIcon from "@mui/icons-material/Visibility"
-import EditIcon from "@mui/icons-material/Edit"
-import BlockIcon from "@mui/icons-material/Block"
-import CheckCircleIcon from "@mui/icons-material/CheckCircle"
-import { Pagination } from "./Pagination"
+import React from "react";
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import EditIcon from "@mui/icons-material/Edit";
+import BlockIcon from "@mui/icons-material/Block";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import { Pagination } from "./Pagination";
+import { InformacionArticuloManufacturadoDto } from "../../../models/dto/InformacionArticuloManufacturadoDto";
 
 interface ProductsTableProps {
-  products: ArticuloManufacturado[]
-  onEdit: (product: ArticuloManufacturado) => void
-  onDelete: (product: ArticuloManufacturado) => void
-  onViewDetails: (product: ArticuloManufacturado) => void
-  onToggleStatus: (product: ArticuloManufacturado) => void
-  loading: boolean
+  products: InformacionArticuloManufacturadoDto[];
+  onEdit: (product: InformacionArticuloManufacturadoDto) => void;
+  onDelete: (product: InformacionArticuloManufacturadoDto) => void;
+  onViewDetails: (product: InformacionArticuloManufacturadoDto) => void;
+  onToggleStatus: (product: InformacionArticuloManufacturadoDto) => void;
+  loading: boolean;
+  pagination: {
+    currentPage: number;
+    totalPages: number;
+    totalItems: number;
+    itemsPerPage: number;
+  };
+  onPageChange: (page: number) => void;
+  onItemsPerPageChange: (itemsPerPage: number) => void;
 }
 
 export const ProductsTable: React.FC<ProductsTableProps> = ({
   products,
   onEdit,
-  onDelete,
   onViewDetails,
   onToggleStatus,
   loading,
+  pagination,
+  onPageChange,
+  onItemsPerPageChange,
 }) => {
-  // Estados para la paginación
-  const [currentPage, setCurrentPage] = React.useState(1)
-  const [itemsPerPage, setItemsPerPage] = React.useState(10)
-
-  // Calcular productos paginados
-  const paginatedData = React.useMemo(() => {
-    const startIndex = (currentPage - 1) * itemsPerPage
-    const endIndex = startIndex + itemsPerPage
-    return products.slice(startIndex, endIndex)
-  }, [products, currentPage, itemsPerPage])
-
-  // Calcular información de paginación
-  const totalPages = Math.ceil(products.length / itemsPerPage)
-
-  // Handlers para la paginación
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page)
-  }
-
-  const handleItemsPerPageChange = (newItemsPerPage: number) => {
-    setItemsPerPage(newItemsPerPage)
-    // Ajustar la página actual si es necesario
-    const newTotalPages = Math.ceil(products.length / newItemsPerPage)
-    if (currentPage > newTotalPages) {
-      setCurrentPage(1)
-    }
-  }
-
-  // Resetear página cuando cambian los productos
-  React.useEffect(() => {
-    setCurrentPage(1)
-  }, [products.length])
-
-  // Función auxiliar para obtener el estado del producto
-  const getProductStatus = (product: ArticuloManufacturado): boolean => {
-    return (product as any).esParaElaborar ?? true
-  }
-
-  // Función auxiliar para obtener el nombre de la categoría
-  const getCategoryName = (product: ArticuloManufacturado): string => {
-    try {
-      const categoria = product.getCategoria()
-      if (!categoria) return "Sin categoría"
-      return categoria.getcategoriaNombre()
-    } catch (error) {
-      console.warn("Error obteniendo nombre de categoría:", error)
-      return "Sin categoría"
-    }
-  }
-
   if (loading) {
     return (
       <div className="bg-white rounded-lg shadow">
@@ -82,7 +42,7 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div>
         </div>
       </div>
-    )
+    );
   }
 
   if (products.length === 0) {
@@ -93,7 +53,7 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({
           <p className="text-gray-400 mt-2">Agrega tu primer producto para comenzar</p>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -103,7 +63,7 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({
         <div className="flex justify-between items-center">
           <h3 className="text-lg font-medium text-gray-900">Productos Manufacturados</h3>
           <div className="text-sm text-gray-500">
-            {products.length} producto{products.length !== 1 ? "s" : ""} total{products.length !== 1 ? "es" : ""}
+            {pagination.totalItems} producto{pagination.totalItems !== 1 ? "s" : ""} total
           </div>
         </div>
       </div>
@@ -116,9 +76,6 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Producto
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Descripción
-              </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Precio</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -127,34 +84,23 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {paginatedData.map((product) => {
-              const isActive = getProductStatus(product)
-              const categoryName = getCategoryName(product)
+            {products.map((product) => {
+              const isActive = product.getDadoDeAlta();
 
               return (
-                <tr key={product.getIdArticulo()} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      {product.getUrlImagen() && (
-                        <div className="flex-shrink-0 h-12 w-12">
-                          <img
-                            className="h-12 w-12 rounded-lg object-cover"
-                            src={product.getUrlImagen() || "/placeholder.svg"}
-                            alt={product.getNombre()}
-                            onError={(e) => {
-                              ;(e.target as HTMLImageElement).src = "/placeholder.svg?height=48&width=48"
-                            }}
-                          />
-                        </div>
-                      )}
-                      <div className={product.getUrlImagen() ? "ml-4" : ""}>
-                        <div className="text-sm font-medium text-gray-900">{product.getNombre()}</div>
-                        <div className="text-sm text-gray-500">{categoryName}</div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="text-sm text-gray-900 max-w-xs truncate">{product.getDescripcion()}</div>
+                <tr
+                  key={product.getIdArticuloManufacturado()}
+                  className="hover:bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap flex items-center gap-3">
+                    <img
+                      src={product.getImagenDto().getUrl() || "/placeholder.svg"}
+                      alt={product.getNombre()}
+                      className="h-12 w-12 object-cover rounded-md"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = "/placeholder.svg?height=48&width=48";
+                      }}
+                    />
+                    <span className="text-sm font-medium text-gray-900">{product.getNombre()}</span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">${product.getPrecioVenta().toFixed(2)}</div>
@@ -163,32 +109,26 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({
                     <span
                       className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                         isActive ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
-                      }`}
-                    >
+                      }`}>
                       {isActive ? "Activo" : "Inactivo"}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div className="flex space-x-2">
-                      {/* Ver detalles */}
                       <button
                         onClick={() => onViewDetails(product)}
                         className="text-blue-600 hover:text-blue-900 p-2 rounded-md hover:bg-blue-50 transition-colors"
-                        title="Ver detalles"
-                      >
+                        title="Ver detalles">
                         <VisibilityIcon fontSize="small" />
                       </button>
 
-                      {/* Editar */}
                       <button
                         onClick={() => onEdit(product)}
                         className="text-orange-600 hover:text-orange-900 p-2 rounded-md hover:bg-orange-50 transition-colors"
-                        title="Editar"
-                      >
+                        title="Editar">
                         <EditIcon fontSize="small" />
                       </button>
 
-                      {/* Toggle estado */}
                       <button
                         onClick={() => onToggleStatus(product)}
                         className={`p-2 rounded-md transition-colors ${
@@ -196,14 +136,13 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({
                             ? "text-red-600 hover:text-red-900 hover:bg-red-50"
                             : "text-green-600 hover:text-green-900 hover:bg-green-50"
                         }`}
-                        title={isActive ? "Dar de baja" : "Dar de alta"}
-                      >
+                        title={isActive ? "Dar de baja" : "Dar de alta"}>
                         {isActive ? <BlockIcon fontSize="small" /> : <CheckCircleIcon fontSize="small" />}
                       </button>
                     </div>
                   </td>
                 </tr>
-              )
+              );
             })}
           </tbody>
         </table>
@@ -211,14 +150,13 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({
 
       {/* Paginación */}
       <Pagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        totalItems={products.length}
-        itemsPerPage={itemsPerPage}
-        onPageChange={handlePageChange}
-        onItemsPerPageChange={handleItemsPerPageChange}
-        itemsPerPageOptions={[5, 10, 25, 50]}
+        currentPage={pagination.currentPage}
+        totalPages={pagination.totalPages}
+        totalItems={pagination.totalItems}
+        itemsPerPage={pagination.itemsPerPage}
+        onPageChange={onPageChange}
+        onItemsPerPageChange={onItemsPerPageChange}
       />
     </div>
-  )
-}
+  );
+};
