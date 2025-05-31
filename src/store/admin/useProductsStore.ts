@@ -7,9 +7,9 @@ import {
 } from "../../services/articuloManufacturadoServicio";
 import { InformacionArticuloManufacturadoDto } from "../../models/dto/InformacionArticuloManufacturadoDto";
 import { fetchCategoriasAbm } from "../../services/categoriaServicio";
-import { CategoriaDTO } from "../../models/dto/CategoriaDTO";
+import type { CategoriaDTO } from "../../models/dto/CategoriaDTO";
 import { fetchInsumoAbm } from "../../services/articulosInsumosServicio";
-import { InsumoDTO } from "../../models/dto/InsumoDTO";
+import type { InsumoDTO } from "../../models/dto/InsumoDTO";
 
 interface PaginationState {
   currentPage: number;
@@ -97,22 +97,18 @@ export const useProductsStore = create<ProductsStore>((set) => ({
         productData.getDetalles(),
       );
 
-      const savedProduct = await crearArticuloManufacturado(newProduct);
+      await crearArticuloManufacturado(newProduct);
 
+      // Obtener el estado actual y refrescar
       set((state) => {
-        const newProducts = [...state.products, savedProduct];
-        const totalItems = newProducts.length;
-        const totalPages = Math.ceil(totalItems / state.pagination.itemsPerPage);
+        // Forzar el refresh llamando a fetchProductsPaginated
+        setTimeout(() => {
+          useProductsStore
+            .getState()
+            .fetchProductsPaginated(state.pagination.currentPage, state.pagination.itemsPerPage);
+        }, 0);
 
-        return {
-          products: newProducts,
-          loading: false,
-          pagination: {
-            ...state.pagination,
-            totalItems,
-            totalPages,
-          },
-        };
+        return { loading: false };
       });
     } catch (error) {
       set({ error: (error as Error).message, loading: false });
@@ -123,7 +119,6 @@ export const useProductsStore = create<ProductsStore>((set) => ({
     set({ loading: true, error: null });
     try {
       const updatedProduct = await actualizarArticuloManufacturado(id, updates as InformacionArticuloManufacturadoDto);
-      console.log("Producto actualizado recibido:", updatedProduct);
 
       set((state) => ({
         products: state.products.map((product) =>
@@ -139,23 +134,19 @@ export const useProductsStore = create<ProductsStore>((set) => ({
   deleteProduct: async (id) => {
     set({ loading: true, error: null });
     try {
-      set((state) => {
-        const newProducts = state.products.filter((product) => product.getIdArticuloManufacturado() !== id);
-        const totalItems = newProducts.length;
-        const totalPages = Math.ceil(totalItems / state.pagination.itemsPerPage);
+      // Aquí deberías llamar a tu API para eliminar el producto
+      // await eliminarArticuloManufacturado(id);
 
-        return {
-          products: newProducts,
-          loading: false,
-          pagination: {
-            ...state.pagination,
-            totalItems,
-            totalPages,
-            // Ajustar página actual si es necesario
-            currentPage:
-              state.pagination.currentPage > totalPages ? Math.max(1, totalPages) : state.pagination.currentPage,
-          },
-        };
+      // Obtener el estado actual y refrescar
+      set((state) => {
+        // Forzar el refresh llamando a fetchProductsPaginated
+        setTimeout(() => {
+          useProductsStore
+            .getState()
+            .fetchProductsPaginated(state.pagination.currentPage, state.pagination.itemsPerPage);
+        }, 0);
+
+        return { loading: false };
       });
     } catch (error) {
       set({ error: (error as Error).message, loading: false });
@@ -165,7 +156,6 @@ export const useProductsStore = create<ProductsStore>((set) => ({
   toggleProductStatus: async (id) => {
     set({ loading: true, error: null });
     try {
-      // Primero obtenemos el producto actual
       const currentProduct = useProductsStore
         .getState()
         .products.find((product) => product.getIdArticuloManufacturado() === id);
@@ -177,19 +167,19 @@ export const useProductsStore = create<ProductsStore>((set) => ({
       const currentStatus = currentProduct.getDadoDeAlta() ?? true;
       const newStatus = !currentStatus;
 
-      // Llamada al backend para cambiar el estado
       await altaBajaArticuloManufacturado(id, newStatus);
 
-      // Actualizamos el estado local si la petición fue exitosa
-      set((state) => ({
-        products: state.products.map((product) => {
-          if (product.getIdArticuloManufacturado() === id) {
-            product.setDadoDeAlta(newStatus);
-          }
-          return product;
-        }),
-        loading: false,
-      }));
+      // Obtener el estado actual y refrescar
+      set((state) => {
+        // Forzar el refresh llamando a fetchProductsPaginated
+        setTimeout(() => {
+          useProductsStore
+            .getState()
+            .fetchProductsPaginated(state.pagination.currentPage, state.pagination.itemsPerPage);
+        }, 0);
+
+        return { loading: false };
+      });
     } catch (error) {
       console.error("Error en toggleProductStatus:", error);
       set({ error: (error as Error).message, loading: false });

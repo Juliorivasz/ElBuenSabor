@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import type React from "react";
+import { useEffect, useState } from "react";
 import { useProductsStore } from "../../store/admin/useProductsStore";
 import { ProductsTable } from "../../components/Admin/products/ProductsTable";
 import { ProductForm } from "../../components/Admin/products/ProductForm";
 import { ProductDetailsModal } from "../../components/Admin/products/ProductDetailsModal";
 import { DeleteConfirmModal } from "../../components/Admin/products/DeleteConfirmModal";
-import { InformacionArticuloManufacturadoDto } from "../../models/dto/InformacionArticuloManufacturadoDto";
+import type { InformacionArticuloManufacturadoDto } from "../../models/dto/InformacionArticuloManufacturadoDto";
 
 export const Products: React.FC = () => {
   const {
@@ -31,12 +32,32 @@ export const Products: React.FC = () => {
   const [editingProduct, setEditingProduct] = useState<InformacionArticuloManufacturadoDto | undefined>();
   const [deletingProduct, setDeletingProduct] = useState<InformacionArticuloManufacturadoDto | undefined>();
   const [viewingProduct, setViewingProduct] = useState<InformacionArticuloManufacturadoDto | undefined>();
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
+  // useEffect(() => {
+  //   fetchProductsPaginated(pagination.currentPage, pagination.itemsPerPage);
+
+  //   // Solo cargar categorías e ingredientes una vez
+  //   if (categories.length === 0) {
+  //     fetchCategories();
+  //   }
+  //   if (ingredients.length === 0) {
+  //     fetchIngredients();
+  //   }
+  // }, [pagination.currentPage, pagination.itemsPerPage, refreshTrigger]); // Remover fetchCategories y fetchIngredients de las dependencias
+  useEffect(() => {
+    if (categories.length === 0) {
+      fetchCategories();
+    }
+    if (ingredients.length === 0) {
+      fetchIngredients();
+    }
+  }, [categories.length, ingredients.length, fetchCategories, fetchIngredients]);
+
+  // Cargar productos cuando cambie la paginación o el trigger
   useEffect(() => {
     fetchProductsPaginated(pagination.currentPage, pagination.itemsPerPage);
-    fetchCategories();
-    fetchIngredients();
-  }, [fetchProductsPaginated, fetchCategories, fetchIngredients, pagination.currentPage, pagination.itemsPerPage]);
+  }, [pagination.currentPage, pagination.itemsPerPage, fetchProductsPaginated, refreshTrigger]);
 
   const handlePageChange = (page: number) => {
     setPagination({ currentPage: page });
@@ -67,6 +88,7 @@ export const Products: React.FC = () => {
   const handleToggleStatus = async (product: InformacionArticuloManufacturadoDto) => {
     try {
       await toggleProductStatus(product.getIdArticuloManufacturado());
+      setRefreshTrigger((prev) => prev + 1); // Forzar refresh
     } catch (error) {
       console.error("Error al cambiar estado del producto:", error);
     }
@@ -85,6 +107,7 @@ export const Products: React.FC = () => {
       } else {
         await createProduct(productData);
       }
+      setRefreshTrigger((prev) => prev + 1); // Forzar refresh
       setShowForm(false);
       setEditingProduct(undefined);
     } catch (error) {
@@ -101,6 +124,7 @@ export const Products: React.FC = () => {
     if (deletingProduct) {
       try {
         await deleteProduct(deletingProduct.getIdArticuloManufacturado());
+        setRefreshTrigger((prev) => prev + 1); // Forzar refresh
         setDeletingProduct(undefined);
       } catch (error) {
         console.error("Error al eliminar producto:", error);
