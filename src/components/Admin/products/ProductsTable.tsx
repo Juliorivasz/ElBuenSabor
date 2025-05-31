@@ -86,7 +86,6 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({
           <tbody className="bg-white divide-y divide-gray-200">
             {products.map((product) => {
               const isActive = product.getDadoDeAlta();
-
               return (
                 <tr
                   key={product.getIdArticuloManufacturado()}
@@ -96,9 +95,6 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({
                       src={product.getImagenDto().getUrl() || "/placeholder.svg"}
                       alt={product.getNombre()}
                       className="h-12 w-12 object-cover rounded-md"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = "/placeholder.svg?height=48&width=48";
-                      }}
                     />
                     <span className="text-sm font-medium text-gray-900">{product.getNombre()}</span>
                   </td>

@@ -67,6 +67,7 @@ export type ImagenApi = {
 
 type InformacionDetalleDTOApi = {
   idArticuloInsumo: number;
+  nombreInsumo: string;
   cantidad: number;
 };
 
@@ -78,6 +79,7 @@ type InformacionArticuloManufacturadoDtoApi = {
   tiempoDeCocina: number;
   imagenDto: ImagenApi;
   idCategoria: number;
+  nombreCategoria: string;
   dadoDeAlta: boolean;
   precioVenta: number;
   detalles: InformacionDetalleDTOApi[];
@@ -210,7 +212,7 @@ const parseArticuloManufacturado = (data: ArticuloManufacturadoApi): ArticuloMan
 };
 
 const parseDetallesDTO = (data: InformacionDetalleDTOApi) => {
-  return new InformacionDetalleDto(data.idArticuloInsumo, data.cantidad);
+  return new InformacionDetalleDto(data.idArticuloInsumo, data.nombreInsumo, data.cantidad);
 };
 
 const parseArticuloManufacturadoDTO = (data: InformacionArticuloManufacturadoDtoApi) => {
@@ -225,6 +227,7 @@ const parseArticuloManufacturadoDTO = (data: InformacionArticuloManufacturadoDto
     data.tiempoDeCocina,
     imagenDto,
     data.idCategoria,
+    data.nombreCategoria,
     data.dadoDeAlta,
     data.precioVenta,
     detalles,
@@ -255,4 +258,102 @@ export const fetchArticulosManufacturadosAbm = async (
   const content = data.content.map(parseArticuloManufacturadoDTO);
 
   return { ...data, content: content };
+};
+
+// Función para realizar alta/baja lógica de un producto
+export const altaBajaArticuloManufacturado = async (id: number, dadoDeAlta: boolean): Promise<void> => {
+  const response = await fetch("http://localhost:8080/articuloManufacturado/altaBajaLogica", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      id,
+      dadoDeAlta,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+
+  // El endpoint no devuelve contenido, solo verificamos que la respuesta sea exitosa
+};
+
+// Función para crear un nuevo artículo manufacturado
+export const crearArticuloManufacturado = async (
+  producto: InformacionArticuloManufacturadoDto,
+): Promise<InformacionArticuloManufacturadoDto> => {
+  // Convertir el DTO a la estructura requerida por la API
+  console.log(producto);
+  const requestBody = {
+    nombre: producto.getNombre(),
+    descripcion: producto.getDescripcion(),
+    receta: producto.getReceta(),
+    tiempoDeCocina: producto.getTiempoDeCocina(),
+    dadoDeBaja: !producto.getDadoDeAlta(),
+    idCategoria: producto.getIdCategoria(),
+    imagenDto: {
+      url: producto.getImagenDto().getUrl(),
+    },
+    detalles: producto.getDetalles().map((detalle) => ({
+      idArticuloInsumo: detalle.getIdArticuloInsumo(),
+      cantidad: detalle.getCantidad(),
+    })),
+  };
+
+  const response = await fetch("http://localhost:8080/articuloManufacturado/nuevo", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(requestBody),
+  });
+
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+
+  const data: InformacionArticuloManufacturadoDtoApi = await response.json();
+  return parseArticuloManufacturadoDTO(data);
+};
+
+// Función para actualizar un artículo manufacturado
+export const actualizarArticuloManufacturado = async (
+  id: number,
+  producto: InformacionArticuloManufacturadoDto,
+): Promise<InformacionArticuloManufacturadoDto> => {
+  // Convertir el DTO a la estructura requerida por la API
+  console.log("id: " + id, producto);
+
+  const requestBody = {
+    nombre: producto.getNombre(),
+    descripcion: producto.getDescripcion(),
+    receta: producto.getReceta(),
+    tiempoDeCocina: producto.getTiempoDeCocina(),
+    dadoDeBaja: !producto.getDadoDeAlta(),
+    idCategoria: producto.getIdCategoria(),
+    imagenDto: {
+      url: producto.getImagenDto().getUrl(),
+    },
+    detalles: producto.getDetalles().map((detalle) => ({
+      idArticuloInsumo: detalle.getIdArticuloInsumo(),
+      cantidad: detalle.getCantidad(),
+    })),
+  };
+
+  const response = await fetch(`http://localhost:8080/articuloManufacturado/articulos/${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(requestBody),
+  });
+
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+
+  const data: InformacionArticuloManufacturadoDtoApi = await response.json();
+  return parseArticuloManufacturadoDTO(data);
 };

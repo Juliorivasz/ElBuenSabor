@@ -1,20 +1,18 @@
-// Archivo corregido de ProductForm.tsx con manejo seguro para objetos planos o clases
-
 "use client";
 
 import type React from "react";
 import { useState, useEffect, useMemo } from "react";
-import { ArticuloManufacturado } from "../../../models/ArticuloManufacturado";
-import { ArticuloManufacturadoDetalle } from "../../../models/ArticuloManufacturadoDetalle";
-import type { Categoria } from "../../../models/Categoria";
-import type { ArticuloInsumo } from "../../../models/ArticuloInsumo";
-import { NuevoArticuloManufacturadoDto } from "../../../models/dto/NuevoArticuloManufacturadoDto";
+import { InformacionArticuloManufacturadoDto } from "../../../models/dto/InformacionArticuloManufacturadoDto";
+import { CategoriaDTO } from "../../../models/dto/CategoriaDTO";
+import { InsumoDTO } from "../../../models/dto/InsumoDTO";
+import { ImagenDTO } from "../../../models/dto/ImagenDTO";
+import { InformacionDetalleDto } from "../../../models/dto/InformacionDetalleDto";
 
 interface ProductFormProps {
-  product?: ArticuloManufacturado;
-  categories: Categoria[];
-  ingredients: ArticuloInsumo[];
-  onSubmit: (product: NuevoArticuloManufacturadoDto) => void;
+  product?: InformacionArticuloManufacturadoDto;
+  categories: CategoriaDTO[];
+  ingredients: InsumoDTO[];
+  onSubmit: (product: InformacionArticuloManufacturadoDto) => void;
   onCancel: () => void;
   loading: boolean;
 }
@@ -49,24 +47,25 @@ interface CategoriaSimple {
 }
 
 // Función auxiliar para verificar si una categoría es padre
-const esCategoriaPadre = (categoria: Categoria): boolean => {
-  const padre = categoria.getcategoriaPadre();
-  return padre === null || padre === undefined;
+const esCategoriaPadre = (categoria: CategoriaDTO): boolean => {
+  const padre = categoria.getIdCategoriaPadre();
+  return padre === null || padre === undefined || padre === 0;
 };
 
 // Función para obtener el ID de una categoría
-const getCategoriaId = (categoria: Categoria): number => {
-  return categoria.getcategoriaId();
+const getCategoriaId = (categoria: CategoriaDTO): number => {
+  return categoria.getIdCategoria();
 };
 
 // Función para obtener el nombre de una categoría
-const getCategoriaNombre = (categoria: Categoria): string => {
-  return categoria.getcategoriaNombre();
+const getCategoriaNombre = (categoria: CategoriaDTO): string => {
+  return categoria.getNombre();
 };
 
 // Función para obtener la categoría padre de una categoría
-const getCategoriaPadre = (categoria: Categoria): Categoria | null => {
-  return categoria.getcategoriaPadre();
+const getCategoriaPadre = (categoria: CategoriaDTO): number | null => {
+  const padreId = categoria.getIdCategoriaPadre();
+  return padreId === 0 ? null : padreId;
 };
 
 export const ProductForm: React.FC<ProductFormProps> = ({
@@ -91,30 +90,8 @@ export const ProductForm: React.FC<ProductFormProps> = ({
 
   const [errors, setErrors] = useState<FormErrors>({});
 
-  // Debug: Mostrar las categorías en consola
-  useEffect(() => {
-    console.log("=== DEBUG CATEGORÍAS ===");
-    console.log("Total categorías recibidas:", categories.length);
-    categories.forEach((cat, index) => {
-      const padre = getCategoriaPadre(cat);
-      console.log(`Categoría ${index}:`, {
-        id: getCategoriaId(cat),
-        nombre: getCategoriaNombre(cat),
-        esPadre: esCategoriaPadre(cat),
-        categoriaPadre: padre
-          ? {
-              id: getCategoriaId(padre),
-              nombre: getCategoriaNombre(padre),
-            }
-          : null,
-      });
-    });
-  }, [categories]);
-
   // Procesar categorías y subcategorías
   const { categoriasPadre, subcategoriasPorPadre } = useMemo(() => {
-    console.log("=== PROCESANDO CATEGORÍAS ===");
-
     const padres: CategoriaSimple[] = [];
     const hijasPorPadre: Map<number, CategoriaSimple[]> = new Map();
 
@@ -123,7 +100,6 @@ export const ProductForm: React.FC<ProductFormProps> = ({
       if (esCategoriaPadre(categoria)) {
         const id = getCategoriaId(categoria);
         const nombre = getCategoriaNombre(categoria);
-
         padres.push({ id, nombre });
         console.log(`✅ Categoría padre agregada: ${nombre} (ID: ${id})`);
       }
@@ -132,26 +108,20 @@ export const ProductForm: React.FC<ProductFormProps> = ({
     // Luego procesamos las subcategorías
     categories.forEach((categoria) => {
       if (!esCategoriaPadre(categoria)) {
-        const categoriaPadre = getCategoriaPadre(categoria);
-        if (categoriaPadre) {
-          const padreId = getCategoriaId(categoriaPadre);
+        const categoriaPadreId = getCategoriaPadre(categoria);
+        if (categoriaPadreId) {
           const id = getCategoriaId(categoria);
           const nombre = getCategoriaNombre(categoria);
-          const nombrePadre = getCategoriaNombre(categoriaPadre);
 
-          if (!hijasPorPadre.has(padreId)) {
-            hijasPorPadre.set(padreId, []);
+          if (!hijasPorPadre.has(categoriaPadreId)) {
+            hijasPorPadre.set(categoriaPadreId, []);
           }
 
-          hijasPorPadre.get(padreId)?.push({ id, nombre });
-          console.log(`✅ Subcategoría agregada: ${nombre} (ID: ${id}) → Padre: ${nombrePadre} (ID: ${padreId})`);
+          hijasPorPadre.get(categoriaPadreId)?.push({ id, nombre });
+          console.log(`✅ Subcategoría agregada: ${nombre} (ID: ${id}) → Padre: (ID: ${categoriaPadreId})`);
         }
       }
     });
-
-    console.log("=== RESULTADO PROCESAMIENTO ===");
-    console.log("Categorías padre:", padres);
-    console.log("Subcategorías por padre:", Object.fromEntries(hijasPorPadre));
 
     return {
       categoriasPadre: padres,
@@ -168,25 +138,35 @@ export const ProductForm: React.FC<ProductFormProps> = ({
 
   useEffect(() => {
     if (product) {
-      const categoria = product.getCategoria();
-      let categoriaId = 0;
-      let subcategoriaId = 0;
+      const categoriaId = product.getIdCategoria();
+      let categoriaSeleccionada = 0;
+      let subcategoriaSeleccionada = 0;
+
+      // Buscar la categoría en nuestro array
+      const categoria = categories.find((cat) => getCategoriaId(cat) === categoriaId);
 
       if (categoria) {
-        const catId = getCategoriaId(categoria);
-
         if (!esCategoriaPadre(categoria)) {
           // Es una subcategoría
-          const categoriaPadre = getCategoriaPadre(categoria);
-          if (categoriaPadre) {
-            categoriaId = getCategoriaId(categoriaPadre);
-            subcategoriaId = catId;
+          const categoriaPadreId = getCategoriaPadre(categoria);
+          if (categoriaPadreId) {
+            categoriaSeleccionada = categoriaPadreId;
+            subcategoriaSeleccionada = categoriaId;
           }
         } else {
           // Es una categoría padre
-          categoriaId = catId;
+          categoriaSeleccionada = categoriaId;
         }
       }
+
+      // Obtener ingredientes a partir de detalles del producto
+      const detalles = product.getDetalles();
+      const ingredientes = detalles.map((detalle) => {
+        return {
+          insumoId: detalle.getIdArticuloInsumo(),
+          cantidad: detalle.getCantidad(),
+        };
+      });
 
       setFormData({
         nombre: product.getNombre(),
@@ -194,74 +174,72 @@ export const ProductForm: React.FC<ProductFormProps> = ({
         precioVenta: product.getPrecioVenta(),
         receta: product.getReceta(),
         tiempoDeCocina: product.getTiempoDeCocina(),
-        categoriaId,
-        subcategoriaId,
-        urlImagen: product.getUrlImagen(),
-        ingredientes:
-          product.getDetalles()?.map((detalle: any) => {
-            const articuloInsumo =
-              typeof detalle.getArticuloInsumo === "function" ? detalle.getArticuloInsumo() : detalle.articuloInsumo;
-
-            const cantidad = typeof detalle.getCantidad === "function" ? detalle.getCantidad() : detalle.cantidad;
-
-            return {
-              insumoId:
-                typeof articuloInsumo?.getIdInsumo === "function"
-                  ? articuloInsumo.getIdInsumo()
-                  : articuloInsumo?.id || 0,
-              cantidad: cantidad || 0,
-            };
-          }) || [],
+        categoriaId: categoriaSeleccionada,
+        subcategoriaId: subcategoriaSeleccionada,
+        urlImagen: product.getImagenDto().getUrl(),
+        ingredientes,
       });
     }
-  }, [product]);
+  }, [product, categories]);
 
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
+
     if (!formData.nombre.trim()) newErrors.nombre = "El nombre es requerido";
     if (!formData.descripcion.trim()) newErrors.descripcion = "La descripción es requerida";
-    if (formData.precioVenta <= 0) newErrors.precioVenta = "El precio debe ser mayor a 0";
     if (!formData.receta.trim()) newErrors.receta = "La receta es requerida";
     if (formData.tiempoDeCocina <= 0) newErrors.tiempoDeCocina = "El tiempo de cocina debe ser mayor a 0";
     if (formData.categoriaId === 0) newErrors.categoriaId = "Debe seleccionar una categoría";
-    if (subcategoriasActuales.length > 0 && formData.subcategoriaId === 0) {
-      newErrors.subcategoriaId = "Debe seleccionar una subcategoría";
+
+    // 🔁 Calcular subcategorías actualizadas en tiempo real
+    // const subcategorias = categories.filter((cat) => cat.getIdCategoria() === formData.categoriaId);
+
+    // if (subcategorias.length > 0 && formData.subcategoriaId === 0) {
+    //   newErrors.subcategoriaId = "Debe seleccionar una subcategoría";
+    // }
+
+    if (formData.ingredientes.length === 0) {
+      newErrors.ingredientes = "Debe agregar al menos un ingrediente";
     }
-    if (formData.ingredientes.length === 0) newErrors.ingredientes = "Debe agregar al menos un ingrediente";
+
     setErrors(newErrors);
+    console.log(errors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = (e: React.FormEvent) => {
+    console.log(validateForm());
     e.preventDefault();
     if (!validateForm()) return;
 
     // Buscar la categoría final (subcategoría si existe, sino la categoría padre)
     const finalCategoryId = formData.subcategoriaId || formData.categoriaId;
-    const selectedCategory = categories.find((cat) => {
-      return getCategoriaId(cat) === finalCategoryId;
+
+    // Crear los detalles
+    const detalles = formData.ingredientes.map((ing) => {
+      const insumo = ingredients.find((i) => i.getIdArticuloInsumo() === ing.insumoId);
+      if (!insumo) {
+        throw new Error(`Insumo con ID ${ing.insumoId} no encontrado`);
+      }
+      return new InformacionDetalleDto(ing.insumoId, insumo.getNombre(), ing.cantidad);
     });
 
-    if (!selectedCategory) return;
+    // Crear la imagen DTO
+    const imagenDto = new ImagenDTO(formData.urlImagen || "/placeholder.svg?height=200&width=300");
 
-    const detalles = formData.ingredientes
-      .map((ing) => {
-        const insumo = ingredients.find((i) => (i as any).id === ing.insumoId);
-        if (!insumo) return null;
-        return new ArticuloManufacturadoDetalle(0, ing.cantidad, null as any, insumo);
-      })
-      .filter(Boolean) as ArticuloManufacturadoDetalle[];
-
-    const productData = new ArticuloManufacturado(
-      product?.getIdArticulo() || 0,
+    // Crear el producto
+    const productData = new InformacionArticuloManufacturadoDto(
+      product?.getIdArticuloManufacturado() || 0,
       formData.nombre,
       formData.descripcion,
-      formData.precioVenta,
       formData.receta,
       formData.tiempoDeCocina,
+      imagenDto,
+      finalCategoryId,
+      "", // nombreCategoria se puede obtener del backend
+      true, // dadoDeAlta por defecto true
+      formData.precioVenta,
       detalles,
-      selectedCategory,
-      formData.urlImagen,
     );
 
     onSubmit(productData);
@@ -319,28 +297,12 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                 {errors.nombre && <p className="mt-1 text-sm text-red-600">{errors.nombre}</p>}
               </div>
 
-              {/* Precio */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Precio de Venta *</label>
-                <input
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  value={formData.precioVenta}
-                  onChange={(e) =>
-                    setFormData((prev) => ({ ...prev, precioVenta: Number.parseFloat(e.target.value) || 0 }))
-                  }
-                  className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-orange-500 focus:border-orange-500 text-gray-900"
-                />
-                {errors.precioVenta && <p className="mt-1 text-sm text-red-600">{errors.precioVenta}</p>}
-              </div>
-
               {/* Categoría */}
               <div>
                 <label className="block text-sm font-medium text-gray-700">Categoría *</label>
                 <select
                   value={formData.categoriaId}
-                  onChange={(e) => handleCategoriaChange(Number.parseInt(e.target.value))}
+                  onChange={(e) => handleCategoriaChange(parseInt(e.target.value))}
                   className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-orange-500 focus:border-orange-500 text-gray-900">
                   <option value={0}>Seleccionar categoría</option>
                   {categoriasPadre.map((categoria) => (
@@ -360,9 +322,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                   <label className="block text-sm font-medium text-gray-700">Subcategoría *</label>
                   <select
                     value={formData.subcategoriaId}
-                    onChange={(e) =>
-                      setFormData((prev) => ({ ...prev, subcategoriaId: Number.parseInt(e.target.value) }))
-                    }
+                    onChange={(e) => setFormData((prev) => ({ ...prev, subcategoriaId: parseInt(e.target.value) }))}
                     className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-orange-500 focus:border-orange-500 text-gray-900">
                     <option value={0}>Seleccionar subcategoría</option>
                     {subcategoriasActuales.map((subcategoria) => (
@@ -384,9 +344,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                   type="number"
                   min="1"
                   value={formData.tiempoDeCocina}
-                  onChange={(e) =>
-                    setFormData((prev) => ({ ...prev, tiempoDeCocina: Number.parseInt(e.target.value) || 0 }))
-                  }
+                  onChange={(e) => setFormData((prev) => ({ ...prev, tiempoDeCocina: parseInt(e.target.value) || 0 }))}
                   className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-orange-500 focus:border-orange-500 text-gray-900"
                 />
                 {errors.tiempoDeCocina && <p className="mt-1 text-sm text-red-600">{errors.tiempoDeCocina}</p>}
@@ -448,14 +406,12 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                   className="flex gap-3 items-center mb-2">
                   <select
                     value={ingrediente.insumoId}
-                    onChange={(e) => updateIngredient(index, "insumoId", Number.parseInt(e.target.value))}
+                    onChange={(e) => updateIngredient(index, "insumoId", parseInt(e.target.value))}
                     className="flex-1 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-orange-500 focus:border-orange-500 text-gray-900">
                     <option value={0}>Seleccionar ingrediente</option>
-                    {ingredients.map((ingredient, index) => {
-                      const id = ingredient.getIdInsumo ? ingredient.getIdInsumo() : (ingredient as any).id || index;
-                      const nombre = ingredient.getNombre
-                        ? ingredient.getNombre()
-                        : (ingredient as any).nombre || "Sin nombre";
+                    {ingredients.map((ingredient) => {
+                      const id = ingredient.getIdArticuloInsumo();
+                      const nombre = ingredient.getNombre();
                       return (
                         <option
                           key={`ingredient-${id}`}
@@ -470,7 +426,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                     min="0.1"
                     step="0.1"
                     value={ingrediente.cantidad}
-                    onChange={(e) => updateIngredient(index, "cantidad", Number.parseFloat(e.target.value) || 0)}
+                    onChange={(e) => updateIngredient(index, "cantidad", parseFloat(e.target.value) || 0)}
                     className="w-24 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-orange-500 focus:border-orange-500 text-gray-900"
                     placeholder="Cant."
                   />

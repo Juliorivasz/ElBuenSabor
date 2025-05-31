@@ -1,5 +1,10 @@
 import { create } from "zustand";
-import { fetchArticulosManufacturadosAbm } from "../../services/articuloManufacturadoServicio";
+import {
+  actualizarArticuloManufacturado,
+  altaBajaArticuloManufacturado,
+  crearArticuloManufacturado,
+  fetchArticulosManufacturadosAbm,
+} from "../../services/articuloManufacturadoServicio";
 import { InformacionArticuloManufacturadoDto } from "../../models/dto/InformacionArticuloManufacturadoDto";
 import { fetchCategoriasAbm } from "../../services/categoriaServicio";
 import { CategoriaDTO } from "../../models/dto/CategoriaDTO";
@@ -79,20 +84,23 @@ export const useProductsStore = create<ProductsStore>((set) => ({
     set({ loading: true, error: null });
     try {
       const newProduct = new InformacionArticuloManufacturadoDto(
-        productData.getIdArticuloManufacturado(),
+        0,
         productData.getNombre(),
         productData.getDescripcion(),
         productData.getReceta(),
         productData.getTiempoDeCocina(),
         productData.getImagenDto(),
         productData.getIdCategoria(),
+        productData.getNombreCategoria(),
         productData.getDadoDeAlta(),
         productData.getPrecioVenta(),
         productData.getDetalles(),
       );
 
+      const savedProduct = await crearArticuloManufacturado(newProduct);
+
       set((state) => {
-        const newProducts = [...state.products, newProduct];
+        const newProducts = [...state.products, savedProduct];
         const totalItems = newProducts.length;
         const totalPages = Math.ceil(totalItems / state.pagination.itemsPerPage);
 
@@ -114,21 +122,13 @@ export const useProductsStore = create<ProductsStore>((set) => ({
   updateProduct: async (id, updates) => {
     set({ loading: true, error: null });
     try {
+      const updatedProduct = await actualizarArticuloManufacturado(id, updates as InformacionArticuloManufacturadoDto);
+      console.log("Producto actualizado recibido:", updatedProduct);
+
       set((state) => ({
-        products: state.products.map((product) => {
-          if (product.getIdArticuloManufacturado() === id) {
-            if (updates.getNombre) product.setNombre(updates.getNombre());
-            if (updates.getDescripcion) product.setDescripcion(updates.getDescripcion());
-            if (updates.getReceta) product.setReceta(updates.getReceta());
-            if (updates.getTiempoDeCocina) product.setTiempoDeCocina(updates.getTiempoDeCocina());
-            if (updates.getImagenDto) product.setImagenDto(updates.getImagenDto());
-            if (updates.getIdCategoria) product.setIdCategoria(updates.getIdCategoria());
-            if (updates.getDadoDeAlta) product.setDadoDeAlta(updates.getDadoDeAlta());
-            if (updates.getPrecioVenta) product.setPrecioVenta(updates.getPrecioVenta());
-            if (updates.getDetalles) product.setDetalles(updates.getDetalles());
-          }
-          return product;
-        }),
+        products: state.products.map((product) =>
+          product.getIdArticuloManufacturado() === id ? updatedProduct : product,
+        ),
         loading: false,
       }));
     } catch (error) {
@@ -165,17 +165,33 @@ export const useProductsStore = create<ProductsStore>((set) => ({
   toggleProductStatus: async (id) => {
     set({ loading: true, error: null });
     try {
+      // Primero obtenemos el producto actual
+      const currentProduct = useProductsStore
+        .getState()
+        .products.find((product) => product.getIdArticuloManufacturado() === id);
+
+      if (!currentProduct) {
+        throw new Error("Producto no encontrado");
+      }
+
+      const currentStatus = currentProduct.getDadoDeAlta() ?? true;
+      const newStatus = !currentStatus;
+
+      // Llamada al backend para cambiar el estado
+      await altaBajaArticuloManufacturado(id, newStatus);
+
+      // Actualizamos el estado local si la petición fue exitosa
       set((state) => ({
         products: state.products.map((product) => {
           if (product.getIdArticuloManufacturado() === id) {
-            const currentStatus = product.getDadoDeAlta() ?? true;
-            product.setDadoDeAlta(!currentStatus);
+            product.setDadoDeAlta(newStatus);
           }
           return product;
         }),
         loading: false,
       }));
     } catch (error) {
+      console.error("Error en toggleProductStatus:", error);
       set({ error: (error as Error).message, loading: false });
     }
   },
@@ -195,22 +211,14 @@ export const useProductsStore = create<ProductsStore>((set) => ({
     try {
       const allProducts = await fetchArticulosManufacturadosAbm(page - 1, itemsPerPage);
 
-      // Simular paginación server-side
-      const startIndex = (page - 1) * itemsPerPage;
-      const endIndex = startIndex + itemsPerPage;
-      const paginatedProducts = allProducts.content.slice(startIndex, endIndex);
-
-      const totalItems = allProducts.content.length;
-      const totalPages = Math.ceil(totalItems / itemsPerPage);
-
       set({
-        products: paginatedProducts,
+        products: allProducts.content, // usar directamente
         loading: false,
         pagination: {
           currentPage: page,
           itemsPerPage,
-          totalItems,
-          totalPages,
+          totalItems: allProducts.totalElements, // usa lo que venga del backend
+          totalPages: allProducts.totalPages, // idem
         },
       });
     } catch (error) {

@@ -6,8 +6,6 @@ import { ProductsTable } from "../../components/Admin/products/ProductsTable";
 import { ProductForm } from "../../components/Admin/products/ProductForm";
 import { ProductDetailsModal } from "../../components/Admin/products/ProductDetailsModal";
 import { DeleteConfirmModal } from "../../components/Admin/products/DeleteConfirmModal";
-import type { ArticuloManufacturadoDTO } from "../../models/dto/ArticuloManufacturadoDTO";
-import { NuevoArticuloManufacturadoDto } from "../../models/dto/NuevoArticuloManufacturadoDto";
 import { InformacionArticuloManufacturadoDto } from "../../models/dto/InformacionArticuloManufacturadoDto";
 
 export const Products: React.FC = () => {
@@ -66,7 +64,7 @@ export const Products: React.FC = () => {
     setViewingProduct(product);
   };
 
-  const handleToggleStatus = async (product: ArticuloManufacturadoDTO) => {
+  const handleToggleStatus = async (product: InformacionArticuloManufacturadoDto) => {
     try {
       await toggleProductStatus(product.getIdArticuloManufacturado());
     } catch (error) {
@@ -74,8 +72,9 @@ export const Products: React.FC = () => {
     }
   };
 
-  const handleFormSubmit = async (productData: ArticuloManufacturadoDTO) => {
+  const handleFormSubmit = async (productData: InformacionArticuloManufacturadoDto) => {
     try {
+      console.log("✅ handleSubmit ejecutado");
       if (editingProduct) {
         const id = editingProduct.getIdArticuloManufacturado();
         if (id !== undefined) {

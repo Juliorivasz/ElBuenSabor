@@ -9,6 +9,7 @@ export class InformacionArticuloManufacturadoDto {
   private tiempoDeCocina: number;
   private imagenDto: ImagenDTO;
   private idCategoria: number;
+  private nombreCategoria: string;
   private dadoDeAlta: boolean;
   private precioVenta: number;
   private detalles: InformacionDetalleDto[];
@@ -21,6 +22,7 @@ export class InformacionArticuloManufacturadoDto {
     tiempoDeCocina: number,
     imagenDto: ImagenDTO,
     idCategoria: number,
+    nombreCategoria: string,
     dadoDeAlta: boolean,
     precioVenta: number,
     detalles: InformacionDetalleDto[],
@@ -32,6 +34,7 @@ export class InformacionArticuloManufacturadoDto {
     this.tiempoDeCocina = tiempoDeCocina;
     this.imagenDto = imagenDto;
     this.idCategoria = idCategoria;
+    this.nombreCategoria = nombreCategoria;
     this.dadoDeAlta = dadoDeAlta;
     this.precioVenta = precioVenta;
     this.detalles = detalles;
@@ -97,6 +100,14 @@ export class InformacionArticuloManufacturadoDto {
 
   public setIdCategoria(idCategoria: number): void {
     this.idCategoria = idCategoria;
+  }
+
+  public getNombreCategoria(): string {
+    return this.nombreCategoria;
+  }
+
+  public setNombreCategoria(newNombreCategoria: string): void {
+    this.nombreCategoria = newNombreCategoria;
   }
 
   public getDadoDeAlta(): boolean {

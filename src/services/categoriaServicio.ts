@@ -51,3 +51,9 @@ export const fetchCategoriasAbm = async (): Promise<CategoriaDTO[]> => {
   const data: CategoriaAbmApi[] = await response.json();
   return data.map(parseCategoriaAbm);
 };
+
+export const fetchCategoriaAbm = async (id: number): Promise<string> => {
+  const response = await fetch(`http://localhost:8080/categoria/obtenerNombre/${id}`);
+  const data = await response.json();
+  return data;
+};

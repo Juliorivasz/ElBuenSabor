@@ -1,13 +1,13 @@
-"use client"
+"use client";
 
-import type React from "react"
-import type { ArticuloManufacturado } from "../../../models/ArticuloManufacturado"
+import type React from "react";
+import { InformacionArticuloManufacturadoDto } from "../../../models/dto/InformacionArticuloManufacturadoDto";
 
 interface DeleteConfirmModalProps {
-  product: ArticuloManufacturado
-  onConfirm: () => void
-  onCancel: () => void
-  loading: boolean
+  product: InformacionArticuloManufacturadoDto;
+  onConfirm: () => void;
+  onCancel: () => void;
+  loading: boolean;
 }
 
 export const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({ product, onConfirm, onCancel, loading }) => {
@@ -16,7 +16,11 @@ export const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({ product,
       <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
         <div className="mt-3 text-center">
           <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
-            <svg className="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg
+              className="h-6 w-6 text-red-600"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -40,20 +44,18 @@ export const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({ product,
             <button
               onClick={onCancel}
               disabled={loading}
-              className="px-4 py-2 bg-white text-gray-500 border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50"
-            >
+              className="px-4 py-2 bg-white text-gray-500 border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50">
               Cancelar
             </button>
             <button
               onClick={onConfirm}
               disabled={loading}
-              className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50"
-            >
+              className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50">
               {loading ? "Eliminando..." : "Eliminar"}
             </button>
           </div>
         </div>
       </div>
     </div>
-  )
-}
+  );
+};

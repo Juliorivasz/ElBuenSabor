@@ -1,33 +1,30 @@
-"use client"
+"use client";
 
-import type React from "react"
-import type { ArticuloManufacturado } from "../../../models/ArticuloManufacturado"
+import type React from "react";
+import { InformacionArticuloManufacturadoDto } from "../../../models/dto/InformacionArticuloManufacturadoDto";
 
 interface ProductDetailsModalProps {
-  product: ArticuloManufacturado
-  onClose: () => void
+  product: InformacionArticuloManufacturadoDto;
+  onClose: () => void;
 }
 
 export const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({ product, onClose }) => {
-  // Función auxiliar para obtener el estado del producto
-  const getProductStatus = (product: ArticuloManufacturado): boolean => {
-    return (product as any).esParaElaborar ?? true
-  }
+  const getProductStatus = (): boolean => {
+    return product.getDadoDeAlta?.() ?? true;
+  };
 
-  // Función auxiliar para obtener el nombre de la categoría
-  const getCategoryName = (product: ArticuloManufacturado): string => {
+  const getCategoryName = (): string => {
     try {
-      const categoria = product.getCategoria()
-      if (!categoria) return "Sin categoría"
-      return categoria.getcategoriaNombre()
+      const categoriaNombre = product.getNombreCategoria?.();
+      return categoriaNombre ? `${categoriaNombre}` : "Sin categoría";
     } catch (error) {
-      console.warn("Error obteniendo nombre de categoría:", error)
-      return "Sin categoría"
+      console.warn("Error obteniendo nombre de categoría:", error);
+      return "Sin categoría";
     }
-  }
+  };
 
-  const isActive = getProductStatus(product)
-  const categoryName = getCategoryName(product)
+  const isActive = getProductStatus();
+  const categoryName = getCategoryName();
 
   return (
     <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
@@ -38,10 +35,18 @@ export const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({ produc
             <h3 className="text-xl font-bold text-gray-900">Detalles del Producto</h3>
             <button
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-600 transition-colors p-2 hover:bg-gray-100 rounded-full"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+              className="text-gray-400 hover:text-gray-600 transition-colors p-2 hover:bg-gray-100 rounded-full">
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
             </button>
           </div>
@@ -55,7 +60,7 @@ export const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({ produc
                 <div className="space-y-3">
                   <div>
                     <span className="text-sm font-medium text-gray-500">Nombre:</span>
-                    <p className="text-gray-900 font-medium">{product.getNombre()}</p>
+                    <p className="text-gray-900 font-medium">{product.getNombre?.()}</p>
                   </div>
                   <div>
                     <span className="text-sm font-medium text-gray-500">Categoría:</span>
@@ -63,15 +68,13 @@ export const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({ produc
                   </div>
                   <div>
                     <span className="text-sm font-medium text-gray-500">Precio:</span>
-                    <p className="text-gray-900 font-semibold text-lg text-green-600">
-                      ${product.getPrecioVenta().toFixed(2)}
-                    </p>
+                    <p className="text-gray-900 font-semibold text-lg">${product.getPrecioVenta?.().toFixed(2)}</p>
                   </div>
                   <div>
                     <span className="text-sm font-medium text-gray-500">Tiempo de Cocina:</span>
                     <p className="text-gray-900 font-medium">
                       <span className="inline-flex items-center px-2 py-1 rounded-full text-sm bg-blue-100 text-blue-800">
-                        🕒 {product.getTiempoDeCocina()} minutos
+                        🕒 {product.getTiempoDeCocina?.()} minutos
                       </span>
                     </p>
                   </div>
@@ -80,8 +83,7 @@ export const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({ produc
                     <span
                       className={`inline-flex px-3 py-1 text-sm font-semibold rounded-full ${
                         isActive ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
-                      }`}
-                    >
+                      }`}>
                       {isActive ? "✅ Activo" : "❌ Inactivo"}
                     </span>
                   </div>
@@ -93,18 +95,10 @@ export const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({ produc
                 <h4 className="text-lg font-semibold text-gray-900 mb-4">Imagen</h4>
                 <div className="relative">
                   <img
-                    src={product.getUrlImagen() || "/placeholder.svg?height=200&width=300"}
-                    alt={product.getNombre()}
+                    src={product.getImagenDto?.().getUrl?.() || "/placeholder.svg?height=200&width=300"}
+                    alt={product.getNombre?.()}
                     className="w-full h-48 object-cover rounded-lg border shadow-sm"
-                    onError={(e) => {
-                      ;(e.target as HTMLImageElement).src = "/placeholder.svg?height=200&width=300"
-                    }}
                   />
-                  {!product.getUrlImagen() && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-gray-100 rounded-lg">
-                      <span className="text-gray-400">Sin imagen</span>
-                    </div>
-                  )}
                 </div>
               </div>
             </div>
@@ -112,14 +106,14 @@ export const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({ produc
             {/* Descripción */}
             <div>
               <h4 className="text-lg font-semibold text-gray-900 mb-2">Descripción</h4>
-              <div className="text-gray-700 bg-gray-50 p-4 rounded-lg border">{product.getDescripcion()}</div>
+              <div className="text-gray-700 bg-gray-50 p-4 rounded-lg border">{product.getDescripcion?.()}</div>
             </div>
 
             {/* Receta */}
             <div>
               <h4 className="text-lg font-semibold text-gray-900 mb-2">Receta</h4>
               <div className="text-gray-700 bg-gray-50 p-4 rounded-lg border whitespace-pre-wrap">
-                {product.getReceta()}
+                {product.getReceta?.()}
               </div>
             </div>
 
@@ -128,27 +122,22 @@ export const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({ produc
               <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
                 🥘 Ingredientes
                 <span className="ml-2 bg-orange-100 text-orange-800 text-sm font-medium px-2 py-1 rounded-full">
-                  {product.getDetalles().length}
+                  {product.getDetalles?.()?.length || 0}
                 </span>
               </h4>
               <div className="bg-gray-50 rounded-lg p-4 border">
-                {product.getDetalles().length > 0 ? (
+                {product.getDetalles?.()?.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     {product.getDetalles().map((detalle, index) => {
                       try {
-                        const articuloInsumo = detalle.getArticuloInsumo
-                          ? detalle.getArticuloInsumo()
-                          : (detalle as any).articuloInsumo
-                        const cantidad = detalle.getCantidad ? detalle.getCantidad() : (detalle as any).cantidad
-                        const nombre = articuloInsumo?.getNombre
-                          ? articuloInsumo.getNombre()
-                          : articuloInsumo?.nombre || "Ingrediente sin nombre"
+                        const articuloInsumo = detalle.getNombreInsumo?.();
+                        const cantidad = detalle.getCantidad?.();
+                        const nombre = articuloInsumo;
 
                         return (
                           <div
                             key={index}
-                            className="flex justify-between items-center bg-white p-3 rounded-md border shadow-sm"
-                          >
+                            className="flex justify-between items-center bg-white p-3 rounded-md border shadow-sm">
                             <span className="text-gray-900 font-medium flex items-center">
                               <span className="w-2 h-2 bg-orange-400 rounded-full mr-2"></span>
                               {nombre}
@@ -157,17 +146,16 @@ export const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({ produc
                               {cantidad} unidades
                             </span>
                           </div>
-                        )
+                        );
                       } catch (error) {
-                        console.error("Error procesando ingrediente:", error)
+                        console.error("Error procesando ingrediente:", error);
                         return (
                           <div
                             key={index}
-                            className="flex justify-between items-center bg-red-50 p-3 rounded-md border border-red-200"
-                          >
+                            className="flex justify-between items-center bg-red-50 p-3 rounded-md border border-red-200">
                             <span className="text-red-600">Error al cargar ingrediente</span>
                           </div>
-                        )
+                        );
                       }
                     })}
                   </div>
@@ -185,13 +173,12 @@ export const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({ produc
           <div className="flex justify-end mt-8 pt-4 border-t">
             <button
               onClick={onClose}
-              className="px-6 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors font-medium"
-            >
+              className="px-6 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors font-medium">
               Cerrar
             </button>
           </div>
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
