@@ -4,6 +4,9 @@ import { ArticuloInsumo } from "../models/ArticuloInsumo";
 import { RubroInsumo } from "../models/RubroInsumo";
 import { ArticuloManufacturadoDetalle } from "../models/ArticuloManufacturadoDetalle";
 import { UnidadDeMedida } from "../models/UnidadDeMedida";
+import { ImagenDTO } from "../models/dto/ImagenDTO";
+import { InformacionArticuloManufacturadoDto } from "../models/dto/InformacionArticuloManufacturadoDto";
+import { InformacionDetalleDto } from "../models/dto/InformacionDetalleDto";
 
 // Definimos los tipos para la API, anidando los tipos para mantener la estructura del JSON.
 type UnidadMedidaApi = {
@@ -58,15 +61,51 @@ type ArticuloManufacturadoApi = {
   urlImagen: string;
 };
 
-type ArticuloManufacturadoPaginadoApi = {
-  content: ArticuloManufacturadoApi[];
-  totalPages: number;
+export type ImagenApi = {
+  url: string;
 };
 
-type ArticuloManufacturadoPaginado = {
-  content: ArticuloManufacturado[];
-  totalPages: number;
+type InformacionDetalleDTOApi = {
+  idArticuloInsumo: number;
+  nombreInsumo: string;
+  cantidad: number;
 };
+
+type InformacionArticuloManufacturadoDtoApi = {
+  idArticuloManufacturado: number;
+  nombre: string;
+  descripcion: string;
+  receta: string;
+  tiempoDeCocina: number;
+  imagenDto: ImagenApi;
+  idCategoria: number;
+  nombreCategoria: string;
+  dadoDeAlta: boolean;
+  precioVenta: number;
+  detalles: InformacionDetalleDTOApi[];
+};
+
+type PaginatedResponseApi = {
+  totalPages: number;
+  totalElements: number;
+  size: number;
+  number: number;
+  content: InformacionArticuloManufacturadoDtoApi[];
+  first: boolean;
+  last: boolean;
+  empty: boolean;
+};
+
+type PaginatedResponse = {
+  totalPages: number;
+  totalElements: number;
+  size: number;
+  number: number; // número de página actual (0-based)
+  content: InformacionArticuloManufacturadoDto[];
+  first: boolean;
+  last: boolean;
+  empty: boolean;
+}
 
 // Función para parsear UnidadMedida
 const parseUnidadMedida = (data: UnidadMedidaApi): UnidadDeMedida => {
@@ -172,9 +211,32 @@ const parseArticuloManufacturado = (data: ArticuloManufacturadoApi): ArticuloMan
   );
 };
 
+const parseDetallesDTO = (data: InformacionDetalleDTOApi) => {
+  return new InformacionDetalleDto(data.idArticuloInsumo, data.nombreInsumo, data.cantidad);
+};
+
+const parseArticuloManufacturadoDTO = (data: InformacionArticuloManufacturadoDtoApi) => {
+  const detalles = data.detalles.map(parseDetallesDTO);
+  const imagenDto = new ImagenDTO(data.imagenDto.url);
+
+  return new InformacionArticuloManufacturadoDto(
+    data.idArticuloManufacturado,
+    data.nombre,
+    data.descripcion,
+    data.receta,
+    data.tiempoDeCocina,
+    imagenDto,
+    data.idCategoria,
+    data.nombreCategoria,
+    data.dadoDeAlta,
+    data.precioVenta,
+    detalles,
+  );
+};
+
 // Función para obtener los ArticulosManufacturados
-export const fetchArticulosManufacturados = async (): Promise<ArticuloManufacturado[]> => {
-  const response = await fetch("/src/services/data/articulosManufacturados.json"); // Ajusta la ruta si es necesario
+export const fetchArticulosManufacturados = async (page: number): Promise<ArticuloManufacturado[]> => {
+  const response = await fetch(`localhost:8080/articuloManufacturado/abm?page=${page}`); // Ajusta la ruta si es necesario
   if (!response.ok) {
     throw new Error(`HTTP error! status: ${response.status}`);
   }
@@ -182,25 +244,116 @@ export const fetchArticulosManufacturados = async (): Promise<ArticuloManufactur
   return data.map(parseArticuloManufacturado);
 };
 
-// Función para obtener los ArticulosManufacturados con paginación desde el backend
-export const fetchArticulosManufacturadosPaginados = async (page: number): Promise<ArticuloManufacturadoPaginado> => {
-  const pagina = page;
-  console.log(pagina);
-  try {
-    const response = await fetch(`/src/services/data/articulosPaginados${page}.json`);
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const data: ArticuloManufacturadoPaginadoApi = await response.json();
-
-    return {
-      content: data.content.map(parseArticuloManufacturado),
-      totalPages: data.totalPages,
-    };
-  } catch (error) {
-    console.error("Error fetching paginated products:", error);
-    throw error;
+export const fetchArticulosManufacturadosAbm = async (
+  page: number,
+  itemsPerPage: number,
+): Promise<PaginatedResponse> => {
+  const response = await fetch(
+    `http://localhost:8080/articuloManufacturado/abm?page=${page}${itemsPerPage ? `&size=${itemsPerPage}` : ""}`,
+  );
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
   }
+  const data: PaginatedResponseApi = await response.json();
+  const content = data.content.map(parseArticuloManufacturadoDTO);
+
+  return { ...data, content: content };
+};
+
+// Función para realizar alta/baja lógica de un producto
+export const altaBajaArticuloManufacturado = async (id: number, dadoDeAlta: boolean): Promise<void> => {
+  const response = await fetch("http://localhost:8080/articuloManufacturado/altaBajaLogica", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      id,
+      dadoDeAlta,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+
+  // El endpoint no devuelve contenido, solo verificamos que la respuesta sea exitosa
+};
+
+// Función para crear un nuevo artículo manufacturado
+export const crearArticuloManufacturado = async (
+  producto: InformacionArticuloManufacturadoDto,
+): Promise<InformacionArticuloManufacturadoDto> => {
+  // Convertir el DTO a la estructura requerida por la API
+  console.log(producto);
+  const requestBody = {
+    nombre: producto.getNombre(),
+    descripcion: producto.getDescripcion(),
+    receta: producto.getReceta(),
+    tiempoDeCocina: producto.getTiempoDeCocina(),
+    dadoDeBaja: !producto.getDadoDeAlta(),
+    idCategoria: producto.getIdCategoria(),
+    imagenDto: {
+      url: producto.getImagenDto().getUrl(),
+    },
+    detalles: producto.getDetalles().map((detalle) => ({
+      idArticuloInsumo: detalle.getIdArticuloInsumo(),
+      cantidad: detalle.getCantidad(),
+    })),
+  };
+
+  const response = await fetch("http://localhost:8080/articuloManufacturado/nuevo", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(requestBody),
+  });
+
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+
+  const data: InformacionArticuloManufacturadoDtoApi = await response.json();
+  return parseArticuloManufacturadoDTO(data);
+};
+
+// Función para actualizar un artículo manufacturado
+export const actualizarArticuloManufacturado = async (
+  id: number,
+  producto: InformacionArticuloManufacturadoDto,
+): Promise<InformacionArticuloManufacturadoDto> => {
+  // Convertir el DTO a la estructura requerida por la API
+  console.log("id: " + id, producto);
+
+  const requestBody = {
+    nombre: producto.getNombre(),
+    descripcion: producto.getDescripcion(),
+    receta: producto.getReceta(),
+    tiempoDeCocina: producto.getTiempoDeCocina(),
+    dadoDeBaja: !producto.getDadoDeAlta(),
+    idCategoria: producto.getIdCategoria(),
+    imagenDto: {
+      url: producto.getImagenDto().getUrl(),
+    },
+    detalles: producto.getDetalles().map((detalle) => ({
+      idArticuloInsumo: detalle.getIdArticuloInsumo(),
+      cantidad: detalle.getCantidad(),
+    })),
+  };
+
+  const response = await fetch(`http://localhost:8080/articuloManufacturado/articulos/${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(requestBody),
+  });
+
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+
+  const data: InformacionArticuloManufacturadoDtoApi = await response.json();
+  return parseArticuloManufacturadoDTO(data);
 };
