@@ -105,7 +105,7 @@ type PaginatedResponse = {
   first: boolean;
   last: boolean;
   empty: boolean;
-};
+}
 
 // Función para parsear UnidadMedida
 const parseUnidadMedida = (data: UnidadMedidaApi): UnidadDeMedida => {

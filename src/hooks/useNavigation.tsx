@@ -1,5 +1,3 @@
-"use client";
-
 import { useState, useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import { useAuth0 } from "@auth0/auth0-react";
@@ -21,21 +19,34 @@ export const useNavigation = () => {
   const [cartAnimation, setCartAnimation] = useState(false);
 
   const location = useLocation();
-  const { isLoading, isAuthenticated, user, loginWithRedirect, logout } = useAuth0();
+  const { isLoading, isAuthenticated, user, loginWithRedirect, logout, getAccessTokenSilently } = useAuth0();
   const userMenuRef = useRef<HTMLDivElement>(null);
+
+  const token = async () => {
+    const data = await getAccessTokenSilently();
+    console.log(data);
+    return data;
+  };
+  console.log(token());
 
   // Get cart items count from store
   const cartItems = useCartStore((state) => state.items);
   const cartItemsCount = cartItems.reduce((total, item) => total + item.quantity, 0);
   const prevCartCount = useRef(cartItemsCount);
 
-  // Navigation items configuration - CON ICONOS
-  const navItems = [
-    { name: "Inicio", path: "/", icon: HomeOutlined },
-    { name: "Catálogo", path: "/catalog", icon: RestaurantMenuOutlined },
-    { name: "Sobre Nosotros", path: "/about", icon: InfoOutlined },
-    { name: "Contacto", path: "/contact", icon: PhoneOutlined },
-  ];
+  // Navigation items configuration - DINÁMICO según autenticación
+  const navItems = isAuthenticated
+    ? [
+        // Solo "Inicio" para usuarios logueados, que los lleva al catálogo
+        { name: "Inicio", path: "/catalog", icon: RestaurantMenuOutlined },
+      ]
+    : [
+        // Navegación completa para usuarios no logueados
+        { name: "Inicio", path: "/", icon: HomeOutlined },
+        { name: "Catálogo", path: "/catalog", icon: RestaurantMenuOutlined },
+        { name: "Sobre Nosotros", path: "/about", icon: InfoOutlined },
+        { name: "Contacto", path: "/contact", icon: PhoneOutlined },
+      ];
 
   // User menu items - CON ICONOS
   const userMenuItems = [

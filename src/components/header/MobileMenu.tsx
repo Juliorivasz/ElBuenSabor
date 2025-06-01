@@ -1,3 +1,5 @@
+"use client";
+
 import type React from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -39,8 +41,6 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
 }) => {
   const navigate = useNavigate();
 
-  console.log(isAuthenticated);
-
   const handleNavigation = (path: string) => {
     navigate(path);
     onClose();
@@ -53,12 +53,14 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
   };
 
   // Navigation items
-  const navItems = [
-    { name: "Inicio", path: "/", icon: HomeOutlined },
-    { name: "Catálogo", path: "/catalog", icon: RestaurantMenuOutlined },
-    { name: "Sobre Nosotros", path: "/about", icon: InfoOutlined },
-    { name: "Contacto", path: "/contact", icon: PhoneOutlined },
-  ];
+  const navItems = isAuthenticated
+    ? [{ name: "Inicio", path: "/catalog", icon: HomeOutlined }]
+    : [
+        { name: "Inicio", path: "/", icon: HomeOutlined },
+        { name: "Catálogo", path: "/catalog", icon: RestaurantMenuOutlined },
+        { name: "Sobre Nosotros", path: "/about", icon: InfoOutlined },
+        { name: "Contacto", path: "/contact", icon: PhoneOutlined },
+      ];
 
   const userMenuItems = [
     { name: "Mi Perfil", path: "/profile", icon: AccountCircleOutlined },
@@ -92,7 +94,9 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
             <div className="p-6">
               {/* Header */}
               <div className="flex items-center justify-between mb-8 pb-6 border-b border-orange-100">
-                <div className="flex items-center space-x-3">
+                <div
+                  className="flex items-center space-x-3 cursor-pointer"
+                  onClick={() => handleNavigation(isAuthenticated ? "/catalog" : "/")}>
                   <div className="w-12 h-12 bg-gradient-to-br from-orange-400 to-red-500 rounded-full flex items-center justify-center overflow-hidden">
                     <img
                       src="/logo-elBuenSabor.jpg"
