@@ -1,25 +1,22 @@
-"use client";
-
-import type React from "react";
+//
 import { useState, useEffect, useRef } from "react";
 import { Search, Clear, SearchOff } from "@mui/icons-material";
 import { motion, AnimatePresence } from "framer-motion";
-import type { ArticuloManufacturado } from "../../models/ArticuloManufacturado";
 import { ModalProduct } from "../products/modal/ModalProduct";
 import { useCartStore } from "../../store/cart/useCartStore";
+import { ArticuloDTO } from "../../models/dto/ArticuloDTO";
 
 interface SearchSectionProps {
-  products: ArticuloManufacturado[];
-  onProductSelect?: (product: ArticuloManufacturado) => void;
+  products: ArticuloDTO[];
   onSearchChange?: (searchTerm: string) => void;
 }
 
-export const SearchSection: React.FC<SearchSectionProps> = ({ products, onProductSelect, onSearchChange }) => {
+export const SearchSection: React.FC<SearchSectionProps> = ({ products, onSearchChange }) => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [suggestions, setSuggestions] = useState<ArticuloManufacturado[]>([]);
+  const [suggestions, setSuggestions] = useState<ArticuloDTO[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
-  const [selectedProduct, setSelectedProduct] = useState<ArticuloManufacturado | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<ArticuloDTO | null>(null);
   const [showNoResults, setShowNoResults] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -35,8 +32,7 @@ export const SearchSection: React.FC<SearchSectionProps> = ({ products, onProduc
         .filter(
           (product) =>
             product.getNombre().toLowerCase().includes(searchTerm.toLowerCase()) ||
-            product.getDescripcion().toLowerCase().includes(searchTerm.toLowerCase()) ||
-            product.getCategoria()?.getcategoriaNombre()?.toLowerCase().includes(searchTerm.toLowerCase()),
+            product.getDescripcion().toLowerCase().includes(searchTerm.toLowerCase()),
         )
         .slice(0, 5);
 
@@ -91,20 +87,17 @@ export const SearchSection: React.FC<SearchSectionProps> = ({ products, onProduc
     }
   };
 
-  const handleProductSelect = (product: ArticuloManufacturado) => {
+  const handleProductSelect = (product: ArticuloDTO) => {
     setSearchTerm(product.getNombre());
     setShowSuggestions(false);
     setShowNoResults(false);
     setSelectedProduct(product);
-    onProductSelect?.(product);
   };
 
   const handleSearch = () => {
     if (searchTerm.trim()) {
       setShowSuggestions(false);
       setShowNoResults(false);
-      // La búsqueda se maneja automáticamente a través de onSearchChange
-      console.log("Ejecutando búsqueda para:", searchTerm);
     }
   };
 
@@ -116,9 +109,9 @@ export const SearchSection: React.FC<SearchSectionProps> = ({ products, onProduc
     inputRef.current?.focus();
   };
 
-  const handleAddToCart = (product: ArticuloManufacturado, quantity: number) => {
+  const handleAddToCart = (product: ArticuloDTO, quantity: number) => {
     for (let i = 0; i < quantity; i++) {
-      addItem(product, product.getUrlImagen() || "/placeholder.svg");
+      addItem(product, product.getImagenDto()?.getUrl() || "https://placehold.co/150");
     }
     setSelectedProduct(null);
   };
@@ -188,7 +181,7 @@ export const SearchSection: React.FC<SearchSectionProps> = ({ products, onProduc
                         index === selectedIndex ? "bg-orange-50 border-l-4 border-orange-500" : "hover:bg-gray-50"
                       }`}>
                       <img
-                        src={product.getUrlImagen() || "/placeholder.svg"}
+                        src={product.getImagenDto()?.getUrl() || "https://placehold.co/400"}
                         alt={product.getNombre()}
                         className="w-12 h-12 object-cover rounded-lg"
                       />
@@ -199,7 +192,7 @@ export const SearchSection: React.FC<SearchSectionProps> = ({ products, onProduc
                       <div className="text-right">
                         <p className="font-bold text-orange-600">${product.getPrecioVenta().toFixed(2)}</p>
                         <p className="text-xs text-gray-400 capitalize">
-                          {product.getCategoria()?.getcategoriaNombre() || "Sin categoría"}
+                          {product.getIdCategoria().toString() || "Sin categoría"}
                         </p>
                       </div>
                     </motion.div>

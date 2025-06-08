@@ -1,4 +1,4 @@
-import type React from "react";
+//
 import { motion, AnimatePresence } from "framer-motion";
 import { MenuOutlined, CloseOutlined } from "@mui/icons-material";
 
@@ -101,7 +101,6 @@ export const NavBar: React.FC = () => {
             <motion.button
               whileTap={{ scale: 0.95 }}
               onClick={() => {
-                console.log("Menu button clicked!");
                 toggleMenu();
               }}
               className="relative p-3 text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-xl transition-all duration-200 lg:hidden"

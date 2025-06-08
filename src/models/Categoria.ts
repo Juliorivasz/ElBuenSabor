@@ -1,55 +1,88 @@
-import { ArticuloManufacturado } from "./ArticuloManufacturado";
+import { Articulo } from "./Articulo";
+import { ImagenCategoria } from "./ImagenCategoria";
 
 export class Categoria {
   private idCategoria: number;
   private nombre: string;
   private margenGanancia: number;
   private fechaBaja: Date;
-  private listaManufacturados: ArticuloManufacturado[];
+  private imagen: ImagenCategoria;
+  private articulos: Articulo[];
   private categoriaPadre: Categoria | null;
-  private imagen: string | null;
 
   constructor(
     idCategoria: number,
     nombre: string,
     margenGanancia: number,
     fechaBaja: Date,
-    listaManufacturados: ArticuloManufacturado[],
+    imagen: ImagenCategoria,
+    articulos: Articulo[],
     categoriaPadre: Categoria | null,
-    imagen: string | null = null,
   ) {
     this.idCategoria = idCategoria;
     this.nombre = nombre;
     this.margenGanancia = margenGanancia;
     this.fechaBaja = fechaBaja;
-    this.listaManufacturados = listaManufacturados;
-    this.categoriaPadre = categoriaPadre;
     this.imagen = imagen;
+    this.articulos = articulos;
+    this.categoriaPadre = categoriaPadre;
   }
 
-  public getcategoriaNombre(): string {
+  // Getters
+  public getIdCategoria(): number {
+    return this.idCategoria;
+  }
+
+  public getNombre(): string {
     return this.nombre;
   }
 
-  public getcategoriaId(): number {
-    return this.idCategoria;
-  }
-  public getcategoriaMargenGanancia(): number {
+  public getMargenGanancia(): number {
     return this.margenGanancia;
   }
-  public getcategoriaFechaBaja(): Date {
+
+  public getFechaBaja(): Date {
     return this.fechaBaja;
   }
-  public getcategoriaListaManufacturados(): ArticuloManufacturado[] {
-    return this.listaManufacturados;
-  }
-  public getcategoriaPadre(): Categoria | null {
-    return this.categoriaPadre;
-  }
-  public getcategoriaImagen(): string | null {
+
+  public getImagen(): ImagenCategoria {
     return this.imagen;
   }
-  public setcategoriaNombre(nombre: string): void {
+
+  public getArticulos(): Articulo[] {
+    return this.articulos;
+  }
+
+  public getCategoriaPadre(): Categoria | null {
+    return this.categoriaPadre;
+  }
+
+  // Setters
+  public setIdCategoria(idCategoria: number): void {
+    this.idCategoria = idCategoria;
+  }
+
+  public setNombre(nombre: string): void {
     this.nombre = nombre;
+  }
+
+  public setMargenGanancia(margenGanancia: number): void {
+    this.margenGanancia = margenGanancia;
+  }
+
+  public setFechaBaja(fechaBaja: Date): void {
+    this.fechaBaja = fechaBaja;
+  }
+
+  public setImagen(imagen: ImagenCategoria): void {
+    this.imagen = imagen;
+  }
+
+  public setArticulos(articulos: Articulo[]): void {
+    this.articulos = articulos;
+  }
+
+  public setCategoriaPadre(categoriaPadre: Categoria | null): void {
+    this.categoriaPadre = categoriaPadre;
   }
 }

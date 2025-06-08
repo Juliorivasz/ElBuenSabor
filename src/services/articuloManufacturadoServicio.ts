@@ -1,359 +1,111 @@
-import { ArticuloManufacturado } from "../models/ArticuloManufacturado";
-import { Categoria } from "../models/Categoria";
-import { ArticuloInsumo } from "../models/ArticuloInsumo";
-import { RubroInsumo } from "../models/RubroInsumo";
-import { ArticuloManufacturadoDetalle } from "../models/ArticuloManufacturadoDetalle";
-import { UnidadDeMedida } from "../models/UnidadDeMedida";
 import { ImagenDTO } from "../models/dto/ImagenDTO";
 import { InformacionArticuloManufacturadoDto } from "../models/dto/InformacionArticuloManufacturadoDto";
 import { InformacionDetalleDto } from "../models/dto/InformacionDetalleDto";
-
-// Definimos los tipos para la API, anidando los tipos para mantener la estructura del JSON.
-type UnidadMedidaApi = {
-  idUnidadMedida: number;
-  nombre: string;
-};
-
-type RubroInsumoApi = {
-  idRubroInsumo: number;
-  nombre: string;
-  fechaBaja: string | null;
-  listaInsumos: ArticuloInsumoApi[]; //Aunque en el modelo está vacía, la dejo por si acaso
-  rubroInsumoPadre: RubroInsumoApi | null;
-};
-
-type ArticuloInsumoApi = {
-  idInsumo: number;
-  nombre: string;
-  stockActual: number;
-  stockMinimo: number;
-  stockMaximo: number;
-  fechaBaja: string | null;
-  unidadMedida: UnidadMedidaApi;
-  rubroInsumo: RubroInsumoApi;
-};
-
-type ArticuloManufacturadoDetalleApi = {
-  idArticuloManufacturadoDetalle: number;
-  cantidad: number;
-  articuloInsumo: ArticuloInsumoApi;
-};
-
-type CategoriaApi = {
-  idCategoria: number;
-  nombre: string;
-  margenGanancia: number;
-  fechaBaja: string | null;
-  listaManufacturados: ArticuloManufacturadoApi[];
-  categoriaPadre: CategoriaApi | null;
-  imagen: string | null;
-};
-
-type ArticuloManufacturadoApi = {
-  idArticulo: number;
-  nombre: string;
-  descripcion: string;
-  precioVenta: number;
-  receta: string;
-  tiempoDeCocina: number;
-  detalles: ArticuloManufacturadoDetalleApi[];
-  categoria: CategoriaApi;
-  urlImagen: string;
-};
-
-export type ImagenApi = {
-  url: string;
-};
-
-type InformacionDetalleDTOApi = {
-  idArticuloInsumo: number;
-  nombreInsumo: string;
-  cantidad: number;
-};
-
-type InformacionArticuloManufacturadoDtoApi = {
-  idArticuloManufacturado: number;
-  nombre: string;
-  descripcion: string;
-  receta: string;
-  tiempoDeCocina: number;
-  imagenDto: ImagenApi;
-  idCategoria: number;
-  nombreCategoria: string;
-  dadoDeAlta: boolean;
-  precioVenta: number;
-  detalles: InformacionDetalleDTOApi[];
-};
-
-type PaginatedResponseApi = {
-  totalPages: number;
-  totalElements: number;
-  size: number;
-  number: number;
-  content: InformacionArticuloManufacturadoDtoApi[];
-  first: boolean;
-  last: boolean;
-  empty: boolean;
-};
-
-type PaginatedResponse = {
-  totalPages: number;
-  totalElements: number;
-  size: number;
-  number: number; // número de página actual (0-based)
-  content: InformacionArticuloManufacturadoDto[];
-  first: boolean;
-  last: boolean;
-  empty: boolean;
-}
-
-// Función para parsear UnidadMedida
-const parseUnidadMedida = (data: UnidadMedidaApi): UnidadDeMedida => {
-  return new UnidadDeMedida(data.idUnidadMedida, data.nombre);
-};
-
-// Función para parsear RubroInsumo
-const parseRubroInsumo = (data: RubroInsumoApi): RubroInsumo => {
-  const rubroInsumoPadre = data.rubroInsumoPadre ? parseRubroInsumo(data.rubroInsumoPadre) : null;
-  // Aquí está el cambio importante: mapeamos ArticuloInsumoApi a ArticuloInsumo
-  const listaInsumos: ArticuloInsumo[] = data.listaInsumos
-    ? data.listaInsumos.map((insumoApi) => parseArticuloInsumo(insumoApi))
-    : [];
-
-  return new RubroInsumo(
-    data.idRubroInsumo,
-    data.nombre,
-    data.fechaBaja ? new Date(data.fechaBaja) : new Date(0),
-    listaInsumos,
-    rubroInsumoPadre,
-  );
-};
-
-// Función para parsear ArticuloInsumo
-const parseArticuloInsumo = (data: ArticuloInsumoApi): ArticuloInsumo => {
-  return new ArticuloInsumo(
-    data.idInsumo,
-    data.nombre,
-    data.stockActual,
-    data.stockMinimo,
-    data.stockMaximo,
-    data.fechaBaja ? new Date(data.fechaBaja) : new Date(0),
-    parseUnidadMedida(data.unidadMedida),
-    parseRubroInsumo(data.rubroInsumo),
-  );
-};
-
-// Función para parsear ArticuloManufacturadoDetalle
-const parseArticuloManufacturadoDetalle = (
-  data: ArticuloManufacturadoDetalleApi,
-  articuloManufacturado: ArticuloManufacturado,
-): ArticuloManufacturadoDetalle => {
-  return new ArticuloManufacturadoDetalle(
-    data.idArticuloManufacturadoDetalle,
-    data.cantidad,
-    articuloManufacturado,
-    parseArticuloInsumo(data.articuloInsumo),
-  );
-};
-
-// Función para parsear Categoria (usando tu función original)
-const parseCategoria = (data: CategoriaApi): Categoria => {
-  const padre = data.categoriaPadre ? parseCategoria(data.categoriaPadre) : null;
-  // Corregimos el mapeo de listaManufacturados
-  const listaManufacturados: ArticuloManufacturado[] = data.listaManufacturados
-    ? data.listaManufacturados.map(parseArticuloManufacturado) // Usamos parseArticuloManufacturado
-    : [];
-
-  return new Categoria(
-    data.idCategoria,
-    data.nombre,
-    data.margenGanancia,
-    data.fechaBaja ? new Date(data.fechaBaja) : new Date(0),
-    listaManufacturados,
-    padre,
-    data.imagen || null,
-  );
-};
-
-// Función para parsear ArticuloManufacturado
-const parseArticuloManufacturado = (data: ArticuloManufacturadoApi): ArticuloManufacturado => {
-  const categoria = parseCategoria(data.categoria);
-
-  // Primero creamos la instancia de ArticuloManufacturado
-  const articuloManufacturado = new ArticuloManufacturado(
-    data.idArticulo,
-    data.nombre,
-    data.descripcion,
-    data.precioVenta,
-    data.receta,
-    data.tiempoDeCocina,
-    [], // Inicialmente detalles vacío, se llenará después
-    categoria,
-    data.urlImagen, // Usamos directamente la URL de la imagen
-  );
-
-  // Luego parseamos los detalles, pasando la instancia de ArticuloManufacturado
-  const detalles = data.detalles.map((detalleApi) =>
-    parseArticuloManufacturadoDetalle(detalleApi, articuloManufacturado),
-  );
-
-  // Finalmente, retornamos la instancia de ArticuloManufacturado con los detalles parseados
-  return new ArticuloManufacturado(
-    data.idArticulo,
-    data.nombre,
-    data.descripcion,
-    data.precioVenta,
-    data.receta,
-    data.tiempoDeCocina,
-    detalles,
-    categoria,
-    data.urlImagen, // Y también aquí
-  );
-};
+import { NuevoArticuloManufacturadoDto } from "../models/dto/NuevoArticuloManufacturadoDto";
+import { interceptorsApiClient } from "./interceptors/axios.interceptors";
+import {
+  InformacionArticuloManufacturadoDtoApi,
+  InformacionDetalleDTOApi,
+  PaginatedResponseAbm,
+  PaginatedResponseAbmApi,
+} from "./types/abm/InformacionArticulosManufacturadoDto";
 
 const parseDetallesDTO = (data: InformacionDetalleDTOApi) => {
-  return new InformacionDetalleDto(data.idArticuloInsumo, data.nombreInsumo, data.cantidad);
+  return new InformacionDetalleDto(data.idArticuloInsumo, data.nombreInsumo, data.unidadDeMedida, data.cantidad);
 };
 
-const parseArticuloManufacturadoDTO = (data: InformacionArticuloManufacturadoDtoApi) => {
+const parseInformacionArticuloManufacturadoDTO = (data: InformacionArticuloManufacturadoDtoApi) => {
   const detalles = data.detalles.map(parseDetallesDTO);
   const imagenDto = new ImagenDTO(data.imagenDto.url);
 
   return new InformacionArticuloManufacturadoDto(
-    data.idArticuloManufacturado,
+    data.idArticulo,
     data.nombre,
     data.descripcion,
+    data.precioVenta,
+    data.precioModificado,
     data.receta,
     data.tiempoDeCocina,
-    imagenDto,
+    data.dadoDeAlta,
     data.idCategoria,
     data.nombreCategoria,
-    data.dadoDeAlta,
-    data.precioVenta,
+    imagenDto,
     detalles,
   );
-};
-
-// Función para obtener los ArticulosManufacturados
-export const fetchArticulosManufacturados = async (page: number): Promise<ArticuloManufacturado[]> => {
-  const response = await fetch(`localhost:8080/articuloManufacturado/abm?page=${page}`); // Ajusta la ruta si es necesario
-  if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`);
-  }
-  const data: ArticuloManufacturadoApi[] = await response.json();
-  return data.map(parseArticuloManufacturado);
 };
 
 export const fetchArticulosManufacturadosAbm = async (
   page: number,
   itemsPerPage: number,
-): Promise<PaginatedResponse> => {
+): Promise<PaginatedResponseAbm> => {
   const response = await fetch(
     `http://localhost:8080/articuloManufacturado/abm?page=${page}${itemsPerPage ? `&size=${itemsPerPage}` : ""}`,
   );
   if (!response.ok) {
     throw new Error(`HTTP error! status: ${response.status}`);
   }
-  const data: PaginatedResponseApi = await response.json();
-  const content = data.content.map(parseArticuloManufacturadoDTO);
+  const data: PaginatedResponseAbmApi = await response.json();
+  const content = data.content.map(parseInformacionArticuloManufacturadoDTO);
 
   return { ...data, content: content };
 };
 
 // Función para realizar alta/baja lógica de un producto
 export const altaBajaArticuloManufacturado = async (id: number, dadoDeAlta: boolean): Promise<void> => {
-  const response = await fetch("http://localhost:8080/articuloManufacturado/altaBajaLogica", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      id,
-      dadoDeAlta,
-    }),
+  interceptorsApiClient.post("/articuloManufacturado/altaBajaLogica", {
+    id,
+    dadoDeAlta,
   });
-
-  if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`);
-  }
-
-  // El endpoint no devuelve contenido, solo verificamos que la respuesta sea exitosa
 };
 
 // Función para crear un nuevo artículo manufacturado
-export const crearArticuloManufacturado = async (
-  producto: InformacionArticuloManufacturadoDto,
-): Promise<InformacionArticuloManufacturadoDto> => {
+export const crearArticuloManufacturado = async (producto: NuevoArticuloManufacturadoDto) => {
   // Convertir el DTO a la estructura requerida por la API
-  console.log(producto);
-  const requestBody = {
-    nombre: producto.getNombre(),
-    descripcion: producto.getDescripcion(),
-    receta: producto.getReceta(),
-    tiempoDeCocina: producto.getTiempoDeCocina(),
-    dadoDeBaja: !producto.getDadoDeAlta(),
-    idCategoria: producto.getIdCategoria(),
-    imagenDto: {
-      url: producto.getImagenDto().getUrl(),
-    },
-    detalles: producto.getDetalles().map((detalle) => ({
-      idArticuloInsumo: detalle.getIdArticuloInsumo(),
-      cantidad: detalle.getCantidad(),
-    })),
-  };
 
   const response = await fetch("http://localhost:8080/articuloManufacturado/nuevo", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(requestBody),
+    body: JSON.stringify(producto.toJSON()),
   });
 
   if (!response.ok) {
     throw new Error(`HTTP error! status: ${response.status}`);
   }
-
-  const data: InformacionArticuloManufacturadoDtoApi = await response.json();
-  return parseArticuloManufacturadoDTO(data);
 };
 
 // Función para actualizar un artículo manufacturado
 export const actualizarArticuloManufacturado = async (
   id: number,
   producto: InformacionArticuloManufacturadoDto,
-): Promise<InformacionArticuloManufacturadoDto> => {
+): Promise<boolean> => {
   // Convertir el DTO a la estructura requerida por la API
-  console.log("id: " + id, producto);
 
   const requestBody = {
+    idArticulo: producto.getidArticulo(),
     nombre: producto.getNombre(),
     descripcion: producto.getDescripcion(),
+    precioVenta: producto.getPrecioVenta(),
     receta: producto.getReceta(),
     tiempoDeCocina: producto.getTiempoDeCocina(),
-    dadoDeBaja: !producto.getDadoDeAlta(),
+    dadoDeAlta: producto.isDadoDeAlta(),
     idCategoria: producto.getIdCategoria(),
-    imagenDto: {
-      url: producto.getImagenDto().getUrl(),
-    },
+    nombreCategoria: producto.getNombreCategoria(),
+    imagenDto: producto.getImagenDto()
+      ? {
+          url: producto.getImagenDto()!.getUrl(),
+        }
+      : null,
     detalles: producto.getDetalles().map((detalle) => ({
       idArticuloInsumo: detalle.getIdArticuloInsumo(),
+      nombreInsumo: detalle.getNombreInsumo(),
+      unidadDeMedida: detalle.getUnidadDeMedida(),
       cantidad: detalle.getCantidad(),
     })),
   };
 
-  const response = await fetch(`http://localhost:8080/articuloManufacturado/articulos/${id}`, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(requestBody),
-  });
+  interceptorsApiClient.put(`/articuloManufacturado/modificar/${id}`, requestBody);
 
-  if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`);
-  }
-
-  const data: InformacionArticuloManufacturadoDtoApi = await response.json();
-  return parseArticuloManufacturadoDTO(data);
+  return true;
 };

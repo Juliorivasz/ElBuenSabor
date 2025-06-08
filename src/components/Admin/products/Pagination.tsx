@@ -1,16 +1,14 @@
-"use client"
-
-import type React from "react"
-import { FirstPage, LastPage, NavigateBefore, NavigateNext } from "@mui/icons-material"
+//
+import { FirstPage, LastPage, NavigateBefore, NavigateNext } from "@mui/icons-material";
 
 interface PaginationProps {
-  currentPage: number
-  totalPages: number
-  totalItems: number
-  itemsPerPage: number
-  onPageChange: (page: number) => void
-  onItemsPerPageChange: (itemsPerPage: number) => void
-  itemsPerPageOptions?: number[]
+  currentPage: number;
+  totalPages: number;
+  totalItems: number;
+  itemsPerPage: number;
+  onPageChange: (page: number) => void;
+  onItemsPerPageChange: (itemsPerPage: number) => void;
+  itemsPerPageOptions?: number[];
 }
 
 export const Pagination: React.FC<PaginationProps> = ({
@@ -22,39 +20,39 @@ export const Pagination: React.FC<PaginationProps> = ({
   onItemsPerPageChange,
   itemsPerPageOptions = [5, 10, 25, 50],
 }) => {
-  const startItem = (currentPage - 1) * itemsPerPage + 1
-  const endItem = Math.min(currentPage * itemsPerPage, totalItems)
+  const startItem = (currentPage - 1) * itemsPerPage + 1;
+  const endItem = Math.min(currentPage * itemsPerPage, totalItems);
 
   const getVisiblePages = () => {
-    const delta = 2
-    const range = []
-    const rangeWithDots = []
+    const delta = 2;
+    const range = [];
+    const rangeWithDots = [];
 
     for (let i = Math.max(2, currentPage - delta); i <= Math.min(totalPages - 1, currentPage + delta); i++) {
-      range.push(i)
+      range.push(i);
     }
 
     if (currentPage - delta > 2) {
-      rangeWithDots.push(1, "...")
+      rangeWithDots.push(1, "...");
     } else {
-      rangeWithDots.push(1)
+      rangeWithDots.push(1);
     }
 
-    rangeWithDots.push(...range)
+    rangeWithDots.push(...range);
 
     if (currentPage + delta < totalPages - 1) {
-      rangeWithDots.push("...", totalPages)
+      rangeWithDots.push("...", totalPages);
     } else if (totalPages > 1) {
-      rangeWithDots.push(totalPages)
+      rangeWithDots.push(totalPages);
     }
 
-    return rangeWithDots
-  }
+    return rangeWithDots;
+  };
 
-  const visiblePages = getVisiblePages()
+  const visiblePages = getVisiblePages();
 
   if (totalItems === 0) {
-    return null
+    return null;
   }
 
   return (
@@ -65,10 +63,11 @@ export const Pagination: React.FC<PaginationProps> = ({
         <select
           value={itemsPerPage}
           onChange={(e) => onItemsPerPageChange(Number(e.target.value))}
-          className="border border-gray-300 rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-        >
+          className="border border-gray-300 rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent">
           {itemsPerPageOptions.map((option) => (
-            <option key={option} value={option}>
+            <option
+              key={option}
+              value={option}>
               {option}
             </option>
           ))}
@@ -88,8 +87,7 @@ export const Pagination: React.FC<PaginationProps> = ({
           onClick={() => onPageChange(1)}
           disabled={currentPage === 1}
           className="p-2 rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          title="Primera página"
-        >
+          title="Primera página">
           <FirstPage fontSize="small" />
         </button>
 
@@ -98,8 +96,7 @@ export const Pagination: React.FC<PaginationProps> = ({
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage === 1}
           className="p-2 rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          title="Página anterior"
-        >
+          title="Página anterior">
           <NavigateBefore fontSize="small" />
         </button>
 
@@ -108,14 +105,16 @@ export const Pagination: React.FC<PaginationProps> = ({
           {visiblePages.map((page, index) => {
             if (page === "...") {
               return (
-                <span key={`dots-${index}`} className="px-3 py-2 text-gray-500">
+                <span
+                  key={`dots-${index}`}
+                  className="px-3 py-2 text-gray-500">
                   ...
                 </span>
-              )
+              );
             }
 
-            const pageNumber = page as number
-            const isCurrentPage = pageNumber === currentPage
+            const pageNumber = page as number;
+            const isCurrentPage = pageNumber === currentPage;
 
             return (
               <button
@@ -123,11 +122,10 @@ export const Pagination: React.FC<PaginationProps> = ({
                 onClick={() => onPageChange(pageNumber)}
                 className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                   isCurrentPage ? "bg-orange-500 text-white" : "text-gray-700 hover:bg-gray-100"
-                }`}
-              >
+                }`}>
                 {pageNumber}
               </button>
-            )
+            );
           })}
         </div>
 
@@ -136,8 +134,7 @@ export const Pagination: React.FC<PaginationProps> = ({
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage === totalPages}
           className="p-2 rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          title="Página siguiente"
-        >
+          title="Página siguiente">
           <NavigateNext fontSize="small" />
         </button>
 
@@ -146,11 +143,10 @@ export const Pagination: React.FC<PaginationProps> = ({
           onClick={() => onPageChange(totalPages)}
           disabled={currentPage === totalPages}
           className="p-2 rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          title="Última página"
-        >
+          title="Última página">
           <LastPage fontSize="small" />
         </button>
       </div>
     </div>
-  )
-}
+  );
+};

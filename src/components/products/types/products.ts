@@ -1,17 +1,17 @@
-import { ArticuloManufacturado } from "../../../models/ArticuloManufacturado";
+import { ArticuloDTO } from "../../../models/dto/ArticuloDTO";
 
 export interface ProductsListProps {
-  products: ArticuloManufacturado[];
-  onSelectProduct: (product: ArticuloManufacturado) => void;
+  products: ArticuloDTO[];
+  onSelectProduct: (product: ArticuloDTO) => void;
   categoryKey: string;
 }
 
 export interface ProductCardProps {
-  product: ArticuloManufacturado;
+  product: ArticuloDTO;
   onClick: () => void;
 }
 export interface ModalProductProps {
-  product: ArticuloManufacturado;
+  product: ArticuloDTO;
   onClose: () => void;
-  onAddToCart: (product: ArticuloManufacturado, quantity: number) => void;
+  onAddToCart: (product: ArticuloDTO, quantity: number) => void;
 }

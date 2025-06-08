@@ -1,4 +1,4 @@
-import type React from "react";
+//
 import { motion } from "framer-motion";
 import { Warning as WarningIcon, Close as CloseIcon } from "@mui/icons-material";
 

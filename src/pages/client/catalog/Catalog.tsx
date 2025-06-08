@@ -1,36 +1,29 @@
-"use client";
-
 import { useCallback, useState } from "react";
 import { motion } from "framer-motion";
-import type { ArticuloManufacturado } from "../../../models/ArticuloManufacturado";
 import { ProductsGrid } from "../../../components/products/ProductsGrid";
 import { SearchSection } from "../../../components/catalog/SearchSection";
 import { AdvertisementCarousel } from "../../../components/catalog/AdvertisementCarousel";
 import { PopularProductsCarousel } from "../../../components/catalog/PopularProductsCarousel";
 import { useCartStore } from "../../../store/cart/useCartStore";
 import { useAuth0 } from "@auth0/auth0-react";
+import { ArticuloDTO } from "../../../models/dto/ArticuloDTO";
 
 export const Catalog = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [products, setProducts] = useState<ArticuloManufacturado[]>([]);
+  const [products, setProducts] = useState<ArticuloDTO[]>([]);
   const { addItem } = useCartStore();
   const { isAuthenticated, loginWithRedirect } = useAuth0();
 
-  const handleProductSelect = (product: ArticuloManufacturado) => {
-    console.log("Producto seleccionado desde búsqueda:", product.getNombre());
-    // El modal se abre automáticamente desde SearchSection
-  };
-
-  const handleAddToCart = (product: ArticuloManufacturado) => {
+  const handleAddToCart = (product: ArticuloDTO) => {
     if (!isAuthenticated) {
       loginWithRedirect({ appState: { returnTo: window.location.pathname } });
       return;
     }
-    addItem(product, product.getUrlImagen());
+    addItem(product, product.getImagenDto()?.getUrl());
     // Aquí puedes implementar la lógica para agregar al carrito
   };
 
-  const handleProductsLoad = useCallback((loadedProducts: ArticuloManufacturado[]) => {
+  const handleProductsLoad = useCallback((loadedProducts: ArticuloDTO[]) => {
     setProducts(loadedProducts);
   }, []);
 
@@ -73,7 +66,6 @@ export const Catalog = () => {
         className="px-4">
         <SearchSection
           products={products}
-          onProductSelect={handleProductSelect}
           onSearchChange={handleSearchChange}
         />
       </motion.section>

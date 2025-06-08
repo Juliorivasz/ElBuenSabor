@@ -1,12 +1,6 @@
-"use client";
-
-import type React from "react";
-import { useEffect, useState, useMemo, useCallback } from "react";
+import { useEffect, useState, useMemo, useCallback, FC } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import type { Categoria } from "../../models/Categoria";
-import { fetchCategorias } from "../../services/categoriaServicio";
-import type { ArticuloManufacturado } from "../../models/ArticuloManufacturado";
-import { fetchArticulosManufacturadosPaginados } from "../../services/articuloManufacturadoServicio";
+import { fetchCategoriasAbm } from "../../services/categoriaServicio";
 import { ModalProduct } from "./modal/ModalProduct";
 import { ProductsList } from "./ProductsList";
 import { CategoryFilters } from "./CategoryFilters";
@@ -14,21 +8,24 @@ import { useCartStore } from "../../store/cart/useCartStore";
 import { RestaurantMenuOutlined, FilterListOutlined } from "@mui/icons-material";
 import { Category } from "./category/Category";
 import { Pagination } from "./Pagination";
+import { CategoriaDTO } from "../../models/dto/CategoriaDTO";
+import { getAllArticulos } from "../../services/articuloServicio";
+import { ArticuloDTO } from "../../models/dto/ArticuloDTO";
 
 interface ProductsGridProps {
   searchTerm?: string;
-  onProductsLoad?: (products: ArticuloManufacturado[]) => void;
+  onProductsLoad?: (products: ArticuloDTO[]) => void;
 }
 
 type SortOrder = "asc" | "desc";
 type SortKey = "precioVenta" | "tiempoDeCocina" | "orders" | null;
 
-export const ProductsGrid: React.FC<ProductsGridProps> = ({ searchTerm = "", onProductsLoad }) => {
+export const ProductsGrid: FC<ProductsGridProps> = ({ searchTerm = "", onProductsLoad }) => {
   const [selectedParentCategory, setSelectedParentCategory] = useState<string | null>(null);
   const [selectedSubCategory, setSelectedSubCategory] = useState<string>("Todos");
-  const [selectedProduct, setSelectedProduct] = useState<ArticuloManufacturado | null>(null);
-  const [categorias, setCategorias] = useState<Categoria[]>([]);
-  const [productos, setProductos] = useState<ArticuloManufacturado[]>([]);
+  const [selectedProduct, setSelectedProduct] = useState<ArticuloDTO | null>(null);
+  const [categorias, setCategorias] = useState<CategoriaDTO[]>([]);
+  const [productos, setProductos] = useState<ArticuloDTO[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [sortOrder, setSortOrder] = useState<SortOrder>("asc");
   const [sortKey, setSortKey] = useState<SortKey | null>(null);
@@ -41,8 +38,8 @@ export const ProductsGrid: React.FC<ProductsGridProps> = ({ searchTerm = "", onP
   useEffect(() => {
     const loadCategorias = async () => {
       try {
-        const categoriasData = await fetchCategorias();
-        setCategorias(categoriasData);
+        const dataCategorias = await fetchCategoriasAbm();
+        setCategorias(dataCategorias);
       } catch (error) {
         console.error("Error loading categories:", error);
       }
@@ -56,7 +53,7 @@ export const ProductsGrid: React.FC<ProductsGridProps> = ({ searchTerm = "", onP
     const loadProducts = async () => {
       setIsLoading(true);
       try {
-        const data = await fetchArticulosManufacturadosPaginados(currentPage);
+        const data = await getAllArticulos(currentPage - 1);
         setProductos(data.content);
         setPagesTotal(data.totalPages);
 
@@ -66,8 +63,6 @@ export const ProductsGrid: React.FC<ProductsGridProps> = ({ searchTerm = "", onP
         }
       } catch (error) {
         console.error("Error loading products:", error);
-        // setProductos([]);
-        // setHasMorePages(false);
       } finally {
         setIsLoading(false);
       }
@@ -77,17 +72,15 @@ export const ProductsGrid: React.FC<ProductsGridProps> = ({ searchTerm = "", onP
   }, [currentPage, onProductsLoad]);
 
   // Memoizar categorías padre
-  const categoriasPadre = useMemo(() => categorias.filter((cat) => !cat.getcategoriaPadre()), [categorias]);
+  const categoriasPadre = useMemo(() => categorias.filter((cat) => !cat.getIdCategoriaPadre()), [categorias]);
 
   // Memoizar subcategorías
   const subcategoriasConTodos = useMemo(() => {
     if (selectedParentCategory === null) return ["Todos"];
 
     const subcategorias = categorias
-      .filter(
-        (cat) => cat.getcategoriaPadre() && cat.getcategoriaPadre()?.getcategoriaNombre() === selectedParentCategory,
-      )
-      .map((cat) => cat.getcategoriaNombre());
+      .filter((cat) => cat.getIdCategoriaPadre() && cat.getIdCategoriaPadre().toString() === selectedParentCategory)
+      .map((cat) => cat.getNombre());
 
     return ["Todos", ...subcategorias];
   }, [categorias, selectedParentCategory]);
@@ -95,19 +88,27 @@ export const ProductsGrid: React.FC<ProductsGridProps> = ({ searchTerm = "", onP
   // Memoizar productos filtrados
   const filteredProducts = useMemo(() => {
     let filtered = productos.filter((producto) => {
+      const subCategoriasIDs = categorias
+        .filter((cat) => cat.getIdCategoriaPadre()?.toString() === selectedParentCategory)
+        .map((cat) => cat.getIdCategoria().toString());
+
       const perteneceACategoriaPadre =
         selectedParentCategory === null ||
         selectedParentCategory === "todos" ||
-        producto.getCategoria()?.getcategoriaNombre() === selectedParentCategory ||
-        producto.getCategoria()?.getcategoriaPadre()?.getcategoriaNombre() === selectedParentCategory;
+        producto.getIdCategoria().toString() == selectedParentCategory ||
+        subCategoriasIDs.includes(producto.getIdCategoria().toString());
 
       const perteneceASubcategoria =
-        selectedSubCategory === "Todos" || producto.getCategoria()?.getcategoriaNombre() === selectedSubCategory;
+        selectedSubCategory === "Todos" ||
+        categorias.find(
+          (cat) => cat.getNombre() === selectedSubCategory && cat.getIdCategoria() === producto.getIdCategoria(),
+        );
 
       const coincideBusqueda =
         searchTerm === "" ||
         producto.getNombre().toLowerCase().includes(searchTerm.toLowerCase()) ||
-        producto.getDescripcion().toLowerCase().includes(searchTerm.toLowerCase());
+        producto.getDescripcion().toLowerCase().includes(searchTerm.toLowerCase()) ||
+        producto.getIdCategoria().toString().includes(searchTerm);
 
       return perteneceACategoriaPadre && perteneceASubcategoria && coincideBusqueda;
     });
@@ -117,7 +118,7 @@ export const ProductsGrid: React.FC<ProductsGridProps> = ({ searchTerm = "", onP
       filtered = [...filtered].sort((a, b) => {
         let comparison = 0;
         if (sortKey === "orders") {
-          comparison = (b.getDetalles()?.length || 0) - (a.getDetalles()?.length || 0);
+          comparison = (b.getPrecioVenta() || 0) - (a.getPrecioVenta() || 0);
         } else {
           const aValue = sortKey === "precioVenta" ? a.getPrecioVenta() : a.getTiempoDeCocina();
           const bValue = sortKey === "precioVenta" ? b.getPrecioVenta() : b.getTiempoDeCocina();
@@ -128,7 +129,7 @@ export const ProductsGrid: React.FC<ProductsGridProps> = ({ searchTerm = "", onP
     }
 
     return filtered;
-  }, [productos, selectedParentCategory, selectedSubCategory, searchTerm, sortOrder, sortKey]);
+  }, [productos, selectedParentCategory, selectedSubCategory, searchTerm, sortOrder, sortKey, categorias]);
 
   const handleCategorySelect = useCallback((cat: string | null) => {
     setSelectedParentCategory(cat);
@@ -141,14 +142,14 @@ export const ProductsGrid: React.FC<ProductsGridProps> = ({ searchTerm = "", onP
     setCurrentPage(1); // Reset to first page when changing subcategory
   }, []);
 
-  const handleProductSelect = useCallback((product: ArticuloManufacturado) => {
+  const handleProductSelect = useCallback((product: ArticuloDTO) => {
     setSelectedProduct(product);
   }, []);
 
   const handleAddToCart = useCallback(
-    (p: ArticuloManufacturado, quantity: number) => {
+    (p: ArticuloDTO, quantity: number) => {
       for (let i = 0; i < quantity; i++) {
-        addItemToCart(p, p.getUrlImagen());
+        addItemToCart(p, p.getImagenDto()?.getUrl());
       }
       setSelectedProduct(null);
     },

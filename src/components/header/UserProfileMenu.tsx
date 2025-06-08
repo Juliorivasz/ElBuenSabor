@@ -1,4 +1,4 @@
-import type React from "react";
+//
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { PersonOutlined, KeyboardArrowDownOutlined, LogoutOutlined } from "@mui/icons-material";

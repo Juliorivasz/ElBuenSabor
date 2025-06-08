@@ -28,7 +28,7 @@ export const CartItem = ({ item }: CartItemProps) => {
         {/* Imagen del producto - Mobile First */}
         <div className="flex-shrink-0">
           <img
-            src={item.articulo.getUrlImagen() || "/placeholder.svg?height=60&width=60"}
+            src={item.articulo.getImagenDto()?.getUrl() || "/placeholder.svg?height=60&width=60"}
             alt={item.articulo.getDescripcion()}
             className="w-16 h-16 object-cover rounded-lg border border-yellow-500 sm:w-20 sm:h-20"
           />

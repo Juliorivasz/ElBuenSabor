@@ -5,11 +5,22 @@ import {
   crearArticuloManufacturado,
   fetchArticulosManufacturadosAbm,
 } from "../../services/articuloManufacturadoServicio";
-import { InformacionArticuloManufacturadoDto } from "../../models/dto/InformacionArticuloManufacturadoDto";
+import {
+  actualizarArticuloNoElaborado,
+  altaBajaArticuloNoElaborado,
+  crearArticuloNoElaborado,
+  fetchArticulosNoElaboradosAbm,
+} from "../../services/articuloNoElaboradoServicio";
+import type { InformacionArticuloManufacturadoDto } from "../../models/dto/InformacionArticuloManufacturadoDto";
+import type { InformacionArticuloNoElaboradoDto } from "../../models/dto/InformacionArticuloNoElaboradoDto";
 import { fetchCategoriasAbm } from "../../services/categoriaServicio";
 import type { CategoriaDTO } from "../../models/dto/CategoriaDTO";
 import { fetchInsumoAbm } from "../../services/articulosInsumosServicio";
 import type { InsumoDTO } from "../../models/dto/InsumoDTO";
+import { mapperInformacionArticuloManufacturadoDtoToNuevoArticuloManufacturadoDto } from "../../utils/mapper/articulosManufacturadosMapper";
+import { mapperInformacionArticuloNoElaboradoDtoToNuevoArticuloNoElaboradoDto } from "../../utils/mapper/articuloNoElaboradoMapper";
+
+export type ProductType = "manufacturados" | "noManufacturados";
 
 interface PaginationState {
   currentPage: number;
@@ -19,51 +30,252 @@ interface PaginationState {
 }
 
 interface ProductsStore {
-  products: InformacionArticuloManufacturadoDto[];
+  // Estados para productos manufacturados
+  manufacturados: InformacionArticuloManufacturadoDto[];
+  manufacturadosPagination: PaginationState;
+  manufacturadosLoading: boolean;
+
+  // Estados para productos no elaborados
+  noElaborados: InformacionArticuloNoElaboradoDto[];
+  noElaboradosPagination: PaginationState;
+  noElaboradosLoading: boolean;
+
+  // Estados compartidos
   categories: CategoriaDTO[];
   ingredients: InsumoDTO[];
-  loading: boolean;
   error: string | null;
 
-  // Agregar estado de paginación
-  pagination: PaginationState;
+  // Actions para productos manufacturados
+  fetchManufacturadosPaginated: (page: number, itemsPerPage: number) => Promise<void>;
+  createManufacturado: (product: InformacionArticuloManufacturadoDto) => Promise<void>;
+  updateManufacturado: (id: number, product: InformacionArticuloManufacturadoDto) => Promise<void>;
+  toggleManufacturadoStatus: (id: number) => Promise<void>;
+  setManufacturadosPagination: (pagination: Partial<PaginationState>) => void;
 
-  // Actions existentes...
-  // fetchProducts: () => Promise<void>;
+  // Actions para productos no elaborados
+  fetchNoElaboradosPaginated: (page: number, itemsPerPage: number) => Promise<void>;
+  createNoElaborado: (product: InformacionArticuloNoElaboradoDto) => Promise<void>;
+  updateNoElaborado: (id: number, product: InformacionArticuloNoElaboradoDto) => Promise<void>;
+  toggleNoElaboradoStatus: (id: number) => Promise<void>;
+  setNoElaboradosPagination: (pagination: Partial<PaginationState>) => void;
+
+  // Actions compartidas
   fetchCategories: () => Promise<void>;
   fetchIngredients: () => Promise<void>;
-  createProduct: (product: Omit<InformacionArticuloManufacturadoDto, "idArticulo">) => Promise<void>;
-  updateProduct: (id: number, product: Partial<InformacionArticuloManufacturadoDto>) => Promise<void>;
-  deleteProduct: (id: number) => Promise<void>;
-  toggleProductStatus: (id: number) => Promise<void>;
-  setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
 
-  // Nuevas actions para paginación
-  setPagination: (pagination: Partial<PaginationState>) => void;
-  fetchProductsPaginated: (page: number, itemsPerPage: number) => Promise<void>;
+  // Getters para compatibilidad con el código existente
+  getProductsByType: (type: ProductType) => InformacionArticuloManufacturadoDto[] | InformacionArticuloNoElaboradoDto[];
+  getPaginationByType: (type: ProductType) => PaginationState;
+  getLoadingByType: (type: ProductType) => boolean;
+
+  // Nuevas funciones para forzar actualización
+  forceRefreshManufacturados: () => Promise<void>;
+  forceRefreshNoElaborados: () => Promise<void>;
 }
 
-export const useProductsStore = create<ProductsStore>((set) => ({
-  products: [],
+const initialPagination: PaginationState = {
+  currentPage: 1,
+  itemsPerPage: 10,
+  totalItems: 0,
+  totalPages: 0,
+};
+
+export const useProductsStore = create<ProductsStore>((set, get) => ({
+  // Estados iniciales
+  manufacturados: [],
+  manufacturadosPagination: { ...initialPagination },
+  manufacturadosLoading: false,
+
+  noElaborados: [],
+  noElaboradosPagination: { ...initialPagination },
+  noElaboradosLoading: false,
+
   categories: [],
   ingredients: [],
-  loading: false,
   error: null,
 
-  // Estado inicial de paginación
-  pagination: {
-    currentPage: 1,
-    itemsPerPage: 10,
-    totalItems: 0,
-    totalPages: 0,
+  // Actions para productos manufacturados
+  fetchManufacturadosPaginated: async (page, itemsPerPage) => {
+    set({ manufacturadosLoading: true, error: null });
+    try {
+      const response = await fetchArticulosManufacturadosAbm(page - 1, itemsPerPage);
+      set({
+        manufacturados: response.content,
+        manufacturadosLoading: false,
+        manufacturadosPagination: {
+          currentPage: page,
+          itemsPerPage,
+          totalItems: response.totalElements,
+          totalPages: response.totalPages,
+        },
+      });
+    } catch (error) {
+      console.error("Error al cargar productos manufacturados:", error);
+      set({ error: (error as Error).message, manufacturadosLoading: false });
+    }
   },
 
-  // Resto de actions existentes...
+  createManufacturado: async (productData) => {
+    set({ manufacturadosLoading: true, error: null });
+    try {
+      const newProduct = mapperInformacionArticuloManufacturadoDtoToNuevoArticuloManufacturadoDto(productData);
+      await crearArticuloManufacturado(newProduct);
+
+      // Forzar actualización inmediata
+      await get().forceRefreshManufacturados();
+    } catch (error) {
+      set({ error: (error as Error).message, manufacturadosLoading: false });
+      throw error;
+    }
+  },
+
+  updateManufacturado: async (id, product) => {
+    set({ manufacturadosLoading: true, error: null });
+    try {
+      await actualizarArticuloManufacturado(id, product);
+
+      // Forzar actualización inmediata
+      await get().forceRefreshManufacturados();
+    } catch (error) {
+      set({ error: (error as Error).message, manufacturadosLoading: false });
+      throw error;
+    }
+  },
+
+  toggleManufacturadoStatus: async (id) => {
+    try {
+      const currentProduct = get().manufacturados.find((product) => product.getidArticulo() === id);
+      if (!currentProduct) {
+        throw new Error("Producto no encontrado");
+      }
+
+      const newStatus = !currentProduct.isDadoDeAlta();
+
+      // Actualización optimista: cambiar el estado local inmediatamente
+      set((state) => ({
+        manufacturados: state.manufacturados.map((product) => {
+          if (product.getidArticulo() === id) {
+            // Crear una copia del producto con el nuevo estado
+            const updatedProduct = Object.create(Object.getPrototypeOf(product));
+            Object.assign(updatedProduct, product);
+            // Actualizar el estado usando el setter del DTO
+            updatedProduct.setDadoDeAlta(newStatus);
+            return updatedProduct;
+          }
+          return product;
+        }),
+      }));
+
+      // Realizar la operación en el backend
+      await altaBajaArticuloManufacturado(id, newStatus);
+    } catch (error) {
+      console.error("Error en toggleManufacturadoStatus:", error);
+      set({ error: (error as Error).message });
+
+      // En caso de error, revertir el cambio optimista recargando los datos
+      await get().forceRefreshManufacturados();
+      throw error;
+    }
+  },
+
+  setManufacturadosPagination: (pagination) =>
+    set((state) => ({
+      manufacturadosPagination: { ...state.manufacturadosPagination, ...pagination },
+    })),
+
+  // Actions para productos no elaborados
+  fetchNoElaboradosPaginated: async (page, itemsPerPage) => {
+    set({ noElaboradosLoading: true, error: null });
+    try {
+      const response = await fetchArticulosNoElaboradosAbm(page - 1, itemsPerPage);
+      set({
+        noElaborados: response.content,
+        noElaboradosLoading: false,
+        noElaboradosPagination: {
+          currentPage: page,
+          itemsPerPage,
+          totalItems: response.totalElements,
+          totalPages: response.totalPages,
+        },
+      });
+    } catch (error) {
+      console.error("Error al cargar productos no elaborados:", error);
+      set({ error: (error as Error).message, noElaboradosLoading: false });
+    }
+  },
+
+  createNoElaborado: async (productData) => {
+    set({ noElaboradosLoading: true, error: null });
+    try {
+      const newProduct = mapperInformacionArticuloNoElaboradoDtoToNuevoArticuloNoElaboradoDto(productData);
+      await crearArticuloNoElaborado(newProduct);
+
+      // Forzar actualización inmediata
+      await get().forceRefreshNoElaborados();
+    } catch (error) {
+      set({ error: (error as Error).message, noElaboradosLoading: false });
+      throw error;
+    }
+  },
+
+  updateNoElaborado: async (id, product) => {
+    set({ noElaboradosLoading: true, error: null });
+    try {
+      await actualizarArticuloNoElaborado(id, product);
+
+      // Forzar actualización inmediata
+      await get().forceRefreshNoElaborados();
+    } catch (error) {
+      set({ error: (error as Error).message, noElaboradosLoading: false });
+      throw error;
+    }
+  },
+
+  toggleNoElaboradoStatus: async (id) => {
+    try {
+      const currentProduct = get().noElaborados.find((product) => product.getIdArticulo() === id);
+      if (!currentProduct) {
+        throw new Error("Producto no encontrado");
+      }
+
+      const newStatus = !currentProduct.isDadoDeAlta();
+
+      // Actualización optimista: cambiar el estado local inmediatamente
+      set((state) => ({
+        noElaborados: state.noElaborados.map((product) => {
+          if (product.getIdArticulo() === id) {
+            // Crear una copia del producto con el nuevo estado
+            const updatedProduct = Object.create(Object.getPrototypeOf(product));
+            Object.assign(updatedProduct, product);
+            // Actualizar el estado usando el setter del DTO
+            updatedProduct.setDadoDeAlta(newStatus);
+            return updatedProduct;
+          }
+          return product;
+        }),
+      }));
+
+      await altaBajaArticuloNoElaborado(id, newStatus);
+    } catch (error) {
+      console.error("Error en toggleNoElaboradoStatus:", error);
+      set({ error: (error as Error).message });
+
+      // En caso de error, revertir el cambio optimista recargando los datos
+      await get().forceRefreshNoElaborados();
+      throw error;
+    }
+  },
+
+  setNoElaboradosPagination: (pagination) =>
+    set((state) => ({
+      noElaboradosPagination: { ...state.noElaboradosPagination, ...pagination },
+    })),
+
+  // Actions compartidas
   fetchCategories: async () => {
     try {
       const categories = await fetchCategoriasAbm();
-      console.log("Categorías cargadas desde servicio:", categories);
       set({ categories });
     } catch (error) {
       console.error("Error al cargar categorías:", error);
@@ -80,140 +292,38 @@ export const useProductsStore = create<ProductsStore>((set) => ({
     }
   },
 
-  createProduct: async (productData) => {
-    set({ loading: true, error: null });
-    try {
-      const newProduct = new InformacionArticuloManufacturadoDto(
-        0,
-        productData.getNombre(),
-        productData.getDescripcion(),
-        productData.getReceta(),
-        productData.getTiempoDeCocina(),
-        productData.getImagenDto(),
-        productData.getIdCategoria(),
-        productData.getNombreCategoria(),
-        productData.getDadoDeAlta(),
-        productData.getPrecioVenta(),
-        productData.getDetalles(),
-      );
-
-      await crearArticuloManufacturado(newProduct);
-
-      // Obtener el estado actual y refrescar
-      set((state) => {
-        // Forzar el refresh llamando a fetchProductsPaginated
-        setTimeout(() => {
-          useProductsStore
-            .getState()
-            .fetchProductsPaginated(state.pagination.currentPage, state.pagination.itemsPerPage);
-        }, 0);
-
-        return { loading: false };
-      });
-    } catch (error) {
-      set({ error: (error as Error).message, loading: false });
-    }
-  },
-
-  updateProduct: async (id, updates) => {
-    set({ loading: true, error: null });
-    try {
-      const updatedProduct = await actualizarArticuloManufacturado(id, updates as InformacionArticuloManufacturadoDto);
-
-      set((state) => ({
-        products: state.products.map((product) =>
-          product.getIdArticuloManufacturado() === id ? updatedProduct : product,
-        ),
-        loading: false,
-      }));
-    } catch (error) {
-      set({ error: (error as Error).message, loading: false });
-    }
-  },
-
-  deleteProduct: async (id) => {
-    set({ loading: true, error: null });
-    try {
-      // Aquí deberías llamar a tu API para eliminar el producto
-      // await eliminarArticuloManufacturado(id);
-
-      // Obtener el estado actual y refrescar
-      set((state) => {
-        // Forzar el refresh llamando a fetchProductsPaginated
-        setTimeout(() => {
-          useProductsStore
-            .getState()
-            .fetchProductsPaginated(state.pagination.currentPage, state.pagination.itemsPerPage);
-        }, 0);
-
-        return { loading: false };
-      });
-    } catch (error) {
-      set({ error: (error as Error).message, loading: false });
-    }
-  },
-
-  toggleProductStatus: async (id) => {
-    set({ loading: true, error: null });
-    try {
-      const currentProduct = useProductsStore
-        .getState()
-        .products.find((product) => product.getIdArticuloManufacturado() === id);
-
-      if (!currentProduct) {
-        throw new Error("Producto no encontrado");
-      }
-
-      const currentStatus = currentProduct.getDadoDeAlta() ?? true;
-      const newStatus = !currentStatus;
-
-      await altaBajaArticuloManufacturado(id, newStatus);
-
-      // Obtener el estado actual y refrescar
-      set((state) => {
-        // Forzar el refresh llamando a fetchProductsPaginated
-        setTimeout(() => {
-          useProductsStore
-            .getState()
-            .fetchProductsPaginated(state.pagination.currentPage, state.pagination.itemsPerPage);
-        }, 0);
-
-        return { loading: false };
-      });
-    } catch (error) {
-      console.error("Error en toggleProductStatus:", error);
-      set({ error: (error as Error).message, loading: false });
-    }
-  },
-
-  setLoading: (loading) => set({ loading }),
   setError: (error) => set({ error }),
 
-  // Nuevas actions para paginación
-  setPagination: (pagination) =>
-    set((state) => ({
-      pagination: { ...state.pagination, ...pagination },
-    })),
+  // Getters para compatibilidad
+  getProductsByType: (type) => {
+    const state = get();
+    return type === "manufacturados" ? state.manufacturados : state.noElaborados;
+  },
 
-  // Preparado para server-side pagination
-  fetchProductsPaginated: async (page, itemsPerPage) => {
-    set({ loading: true, error: null });
-    try {
-      const allProducts = await fetchArticulosManufacturadosAbm(page - 1, itemsPerPage);
+  getPaginationByType: (type) => {
+    const state = get();
+    return type === "manufacturados" ? state.manufacturadosPagination : state.noElaboradosPagination;
+  },
 
-      set({
-        products: allProducts.content, // usar directamente
-        loading: false,
-        pagination: {
-          currentPage: page,
-          itemsPerPage,
-          totalItems: allProducts.totalElements, // usa lo que venga del backend
-          totalPages: allProducts.totalPages, // idem
-        },
-      });
-    } catch (error) {
-      console.error("Error al cargar productos paginados:", error);
-      set({ error: (error as Error).message, loading: false });
-    }
+  getLoadingByType: (type) => {
+    const state = get();
+    return type === "manufacturados" ? state.manufacturadosLoading : state.noElaboradosLoading;
+  },
+
+  // Nuevas funciones para forzar actualización
+  forceRefreshManufacturados: async () => {
+    const state = get();
+    await get().fetchManufacturadosPaginated(
+      state.manufacturadosPagination.currentPage,
+      state.manufacturadosPagination.itemsPerPage,
+    );
+  },
+
+  forceRefreshNoElaborados: async () => {
+    const state = get();
+    await get().fetchNoElaboradosPaginated(
+      state.noElaboradosPagination.currentPage,
+      state.noElaboradosPagination.itemsPerPage,
+    );
   },
 }));

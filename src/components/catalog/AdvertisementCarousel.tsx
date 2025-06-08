@@ -1,6 +1,4 @@
-"use client";
-
-import type React from "react";
+//
 import { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "@mui/icons-material";
 import { motion, AnimatePresence } from "framer-motion";
@@ -29,7 +27,7 @@ const advertisements: Advertisement[] = [
     id: "2",
     title: "Envío Gratis",
     description: "En productos seleccionados",
-    image: "/src/assets/adverts/envio-gratis.png",
+    image: "/src/assets/promos/envio-gratis.png",
     backgroundColor: "from-green-500 to-emerald-500",
     textColor: "text-white",
   },
@@ -37,7 +35,7 @@ const advertisements: Advertisement[] = [
     id: "3",
     title: "Combo Familiar",
     description: "4 hamburguesas + papas + bebidas",
-    image: "/src/assets/adverts/hamburguesas-papas-bebidas.png",
+    image: "/src/assets/promos/hamburguesas-papas-bebidas.png",
     discount: 30,
     backgroundColor: "from-purple-500 to-pink-500",
     textColor: "text-white",
@@ -46,7 +44,7 @@ const advertisements: Advertisement[] = [
     id: "4",
     title: "Happy Hour",
     description: "2x1 en bebidas de 17:00 a 19:00",
-    image: "/src/assets/adverts/happy-hour.png",
+    image: "/src/assets/promos/happy-hour.png",
     backgroundColor: "from-blue-500 to-cyan-500",
     textColor: "text-white",
   },

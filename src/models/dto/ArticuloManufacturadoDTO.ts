@@ -3,22 +3,30 @@ import { ImagenDTO } from "./ImagenDTO";
 export class ArticuloManufacturadoDTO {
   private idArticuloManufacturado: number;
   private nombre: string;
+  private descripcion: string;
   private precioVenta: number;
-  private dadoDeAlta: boolean;
+  private tiempoDeCocina: number;
+  private idCategoria: number;
+  private puedeElaborarse: boolean;
   private imagenDto: ImagenDTO;
-  private;
 
   constructor(
     idArticuloManufacturado: number,
     nombre: string,
+    descripcion: string,
     precioVenta: number,
-    dadoDeAlta: boolean,
+    tiempoDeCocina: number,
+    idCategoria: number,
+    puedeElaborarse: boolean,
     ImagenDTO: ImagenDTO,
   ) {
     this.idArticuloManufacturado = idArticuloManufacturado;
     this.nombre = nombre;
+    this.descripcion = descripcion;
     this.precioVenta = precioVenta;
-    this.dadoDeAlta = dadoDeAlta;
+    this.tiempoDeCocina = tiempoDeCocina;
+    this.idCategoria = idCategoria;
+    this.puedeElaborarse = puedeElaborarse;
     this.imagenDto = ImagenDTO;
   }
 
@@ -37,6 +45,29 @@ export class ArticuloManufacturadoDTO {
   public setNombre(nombre: string): void {
     this.nombre = nombre;
   }
+  public getDescripcion(): string {
+    return this.descripcion;
+  }
+
+  public setDescripcion(descrip: string): void {
+    this.descripcion = descrip;
+  }
+
+  public getIdCategoria(): number {
+    return this.idCategoria;
+  }
+
+  public setIdCategoria(id: number): void {
+    this.idCategoria = id;
+  }
+
+  public getTiempoDeCocina(): number {
+    return this.tiempoDeCocina;
+  }
+
+  public setTiempoDeCocina(tiempoCocina: number): void {
+    this.tiempoDeCocina = tiempoCocina;
+  }
 
   public getPrecioVenta(): number {
     return this.precioVenta;
@@ -46,12 +77,12 @@ export class ArticuloManufacturadoDTO {
     this.precioVenta = precio;
   }
 
-  public getDadoDeAlta(): boolean {
-    return this.dadoDeAlta;
+  public getpuedeElaborarse(): boolean {
+    return this.puedeElaborarse;
   }
 
-  public setDadoDeAlta(dadoDeAlta: boolean): void {
-    this.dadoDeAlta = dadoDeAlta;
+  public setpuedeElaborarse(puedeElaborarse: boolean): void {
+    this.puedeElaborarse = puedeElaborarse;
   }
 
   public getImagenDto(): ImagenDTO {

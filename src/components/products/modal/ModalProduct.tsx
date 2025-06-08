@@ -1,4 +1,4 @@
-import type React from "react";
+//
 import { useState } from "react";
 import { createPortal } from "react-dom";
 import CloseIcon from "@mui/icons-material/Close";
@@ -29,7 +29,7 @@ export const ModalProduct: React.FC<ModalProductProps> = ({ product, onClose, on
   };
 
   const handleAddToCartClick = () => {
-    if (product.getDetalles().length <= 0) {
+    if (!product.getPuedeElaborarse()) {
       return;
     }
 
@@ -99,9 +99,9 @@ export const ModalProduct: React.FC<ModalProductProps> = ({ product, onClose, on
 
             <div className="relative bg-gray-300">
               <img
-                src={product.getUrlImagen() || "/placeholder.svg"}
+                src={product.getImagenDto()?.getUrl() || "/placeholder.svg"}
                 alt={product.getNombre()}
-                className={`w-full h-48 object-cover ${product.getDetalles().length !== 0 ? "" : "grayscale-100"}`}
+                className={`w-full h-48 object-cover ${product.getPuedeElaborarse() ? "" : "grayscale-100"}`}
               />
               <span className="absolute bottom-4 left-2 bg-white text-black text-md px-4 py-2 rounded">
                 {product.getTiempoDeCocina()} min
@@ -121,8 +121,8 @@ export const ModalProduct: React.FC<ModalProductProps> = ({ product, onClose, on
                   <label className="block text-sm font-medium text-gray-700 mb-1">Cantidad</label>
                   <input
                     type="number"
-                    value={product.getDetalles().length <= 0 ? quantity - 1 : quantity}
-                    disabled={product.getDetalles().length <= 0}
+                    value={!product.getPuedeElaborarse() ? quantity - 1 : quantity}
+                    disabled={!product.getPuedeElaborarse()}
                     min={1}
                     max={10}
                     onChange={handleQuantityChange}
@@ -131,14 +131,14 @@ export const ModalProduct: React.FC<ModalProductProps> = ({ product, onClose, on
                 </div>
 
                 <button
-                  disabled={product.getDetalles().length <= 0}
+                  disabled={!product.getPuedeElaborarse()}
                   onClick={handleAddToCartClick}
                   className={`h-10 mt-6 px-4 rounded-lg whitespace-nowrap transition-colors cursor-pointer ${
-                    product.getDetalles().length > 0
+                    product.getPuedeElaborarse()
                       ? "bg-orange-500 text-white hover:bg-orange-600"
                       : "bg-gray-300 text-gray-600 cursor-not-allowed"
                   }`}>
-                  {product.getDetalles().length > 0
+                  {product.getPuedeElaborarse()
                     ? `Agregar a mi orden ($${(product.getPrecioVenta() * quantity).toFixed(2)})`
                     : "Sin stock"}
                 </button>

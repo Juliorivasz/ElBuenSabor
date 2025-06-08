@@ -1,4 +1,4 @@
-import type React from "react";
+//
 import { motion } from "framer-motion";
 import { CheckCircleOutlined } from "@mui/icons-material";
 

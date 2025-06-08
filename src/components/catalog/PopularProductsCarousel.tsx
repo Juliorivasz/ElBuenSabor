@@ -1,14 +1,12 @@
-"use client";
-
-import type React from "react";
+//
 import { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight, AccessTime, ShoppingCart, Star } from "@mui/icons-material";
 import { motion, AnimatePresence } from "framer-motion";
-import type { ArticuloManufacturado } from "../../models/ArticuloManufacturado";
-import { fetchArticulosManufacturados } from "../../services/articuloManufacturadoServicio";
+import { ArticuloDTO } from "../../models/dto/ArticuloDTO";
+import { getAllArticulos } from "../../services/articuloServicio";
 
 interface PopularProductsCarouselProps {
-  onAddToCart: (product: ArticuloManufacturado) => void;
+  onAddToCart: (product: ArticuloDTO) => void;
 }
 
 export const PopularProductsCarousel: React.FC<PopularProductsCarouselProps> = ({ onAddToCart }) => {
@@ -16,18 +14,18 @@ export const PopularProductsCarousel: React.FC<PopularProductsCarouselProps> = (
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
   const [itemsPerView, setItemsPerView] = useState(1);
   const [direction, setDirection] = useState(0);
-  const [popularProducts, setPopularProducts] = useState<ArticuloManufacturado[]>([]);
+  const [popularProducts, setPopularProducts] = useState<ArticuloDTO[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Cargar productos y seleccionar los más populares
   useEffect(() => {
     const loadPopularProducts = async () => {
       try {
-        const allProducts = await fetchArticulosManufacturados();
+        const allProducts = await getAllArticulos(0);
 
         // Seleccionar los primeros 5 productos como los más populares
         // En una aplicación real, esto vendría de una API con datos de popularidad
-        const popular = allProducts.slice(0, 5);
+        const popular = allProducts.content.slice(0, 5);
         setPopularProducts(popular);
       } catch (error) {
         console.error("Error loading popular products:", error);
@@ -178,7 +176,7 @@ export const PopularProductsCarousel: React.FC<PopularProductsCarouselProps> = (
               }`}>
               {popularProducts.slice(currentIndex, currentIndex + itemsPerView).map((product, index) => (
                 <motion.div
-                  key={product.getIdArticulo()}
+                  key={index}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.1, duration: 0.4 }}
@@ -186,7 +184,7 @@ export const PopularProductsCarousel: React.FC<PopularProductsCarouselProps> = (
                   {/* Product Image */}
                   <div className="relative">
                     <img
-                      src={product.getUrlImagen() || "/placeholder.svg?height=200&width=300"}
+                      src={product.getImagenDto()?.getUrl() || "/placeholder.svg?height=200&width=300"}
                       alt={product.getNombre()}
                       className="w-full h-48 object-cover"
                     />

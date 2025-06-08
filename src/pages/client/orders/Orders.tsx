@@ -1,4 +1,4 @@
-import type React from "react";
+//
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import {
@@ -223,19 +223,13 @@ export const Orders: React.FC = () => {
   };
 
   const handleRepeatOrder = (order: Order) => {
-    // Lógica para agregar items al carrito
-    console.log("Repetir orden:", order);
     navigateTo("/cart");
   };
 
-  const handleCancelOrder = (orderId: number) => {
-    // Lógica para cancelar orden
-    console.log("Cancelar orden:", orderId);
-  };
+  const handleCancelOrder = (orderId: number) => {};
 
   const handleViewInvoice = (orderId: number) => {
     // Lógica para ver factura
-    console.log("Ver factura:", orderId);
   };
 
   const canCancelOrder = (estado: string) => {

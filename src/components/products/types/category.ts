@@ -1,7 +1,7 @@
-import { Categoria } from "../../../models/Categoria";
+import { CategoriaDTO } from "../../../models/dto/CategoriaDTO";
 
 export interface CategoryProps {
-  categorias: Categoria[];
+  categorias: CategoriaDTO[];
   selected: string | null;
   onSelect: (cat: string) => void;
 }

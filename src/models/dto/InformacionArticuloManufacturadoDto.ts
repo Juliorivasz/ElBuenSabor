@@ -1,137 +1,178 @@
+import {
+  InformacionArticuloManufacturadoDtoJson,
+  InformacionDetalleDtoJson,
+} from "../interface/InformacionManufacturadoDtoJson";
 import { ImagenDTO } from "./ImagenDTO";
 import { InformacionDetalleDto } from "./InformacionDetalleDto";
 
 export class InformacionArticuloManufacturadoDto {
-  private idArticuloManufacturado: number;
+  private idArticulo: number;
   private nombre: string;
   private descripcion: string;
+  private precioVenta: number;
+  private precioModificado: boolean;
   private receta: string;
   private tiempoDeCocina: number;
-  private imagenDto: ImagenDTO;
+  private dadoDeAlta: boolean;
   private idCategoria: number;
   private nombreCategoria: string;
-  private dadoDeAlta: boolean;
-  private precioVenta: number;
+  private imagenDto: ImagenDTO | null;
   private detalles: InformacionDetalleDto[];
 
   constructor(
-    idArticuloManufacturado: number,
+    idArticulo: number,
     nombre: string,
     descripcion: string,
+    precioVenta: number,
+    precioModificado: boolean,
     receta: string,
     tiempoDeCocina: number,
-    imagenDto: ImagenDTO,
+    dadoDeAlta: boolean,
     idCategoria: number,
     nombreCategoria: string,
-    dadoDeAlta: boolean,
-    precioVenta: number,
+    imagenDto: ImagenDTO | null,
     detalles: InformacionDetalleDto[],
   ) {
-    this.idArticuloManufacturado = idArticuloManufacturado;
+    this.idArticulo = idArticulo;
     this.nombre = nombre;
     this.descripcion = descripcion;
+    this.precioVenta = precioVenta;
+    this.precioModificado = precioModificado;
     this.receta = receta;
     this.tiempoDeCocina = tiempoDeCocina;
-    this.imagenDto = imagenDto;
+    this.dadoDeAlta = dadoDeAlta;
     this.idCategoria = idCategoria;
     this.nombreCategoria = nombreCategoria;
-    this.dadoDeAlta = dadoDeAlta;
-    this.precioVenta = precioVenta;
+    this.imagenDto = imagenDto;
     this.detalles = detalles;
   }
 
-  public getIdArticuloManufacturado(): number {
-    return this.idArticuloManufacturado;
+  public getidArticulo(): number {
+    return this.idArticulo;
   }
 
-  public setIdArticuloManufacturado(id: number): void {
-    this.idArticuloManufacturado = id;
+  public setidArticulo(value: number): void {
+    this.idArticulo = value;
   }
 
-  // Getter y Setter para nombre
   public getNombre(): string {
     return this.nombre;
   }
 
-  public setNombre(nombre: string): void {
-    this.nombre = nombre;
+  public setNombre(value: string): void {
+    this.nombre = value;
   }
 
-  // Getter y Setter para descripcion
   public getDescripcion(): string {
     return this.descripcion;
   }
 
-  public setDescripcion(descripcion: string): void {
-    this.descripcion = descripcion;
-  }
-
-  // Getter y Setter para receta
-  public getReceta(): string {
-    return this.receta;
-  }
-
-  public setReceta(receta: string): void {
-    this.receta = receta;
-  }
-
-  // Getter y Setter para tiempoDeCocina
-  public getTiempoDeCocina(): number {
-    return this.tiempoDeCocina;
-  }
-
-  public setTiempoDeCocina(tiempoDeCocina: number): void {
-    this.tiempoDeCocina = tiempoDeCocina;
-  }
-
-  // Getter y Setter para imagenDto
-  public getImagenDto(): ImagenDTO {
-    return this.imagenDto;
-  }
-
-  public setImagenDto(imagenDto: ImagenDTO): void {
-    this.imagenDto = imagenDto;
-  }
-
-  // Getter y Setter para idCategoria
-  public getIdCategoria(): number {
-    return this.idCategoria;
-  }
-
-  public setIdCategoria(idCategoria: number): void {
-    this.idCategoria = idCategoria;
-  }
-
-  public getNombreCategoria(): string {
-    return this.nombreCategoria;
-  }
-
-  public setNombreCategoria(newNombreCategoria: string): void {
-    this.nombreCategoria = newNombreCategoria;
-  }
-
-  public getDadoDeAlta(): boolean {
-    return this.dadoDeAlta;
-  }
-
-  public setDadoDeAlta(nuevoDadoDeAlta: boolean): void {
-    this.dadoDeAlta = nuevoDadoDeAlta;
+  public setDescripcion(value: string): void {
+    this.descripcion = value;
   }
 
   public getPrecioVenta(): number {
     return this.precioVenta;
   }
 
-  public setPrecioVenta(newPrecioVenta: number): void {
-    this.precioVenta = newPrecioVenta;
+  public setPrecioVenta(value: number): void {
+    this.precioVenta = value;
   }
 
-  // Getter y Setter para detalles
+  public getPrecioModificado(): boolean {
+    return this.precioModificado;
+  }
+
+  public setPrecioModificado(value: boolean): void {
+    this.precioModificado = value;
+  }
+
+  public getReceta(): string {
+    return this.receta;
+  }
+
+  public setReceta(value: string): void {
+    this.receta = value;
+  }
+
+  public getTiempoDeCocina(): number {
+    return this.tiempoDeCocina;
+  }
+
+  public setTiempoDeCocina(value: number): void {
+    this.tiempoDeCocina = value;
+  }
+
+  public isDadoDeAlta(): boolean {
+    return this.dadoDeAlta;
+  }
+
+  public setDadoDeAlta(value: boolean): void {
+    this.dadoDeAlta = value;
+  }
+
+  public getIdCategoria(): number {
+    return this.idCategoria;
+  }
+
+  public setIdCategoria(value: number): void {
+    this.idCategoria = value;
+  }
+
+  public getNombreCategoria(): string {
+    return this.nombreCategoria;
+  }
+
+  public setNombreCategoria(value: string): void {
+    this.nombreCategoria = value;
+  }
+
+  public getImagenDto(): ImagenDTO | null {
+    return this.imagenDto;
+  }
+
+  public setImagenDto(value: ImagenDTO): void {
+    this.imagenDto = value;
+  }
+
   public getDetalles(): InformacionDetalleDto[] {
     return this.detalles;
   }
 
-  public setDetalles(detalles: InformacionDetalleDto[]): void {
-    this.detalles = detalles;
+  public setDetalles(value: InformacionDetalleDto[]): void {
+    this.detalles = value;
+  }
+  public toJSON(): InformacionArticuloManufacturadoDtoJson {
+    return {
+      idArticulo: this.getidArticulo(),
+      nombre: this.getNombre(),
+      descripcion: this.getDescripcion(),
+      precioVenta: this.getPrecioVenta(),
+      precioModificado: this.getPrecioModificado(),
+      receta: this.getReceta(),
+      tiempoDeCocina: this.getTiempoDeCocina(),
+      dadoDeAlta: this.isDadoDeAlta(),
+      idCategoria: this.getIdCategoria(),
+      nombreCategoria: this.getNombreCategoria(),
+      imagenDto: this.getImagenDto() ? this.getImagenDto()!.toJSON() : null,
+      detalles: this.getDetalles().map((detalle) => detalle.toJSON()),
+    };
+  }
+
+  public static fromJson(json: InformacionArticuloManufacturadoDtoJson): InformacionArticuloManufacturadoDto {
+    return new InformacionArticuloManufacturadoDto(
+      json.idArticulo,
+      json.nombre,
+      json.descripcion,
+      json.precioVenta,
+      json.precioModificado,
+      json.receta,
+      json.tiempoDeCocina,
+      json.dadoDeAlta,
+      json.idCategoria,
+      json.nombreCategoria,
+      ImagenDTO.fromJSON(json.imagenDto),
+      json.detalles.map((detalleJson: InformacionDetalleDtoJson) => InformacionDetalleDto.fromJson(detalleJson)),
+    );
   }
 }

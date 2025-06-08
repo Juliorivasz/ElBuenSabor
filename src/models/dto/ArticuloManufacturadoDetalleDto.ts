@@ -1,3 +1,5 @@
+import { ArticuloManufacturadoDetalleDtoJson } from "../interface/ArticuloManufacturadoDetalleDtoJson";
+
 export class ArticuloManufacturadoDetalleDto {
   private idArticuloInsumo: number;
   private cantidad: number;
@@ -18,5 +20,11 @@ export class ArticuloManufacturadoDetalleDto {
   }
   public setCantidad(newCantidad: number) {
     this.idArticuloInsumo = newCantidad;
+  }
+  public toJSON(): ArticuloManufacturadoDetalleDtoJson {
+    return {
+      idArticuloInsumo: this.idArticuloInsumo,
+      cantidad: this.cantidad,
+    };
   }
 }

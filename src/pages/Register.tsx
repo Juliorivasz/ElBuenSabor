@@ -106,9 +106,7 @@ export const Register: React.FC = () => {
         departamento: formData.departamento.trim(),
         phone: formData.phone.trim(),
       };
-
-      console.log("Formulario enviado:", cleanedData);
-      // Aquí podrías enviar los datos al backend o limpiar el formulario
+      return cleanedData;
     }
   };
 
