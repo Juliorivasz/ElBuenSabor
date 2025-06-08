@@ -21,7 +21,7 @@ export const EmptyCart = () => {
 
       <button
         onClick={handleExploreCatalog}
-        className="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-3 px-8 rounded-lg transition-colors shadow-sm hover:shadow-md cursor-pointer">
+        className="bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 px-8 rounded-lg transition-colors shadow-sm hover:shadow-md cursor-pointer">
         Explorar Menú
       </button>
     </div>

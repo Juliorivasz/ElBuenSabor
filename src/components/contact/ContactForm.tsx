@@ -1,4 +1,4 @@
-import type React from "react";
+//
 
 import { useState } from "react";
 import { motion } from "framer-motion";
@@ -26,8 +26,6 @@ export const ContactForm = () => {
 
     // Simulate form submission
     await new Promise((resolve) => setTimeout(resolve, 2000));
-
-    console.log("Form submitted:", formData);
     setIsSubmitting(false);
     setFormData({ name: "", email: "", subject: "", message: "" });
   };

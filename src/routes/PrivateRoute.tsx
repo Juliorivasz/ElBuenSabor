@@ -35,7 +35,6 @@ export const PrivateRoute = ({ children, requiredRole }: PrivateRouteProps) => {
       />
     );
   }
-  console.log(user);
 
   // Si se requiere un rol específico, verificarlo
   if (requiredRole) {

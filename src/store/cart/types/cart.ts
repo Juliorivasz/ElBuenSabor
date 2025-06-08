@@ -1,7 +1,7 @@
-import { ArticuloManufacturado } from "../../../models/ArticuloManufacturado";
+import { ArticuloDTO } from "../../../models/dto/ArticuloDTO";
 
 export interface CartItem {
-  articulo: ArticuloManufacturado;
+  articulo: ArticuloDTO;
   quantity: number;
   imagenUrl?: string;
 }
@@ -11,7 +11,7 @@ export interface CartState {
 }
 
 export interface CartActions {
-  addItem: (articulo: ArticuloManufacturado, imagenUrl?: string) => void;
+  addItem: (articulo: ArticuloDTO, imagenUrl?: string) => void;
   removeItem: (articuloId: number) => void;
   increaseQuantity: (articuloId: number) => void;
   decreaseQuantity: (articuloId: number) => void;

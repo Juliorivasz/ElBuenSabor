@@ -17,12 +17,6 @@ export const Cart = () => {
   const totalItems = getTotalItems();
 
   const handleConfirmOrder = () => {
-    console.log("Confirmar pedido", {
-      items,
-      deliveryType,
-      timestamp: new Date().toISOString(),
-    });
-
     alert("¡Pedido confirmado! Redirigiendo al proceso de pago...");
   };
 

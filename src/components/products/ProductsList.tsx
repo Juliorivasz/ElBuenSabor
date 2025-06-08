@@ -1,4 +1,4 @@
-import type React from "react";
+//
 import { memo, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { EmptyProducts } from "./EmptyProducts";
@@ -25,7 +25,7 @@ export const ProductsList: React.FC<ProductsListProps> = memo(({ products, onSel
           ) : (
             memoizedProducts.map((product) => (
               <ProductsCard
-                key={product.getIdArticulo()}
+                key={product?.getIdArticulo()}
                 product={product}
                 onClick={() => onSelectProduct(product)}
               />
