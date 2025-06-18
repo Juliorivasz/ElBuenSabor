@@ -1,18 +1,21 @@
-import { useCartStore } from "../../store/cart/useCartStore";
-import type { DeliveryType } from "./DeliverySelector";
+"use client"
+
+import { useCartStore } from "../../store/cart/useCartStore"
+import type { DeliveryType } from "./DeliverySelector"
+import { MercadoPagoButton } from "./MercadoPagoButton"
 
 interface OrderSummaryProps {
-  deliveryType: DeliveryType;
-  onConfirmOrder: () => void;
+  deliveryType: DeliveryType
+  onConfirmOrder: () => void
 }
 
 export const OrderSummary = ({ deliveryType, onConfirmOrder }: OrderSummaryProps) => {
-  const { items, getTotalPrice, getTotalItems } = useCartStore();
+  const { items, getTotalPrice, getTotalItems } = useCartStore()
 
-  const subtotal = getTotalPrice();
-  const deliveryCost = deliveryType === "delivery" ? 500 : 0;
-  const total = subtotal + deliveryCost;
-  const totalItems = getTotalItems();
+  const subtotal = getTotalPrice()
+  const deliveryCost = deliveryType === "delivery" ? 500 : 0
+  const total = subtotal + deliveryCost
+  const totalItems = getTotalItems()
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
@@ -21,17 +24,15 @@ export const OrderSummary = ({ deliveryType, onConfirmOrder }: OrderSummaryProps
       {/* Lista de productos con subtotales */}
       <div className="space-y-3 mb-6">
         {items.map((item) => {
-          const itemSubtotal = item.articulo.getPrecioVenta() * item.quantity;
+          const itemSubtotal = item.articulo.getPrecioVenta() * item.quantity
           return (
-            <div
-              key={item.articulo.getIdArticulo()}
-              className="flex justify-between text-sm">
+            <div key={item.articulo.getIdArticulo()} className="flex justify-between text-sm">
               <span className="text-gray-600">
                 {item.articulo.getDescripcion()} x{item.quantity}
               </span>
               <span className="font-medium text-gray-900">${itemSubtotal.toFixed(2)}</span>
             </div>
-          );
+          )
         })}
       </div>
 
@@ -62,13 +63,19 @@ export const OrderSummary = ({ deliveryType, onConfirmOrder }: OrderSummaryProps
         </div>
       </div>
 
+      {/* Botón de Mercado Pago */}
+      <div className="mb-4">
+        <MercadoPagoButton />
+      </div>
+
       {/* Botón confirmar pedido */}
       <button
         onClick={onConfirmOrder}
         disabled={totalItems === 0}
-        className="w-full bg-yellow-500 hover:bg-yellow-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-semibold py-4 px-6 rounded-lg transition-colors text-lg shadow-sm hover:shadow-md">
+        className="w-full bg-yellow-500 hover:bg-yellow-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-semibold py-4 px-6 rounded-lg transition-colors text-lg shadow-sm hover:shadow-md"
+      >
         Confirmar Pedido
       </button>
     </div>
-  );
-};
+  )
+}
