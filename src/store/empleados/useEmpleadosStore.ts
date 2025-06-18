@@ -1,0 +1,169 @@
+import { create } from "zustand"
+import { empleadoServicio, type Empleado } from "../../services/empleadoServicio"
+
+interface EmpleadosState {
+  // Estado
+  empleados: Empleado[]
+  loading: boolean
+  error: string | null
+
+  // Estadísticas computadas
+  estadisticas: {
+    total: number
+    activos: number
+    inactivos: number
+    porcentajeActivos: number
+  }
+
+  // Acciones
+  cargarEmpleados: () => Promise<void>
+  toggleEmpleadoActivo: (id: number) => Promise<void>
+  agregarEmpleado: (empleado: Empleado) => void
+  actualizarEmpleado: (empleado: Empleado) => void
+  setLoading: (loading: boolean) => void
+  setError: (error: string | null) => void
+  limpiarError: () => void
+}
+
+// Función helper para calcular estadísticas
+const calcularEstadisticas = (empleados: Empleado[]) => {
+  const total = empleados.length
+  const activos = empleados.filter((emp) => emp.activo).length
+  const inactivos = total - activos
+  const porcentajeActivos = total > 0 ? Math.round((activos / total) * 100) : 0
+
+  return {
+    total,
+    activos,
+    inactivos,
+    porcentajeActivos,
+  }
+}
+
+export const useEmpleadosStore = create<EmpleadosState>((set, get) => ({
+  // Estado inicial
+  empleados: [],
+  loading: false,
+  error: null,
+  estadisticas: {
+    total: 0,
+    activos: 0,
+    inactivos: 0,
+    porcentajeActivos: 0,
+  },
+
+  // Acciones
+  cargarEmpleados: async () => {
+    set({ loading: true, error: null })
+
+    try {
+      const empleados = await empleadoServicio.obtenerEmpleados()
+      const estadisticas = calcularEstadisticas(empleados)
+
+      set({
+        empleados,
+        estadisticas,
+        loading: false,
+      })
+    } catch (error) {
+      console.error("Error al cargar empleados:", error)
+      set({
+        error: "Error al cargar los empleados",
+        loading: false,
+      })
+    }
+  },
+
+  toggleEmpleadoActivo: async (id: number) => {
+    const { empleados } = get()
+
+    try {
+      // Optimistic update - actualizar UI inmediatamente
+      const empleadosActualizados = empleados.map((emp) => (emp.id === id ? { ...emp, activo: !emp.activo } : emp))
+      const estadisticas = calcularEstadisticas(empleadosActualizados)
+
+      set({
+        empleados: empleadosActualizados,
+        estadisticas,
+      })
+
+      // Llamada al backend
+      await empleadoServicio.toggleAltaBaja(id)
+
+      console.log(`Toggle activo/inactivo exitoso para empleado ID: ${id}`)
+    } catch (error) {
+      console.error("Error en toggle activo/inactivo:", error)
+
+      // Revertir cambios en caso de error
+      const estadisticas = calcularEstadisticas(empleados)
+      set({
+        empleados,
+        estadisticas,
+        error: "Error al cambiar el estado del empleado",
+      })
+
+      // Recargar datos del servidor para asegurar consistencia
+      setTimeout(() => {
+        get().cargarEmpleados()
+      }, 1000)
+    }
+  },
+
+  agregarEmpleado: (nuevoEmpleado: Empleado) => {
+    const { empleados } = get()
+    const empleadosActualizados = [...empleados, nuevoEmpleado]
+    const estadisticas = calcularEstadisticas(empleadosActualizados)
+
+    set({
+      empleados: empleadosActualizados,
+      estadisticas,
+    })
+  },
+
+  actualizarEmpleado: (empleadoActualizado: Empleado) => {
+    const { empleados } = get()
+    const empleadosActualizados = empleados.map((emp) =>
+      emp.id === empleadoActualizado.id ? empleadoActualizado : emp,
+    )
+    const estadisticas = calcularEstadisticas(empleadosActualizados)
+
+    set({
+      empleados: empleadosActualizados,
+      estadisticas,
+    })
+  },
+
+  setLoading: (loading: boolean) => set({ loading }),
+
+  setError: (error: string | null) => set({ error }),
+
+  limpiarError: () => set({ error: null }),
+}))
+
+// Hook personalizado para estadísticas
+export const useEmpleadosStats = () => {
+  const estadisticas = useEmpleadosStore((state) => state.estadisticas)
+  const loading = useEmpleadosStore((state) => state.loading)
+
+  return {
+    ...estadisticas,
+    loading,
+  }
+}
+
+// Hook personalizado para la lista de empleados
+export const useEmpleadosList = () => {
+  const empleados = useEmpleadosStore((state) => state.empleados)
+  const loading = useEmpleadosStore((state) => state.loading)
+  const error = useEmpleadosStore((state) => state.error)
+  const cargarEmpleados = useEmpleadosStore((state) => state.cargarEmpleados)
+  const toggleEmpleadoActivo = useEmpleadosStore((state) => state.toggleEmpleadoActivo)
+
+  return {
+    empleados,
+    loading,
+    error,
+    cargarEmpleados,
+    toggleEmpleadoActivo,
+  }
+}
