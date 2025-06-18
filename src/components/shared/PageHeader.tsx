@@ -1,7 +1,5 @@
-//
-
-import { motion } from "framer-motion";
 import { ArrowBackOutlined } from "@mui/icons-material";
+import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 
 interface PageHeaderProps {
@@ -11,6 +9,10 @@ interface PageHeaderProps {
   backTo?: string;
   gradient?: string;
   children?: React.ReactNode;
+  breadcrumbs?: {
+    label: string;
+    href?: string;
+  }[];
 }
 
 export const PageHeader = ({
@@ -20,6 +22,7 @@ export const PageHeader = ({
   backTo = "/",
   gradient = "from-orange-600 via-red-600 to-yellow-600",
   children,
+  breadcrumbs = [],
 }: PageHeaderProps) => {
   return (
     <div className="relative bg-gradient-to-br from-orange-50 via-red-50 to-yellow-50 pt-20 pb-16 overflow-hidden">
@@ -52,6 +55,26 @@ export const PageHeader = ({
               <span>Volver</span>
             </Link>
           </motion.div>
+        )}
+
+        {/* Breadcrumbs */}
+        {breadcrumbs.length > 0 && (
+          <nav className="mb-4 text-sm text-gray-500">
+            <ol className="list-reset flex flex-wrap items-center">
+              {breadcrumbs.map((crumb, index) => (
+                <li key={index} className="flex items-center">
+                  {crumb.href ? (
+                    <Link to={crumb.href} className="text-orange-600 hover:underline">
+                      {crumb.label}
+                    </Link>
+                  ) : (
+                    <span>{crumb.label}</span>
+                  )}
+                  {index < breadcrumbs.length - 1 && <span className="mx-2">/</span>}
+                </li>
+              ))}
+            </ol>
+          </nav>
         )}
 
         <motion.div
