@@ -1,0 +1,879 @@
+{
+  "content": [
+    {
+      "idArticulo": 1,
+      "nombre": "Hamburguesa Doble",
+      "descripcion": "Burger Doble Carne",
+      "precioVenta": 33585.17,
+      "receta": "Pan, doble carne, queso, lechuga, tomate, salsa",
+      "tiempoDeCocina": 25,
+      "detalles": [
+        {
+          "idArticuloManufacturadoDetalle": 1,
+          "cantidad": 200,
+          "articuloInsumo": {
+            "idInsumo": 1,
+            "nombre": "Carne de Res",
+            "stockActual": 2000,
+            "stockMinimo": 500,
+            "stockMaximo": 3000,
+            "fechaBaja": null,
+            "unidadMedida": {
+              "idUnidadMedida": 1,
+              "nombre": "gramos"
+            },
+            "rubroInsumo": {
+              "idRubroInsumo": 1,
+              "nombre": "Carnes",
+              "fechaBaja": null,
+              "listaInsumos": []
+            }
+          }
+        },
+        {
+          "idArticuloManufacturadoDetalle": 2,
+          "cantidad": 2,
+          "articuloInsumo": {
+            "idInsumo": 2,
+            "nombre": "Pan de Hamburguesa",
+            "stockActual": 100,
+            "stockMinimo": 20,
+            "stockMaximo": 150,
+            "fechaBaja": null,
+            "unidadMedida": {
+              "idUnidadMedida": 2,
+              "nombre": "unidades"
+            },
+            "rubroInsumo": {
+              "idRubroInsumo": 3,
+              "nombre": "Panadería",
+              "fechaBaja": null,
+              "listaInsumos": []
+            }
+          }
+        },
+        {
+          "idArticuloManufacturadoDetalle": 3,
+          "cantidad": 40,
+          "articuloInsumo": {
+            "idInsumo": 3,
+            "nombre": "Queso Cheddar",
+            "stockActual": 500,
+            "stockMinimo": 100,
+            "stockMaximo": 600,
+            "fechaBaja": null,
+            "unidadMedida": {
+              "idUnidadMedida": 1,
+              "nombre": "gramos"
+            },
+            "rubroInsumo": {
+              "idRubroInsumo": 2,
+              "nombre": "Lácteos",
+              "fechaBaja": null,
+              "listaInsumos": []
+            }
+          }
+        },
+        {
+          "idArticuloManufacturadoDetalle": 4,
+          "cantidad": 10,
+          "articuloInsumo": {
+            "idInsumo": 4,
+            "nombre": "Lechuga",
+            "stockActual": 500,
+            "stockMinimo": 100,
+            "stockMaximo": 600,
+            "fechaBaja": null,
+            "unidadMedida": {
+              "idUnidadMedida": 1,
+              "nombre": "gramos"
+            },
+            "rubroInsumo": {
+              "idRubroInsumo": 5,
+              "nombre": "Verduras",
+              "fechaBaja": null,
+              "listaInsumos": []
+            }
+          }
+        },
+        {
+          "idArticuloManufacturadoDetalle": 5,
+          "cantidad": 20,
+          "articuloInsumo": {
+            "idInsumo": 5,
+            "nombre": "Tomate",
+            "stockActual": 500,
+            "stockMinimo": 100,
+            "stockMaximo": 600,
+            "fechaBaja": null,
+            "unidadMedida": {
+              "idUnidadMedida": 1,
+              "nombre": "gramos"
+            },
+            "rubroInsumo": {
+              "idRubroInsumo": 5,
+              "nombre": "Verduras",
+              "fechaBaja": null,
+              "listaInsumos": []
+            }
+          }
+        },
+        {
+          "idArticuloManufacturadoDetalle": 6,
+          "cantidad": 15,
+          "articuloInsumo": {
+            "idInsumo": 6,
+            "nombre": "Salsa",
+            "stockActual": 500,
+            "stockMinimo": 100,
+            "stockMaximo": 600,
+            "fechaBaja": null,
+            "unidadMedida": {
+              "idUnidadMedida": 1,
+              "nombre": "gramos"
+            },
+            "rubroInsumo": {
+              "idRubroInsumo": 7,
+              "nombre": "Salsas",
+              "fechaBaja": null,
+              "listaInsumos": []
+            }
+          }
+        }
+      ],
+      "categoria": {
+        "idCategoria": 3,
+        "nombre": "Carne",
+        "margenGanancia": 23,
+        "fechaBaja": null,
+        "listaManufacturados": [],
+        "categoriaPadre": {
+          "idCategoria": 1,
+          "nombre": "Hamburguesas",
+          "imagen": "/icons/burger.svg",
+          "margenGanancia": 25,
+          "fechaBaja": null,
+          "listaManufacturados": [],
+          "categoriaPadre": null
+        },
+        "imagen": null
+      },
+      "urlImagen": "https://media-cdn.tripadvisor.com/media/photo-s/1c/d1/7a/44/double-gorilla-burger.jpg"
+    },
+    {
+      "idArticulo": 2,
+      "nombre": "Ensalada César",
+      "descripcion": "Ensalada César",
+      "precioVenta": 30370.81,
+      "receta": "Lechuga, crutones, parmesano, aderezo César",
+      "tiempoDeCocina": 15,
+      "detalles": [
+        {
+          "idArticuloManufacturadoDetalle": 7,
+          "cantidad": 150,
+          "articuloInsumo": {
+            "idInsumo": 4,
+            "nombre": "Lechuga Romana",
+            "stockActual": 800,
+            "stockMinimo": 200,
+            "stockMaximo": 1000,
+            "fechaBaja": null,
+            "unidadMedida": {
+              "idUnidadMedida": 1,
+              "nombre": "gramos"
+            },
+            "rubroInsumo": {
+              "idRubroInsumo": 5,
+              "nombre": "Verduras",
+              "fechaBaja": null,
+              "listaInsumos": []
+            }
+          }
+        },
+        {
+          "idArticuloManufacturadoDetalle": 8,
+          "cantidad": 30,
+          "articuloInsumo": {
+            "idInsumo": 7,
+            "nombre": "Crutones",
+            "stockActual": 300,
+            "stockMinimo": 50,
+            "stockMaximo": 400,
+            "fechaBaja": null,
+            "unidadMedida": {
+              "idUnidadMedida": 1,
+              "nombre": "gramos"
+            },
+            "rubroInsumo": {
+              "idRubroInsumo": 3,
+              "nombre": "Panadería",
+              "fechaBaja": null,
+              "listaInsumos": []
+            }
+          }
+        },
+        {
+          "idArticuloManufacturadoDetalle": 9,
+          "cantidad": 20,
+          "articuloInsumo": {
+            "idInsumo": 8,
+            "nombre": "Queso Parmesano",
+            "stockActual": 400,
+            "stockMinimo": 80,
+            "stockMaximo": 500,
+            "fechaBaja": null,
+            "unidadMedida": {
+              "idUnidadMedida": 1,
+              "nombre": "gramos"
+            },
+            "rubroInsumo": {
+              "idRubroInsumo": 2,
+              "nombre": "Lácteos",
+              "fechaBaja": null,
+              "listaInsumos": []
+            }
+          }
+        },
+        {
+          "idArticuloManufacturadoDetalle": 10,
+          "cantidad": 25,
+          "articuloInsumo": {
+            "idInsumo": 9,
+            "nombre": "Aderezo César",
+            "stockActual": 600,
+            "stockMinimo": 120,
+            "stockMaximo": 700,
+            "fechaBaja": null,
+            "unidadMedida": {
+              "idUnidadMedida": 1,
+              "nombre": "mililitros"
+            },
+            "rubroInsumo": {
+              "idRubroInsumo": 7,
+              "nombre": "Salsas",
+              "fechaBaja": null,
+              "listaInsumos": []
+            }
+          }
+        }
+      ],
+      "categoria": {
+        "idCategoria": 7,
+        "nombre": "Pollo",
+        "margenGanancia": 23,
+        "fechaBaja": null,
+        "listaManufacturados": [],
+        "categoriaPadre": {
+          "idCategoria": 6,
+          "nombre": "Ensaladas",
+          "imagen": "/icons/ensalada.svg",
+          "margenGanancia": 25,
+          "fechaBaja": null,
+          "listaManufacturados": [],
+          "categoriaPadre": null
+        },
+        "imagen": null
+      },
+      "urlImagen": "https://popmenucloud.com/cdn-cgi/image/width=1200,height=630,format=auto,fit=cover/kohvqjiu/42a2f374-cd11-4b06-8a63-39597da5226b.jpg"
+    },
+    {
+      "idArticulo": 3,
+      "nombre": "Hamburguesa Vegana",
+      "descripcion": "Burger Vegana",
+      "precioVenta": 48114.0,
+      "receta": "Pan vegano, hamburguesa de vegetales, lechuga, tomate, salsa",
+      "tiempoDeCocina": 20,
+      "detalles": [
+        {
+          "idArticuloManufacturadoDetalle": 11,
+          "cantidad": 200,
+          "articuloInsumo": {
+            "idInsumo": 11,
+            "nombre": "Hamburguesa de vegetales",
+            "stockActual": 600,
+            "stockMinimo": 150,
+            "stockMaximo": 800,
+            "fechaBaja": null,
+            "unidadMedida": {
+              "idUnidadMedida": 1,
+              "nombre": "gramos"
+            },
+            "rubroInsumo": {
+              "idRubroInsumo": 6,
+              "nombre": "Productos Veganos",
+              "fechaBaja": null,
+              "listaInsumos": []
+            }
+          }
+        },
+        {
+          "idArticuloManufacturadoDetalle": 12,
+          "cantidad": 2,
+          "articuloInsumo": {
+            "idInsumo": 12,
+            "nombre": "Pan vegano",
+            "stockActual": 80,
+            "stockMinimo": 15,
+            "stockMaximo": 100,
+            "fechaBaja": null,
+            "unidadMedida": {
+              "idUnidadMedida": 2,
+              "nombre": "unidades"
+            },
+            "rubroInsumo": {
+              "idRubroInsumo": 3,
+              "nombre": "Panadería",
+              "fechaBaja": null,
+              "listaInsumos": []
+            }
+          }
+        },
+        {
+          "idArticuloManufacturadoDetalle": 13,
+          "cantidad": 10,
+          "articuloInsumo": {
+            "idInsumo": 4,
+            "nombre": "Lechuga",
+            "stockActual": 500,
+            "stockMinimo": 100,
+            "stockMaximo": 600,
+            "fechaBaja": null,
+            "unidadMedida": {
+              "idUnidadMedida": 1,
+              "nombre": "gramos"
+            },
+            "rubroInsumo": {
+              "idRubroInsumo": 5,
+              "nombre": "Verduras",
+              "fechaBaja": null,
+              "listaInsumos": []
+            }
+          }
+        },
+        {
+          "idArticuloManufacturadoDetalle": 14,
+          "cantidad": 20,
+          "articuloInsumo": {
+            "idInsumo": 5,
+            "nombre": "Tomate",
+            "stockActual": 500,
+            "stockMinimo": 100,
+            "stockMaximo": 600,
+            "fechaBaja": null,
+            "unidadMedida": {
+              "idUnidadMedida": 1,
+              "nombre": "gramos"
+            },
+            "rubroInsumo": {
+              "idRubroInsumo": 5,
+              "nombre": "Verduras",
+              "fechaBaja": null,
+              "listaInsumos": []
+            }
+          }
+        },
+        {
+          "idArticuloManufacturadoDetalle": 15,
+          "cantidad": 15,
+          "articuloInsumo": {
+            "idInsumo": 13,
+            "nombre": "Salsa Vegana",
+            "stockActual": 500,
+            "stockMinimo": 100,
+            "stockMaximo": 600,
+            "fechaBaja": null,
+            "unidadMedida": {
+              "idUnidadMedida": 1,
+              "nombre": "gramos"
+            },
+            "rubroInsumo": {
+              "idRubroInsumo": 7,
+              "nombre": "Salsas",
+              "fechaBaja": null,
+              "listaInsumos": []
+            }
+          }
+        }
+      ],
+      "categoria": {
+        "idCategoria": 2,
+        "nombre": "Veganas",
+        "margenGanancia": 22,
+        "fechaBaja": null,
+        "listaManufacturados": [],
+        "categoriaPadre": {
+          "idCategoria": 1,
+          "nombre": "Hamburguesas",
+          "imagen": "/icons/burger.svg",
+          "margenGanancia": 25,
+          "fechaBaja": null,
+          "listaManufacturados": [],
+          "categoriaPadre": null
+        },
+        "imagen": "https://dallas.culturemap.com/media-library/true-food-kitchen-beet-burger.jpg?id=31508475&width=2000&height=1500&quality=65&coordinates=0%2C0%2C0%2C0"
+      },
+      "urlImagen": "https://dallas.culturemap.com/media-library/true-food-kitchen-beet-burger.jpg?id=31508475&width=2000&height=1500&quality=65&coordinates=0%2C0%2C0%2C0"
+    },
+    {
+      "idArticulo": 4,
+      "nombre": "Pollo a la Parrilla",
+      "descripcion": "Pollo a la parrilla con especias",
+      "precioVenta": 36173.33,
+      "receta": "Pollo, especias, guarnición",
+      "tiempoDeCocina": 20,
+      "detalles": [
+        {
+          "idArticuloManufacturadoDetalle": 16,
+          "cantidad": 300,
+          "articuloInsumo": {
+            "idInsumo": 14,
+            "nombre": "Pechuga de Pollo",
+            "stockActual": 1500,
+            "stockMinimo": 300,
+            "stockMaximo": 2000,
+            "fechaBaja": null,
+            "unidadMedida": {
+              "idUnidadMedida": 1,
+              "nombre": "gramos"
+            },
+            "rubroInsumo": {
+              "idRubroInsumo": 4,
+              "nombre": "Aves",
+              "fechaBaja": null,
+              "listaInsumos": []
+            }
+          }
+        },
+        {
+          "idArticuloManufacturadoDetalle": 17,
+          "cantidad": 5,
+          "articuloInsumo": {
+            "idInsumo": 15,
+            "nombre": "Mezcla de Especias",
+            "stockActual": 100,
+            "stockMinimo": 20,
+            "stockMaximo": 150,
+            "fechaBaja": null,
+            "unidadMedida": {
+              "idUnidadMedida": 1,
+              "nombre": "gramos"
+            },
+            "rubroInsumo": {
+              "idRubroInsumo": 8,
+              "nombre": "Especias",
+              "fechaBaja": null,
+              "listaInsumos": []
+            }
+          }
+        },
+        {
+          "idArticuloManufacturadoDetalle": 18,
+          "cantidad": 200,
+          "articuloInsumo": {
+            "idInsumo": 16,
+            "nombre": "Guarnicion",
+            "stockActual": 1000,
+            "stockMinimo": 200,
+            "stockMaximo": 1500,
+            "fechaBaja": null,
+            "unidadMedida": {
+              "idUnidadMedida": 1,
+              "nombre": "gramos"
+            },
+            "rubroInsumo": {
+              "idRubroInsumo": 9,
+              "nombre": "Guarniciones",
+              "fechaBaja": null,
+              "listaInsumos": []
+            }
+          }
+        }
+      ],
+      "categoria": {
+        "idCategoria": 10,
+        "nombre": "Pollo",
+        "margenGanancia": 23,
+        "fechaBaja": null,
+        "listaManufacturados": [],
+        "categoriaPadre": {
+          "idCategoria": 9,
+          "nombre": "Plato",
+          "imagen": "/icons/cubiertos.svg",
+          "margenGanancia": 25,
+          "fechaBaja": null,
+          "listaManufacturados": [],
+          "categoriaPadre": null
+        },
+        "imagen": "https://olo-images-live.imgix.net/30/30e2eb860ce741c29002f4b89e05610b.jpeg?auto=format%2Ccompress&q=60&cs=tinysrgb&w=1200&h=800&fit=fill&fm=png32&bg=transparent&s=76425ac34784de027f1be273dd42fef4"
+      },
+      "urlImagen": "https://olo-images-live.imgix.net/30/30e2eb860ce741c29002f4b89e05610b.jpeg?auto=format%2Ccompress&q=60&cs=tinysrgb&w=1200&h=800&fit=fill&fm=png32&bg=transparent&s=76425ac34784de027f1be273dd42fef4"
+    },
+    {
+      "idArticulo": 5,
+      "nombre": "Bife BBQ",
+      "descripcion": "Bife con salsa barbacoa",
+      "precioVenta": 44900.8,
+      "receta": "Bife, salsa barbacoa, guarnición",
+      "tiempoDeCocina": 30,
+      "detalles": [
+        {
+          "idArticuloManufacturadoDetalle": 19,
+          "cantidad": 300,
+          "articuloInsumo": {
+            "idInsumo": 17,
+            "nombre": "Bife de Chorizo",
+            "stockActual": 1000,
+            "stockMinimo": 200,
+            "stockMaximo": 1500,
+            "fechaBaja": null,
+            "unidadMedida": {
+              "idUnidadMedida": 1,
+              "nombre": "gramos"
+            },
+            "rubroInsumo": {
+              "idRubroInsumo": 1,
+              "nombre": "Carnes",
+              "fechaBaja": null,
+              "listaInsumos": []
+            }
+          }
+        },
+        {
+          "idArticuloManufacturadoDetalle": 20,
+          "cantidad": 50,
+          "articuloInsumo": {
+            "idInsumo": 18,
+            "nombre": "Salsa Barbacoa",
+            "stockActual": 500,
+            "stockMinimo": 100,
+            "stockMaximo": 600,
+            "fechaBaja": null,
+            "unidadMedida": {
+              "idUnidadMedida": 1,
+              "nombre": "gramos"
+            },
+            "rubroInsumo": {
+              "idRubroInsumo": 7,
+              "nombre": "Salsas",
+              "fechaBaja": null,
+              "listaInsumos": []
+            }
+          }
+        },
+        {
+          "idArticuloManufacturadoDetalle": 21,
+          "cantidad": 200,
+          "articuloInsumo": {
+            "idInsumo": 16,
+            "nombre": "Guarnicion",
+            "stockActual": 1000,
+            "stockMinimo": 200,
+            "stockMaximo": 1500,
+            "fechaBaja": null,
+            "unidadMedida": {
+              "idUnidadMedida": 1,
+              "nombre": "gramos"
+            },
+            "rubroInsumo": {
+              "idRubroInsumo": 9,
+              "nombre": "Guarniciones",
+              "fechaBaja": null,
+              "listaInsumos": []
+            }
+          }
+        }
+      ],
+      "categoria": {
+        "idCategoria": 11,
+        "nombre": "Carne",
+        "margenGanancia": 23,
+        "fechaBaja": null,
+        "listaManufacturados": [],
+        "categoriaPadre": {
+          "idCategoria": 9,
+          "nombre": "Plato",
+          "imagen": "/icons/cubiertos.svg",
+          "margenGanancia": 25,
+          "fechaBaja": null,
+          "listaManufacturados": [],
+          "categoriaPadre": null
+        },
+        "imagen": "https://static.spotapps.co/website_images/ab_websites/125921_website_v1/about_s2.jpg"
+      },
+      "urlImagen": "https://static.spotapps.co/website_images/ab_websites/125921_website_v1/about_s2.jpg"
+    },
+    {
+      "idArticulo": 6,
+      "nombre": "Salteado de Tofu",
+      "descripcion": "Salteado de tofu y vegetales",
+      "precioVenta": 27956.75,
+      "receta": "Tofu, vegetales, salsa de soja",
+      "tiempoDeCocina": 15,
+      "detalles": [
+        {
+          "idArticuloManufacturadoDetalle": 1,
+          "cantidad": 200,
+          "articuloInsumo": {
+            "idInsumo": 101,
+            "nombre": "Tofu Firme",
+            "stockActual": 1000,
+            "stockMinimo": 100,
+            "stockMaximo": 2000,
+            "fechaBaja": null,
+            "unidadMedida": {
+              "idUnidadMedida": 1,
+              "nombre": "gramos"
+            },
+            "rubroInsumo": {
+              "idRubroInsumo": 1,
+              "nombre": "Proteínas Veganas",
+              "fechaBaja": null,
+              "listaInsumos": []
+            }
+          }
+        },
+        {
+          "idArticuloManufacturadoDetalle": 2,
+          "cantidad": 150,
+          "articuloInsumo": {
+            "idInsumo": 102,
+            "nombre": "Pimiento Rojo",
+            "stockActual": 500,
+            "stockMinimo": 50,
+            "stockMaximo": 800,
+            "fechaBaja": null,
+            "unidadMedida": {
+              "idUnidadMedida": 1,
+              "nombre": "gramos"
+            },
+            "rubroInsumo": {
+              "idRubroInsumo": 2,
+              "nombre": "Vegetales",
+              "fechaBaja": null,
+              "listaInsumos": []
+            }
+          }
+        }
+      ],
+      "categoria": {
+        "idCategoria": 12,
+        "nombre": "Vegetariana",
+        "imagen": "/icons/vegetariano.svg",
+        "margenGanancia": 25,
+        "fechaBaja": null,
+        "listaManufacturados": [],
+        "categoriaPadre": null
+      },
+      "urlImagen": "https://pinchofyum.com/wp-content/uploads/Honey-Ginger-Tofu-Veggie-Stir-Fry-Square.jpg"
+    },
+    {
+      "idArticulo": 7,
+      "nombre": "Nuggets de Pollo",
+      "descripcion": "Nuggets de pollo crocantes",
+      "precioVenta": 25541.6,
+      "receta": "Pollo, empanizado, aceite",
+      "tiempoDeCocina": 10,
+      "detalles": [
+        {
+          "idArticuloManufacturadoDetalle": 3,
+          "cantidad": 300,
+          "articuloInsumo": {
+            "idInsumo": 103,
+            "nombre": "Pechuga de Pollo",
+            "stockActual": 2000,
+            "stockMinimo": 500,
+            "stockMaximo": 3000,
+            "fechaBaja": null,
+            "unidadMedida": {
+              "idUnidadMedida": 1,
+              "nombre": "gramos"
+            },
+            "rubroInsumo": {
+              "idRubroInsumo": 3,
+              "nombre": "Pollo",
+              "fechaBaja": null,
+              "listaInsumos": []
+            }
+          }
+        },
+        {
+          "idArticuloManufacturadoDetalle": 4,
+          "cantidad": 100,
+          "articuloInsumo": {
+            "idInsumo": 104,
+            "nombre": "Pan Rallado",
+            "stockActual": 1500,
+            "stockMinimo": 200,
+            "stockMaximo": 2000,
+            "fechaBaja": null,
+            "unidadMedida": {
+              "idUnidadMedida": 1,
+              "nombre": "gramos"
+            },
+            "rubroInsumo": {
+              "idRubroInsumo": 4,
+              "nombre": "Panadería",
+              "fechaBaja": null,
+              "listaInsumos": []
+            }
+          }
+        }
+      ],
+      "categoria": {
+        "idCategoria": 10,
+        "nombre": "Pollo",
+        "margenGanancia": 23,
+        "fechaBaja": null,
+        "listaManufacturados": [],
+        "categoriaPadre": {
+          "idCategoria": 9,
+          "nombre": "Plato",
+          "imagen": "/icons/cubiertos.svg",
+          "margenGanancia": 25,
+          "fechaBaja": null,
+          "listaManufacturados": [],
+          "categoriaPadre": null
+        },
+        "imagen": "https://i.ytimg.com/vi/BMiFPfHmGg4/maxresdefault.jpg"
+      },
+      "urlImagen": "https://i.ytimg.com/vi/BMiFPfHmGg4/maxresdefault.jpg"
+    },
+    {
+      "idArticulo": 8,
+      "nombre": "Tacos de Carne",
+      "descripcion": "Tacos de carne con guacamole",
+      "precioVenta": 31953.47,
+      "receta": "Tortillas, carne, guacamole, salsa",
+      "tiempoDeCocina": 20,
+      "detalles": [
+        {
+          "idArticuloManufacturadoDetalle": 5,
+          "cantidad": 250,
+          "articuloInsumo": {
+            "idInsumo": 105,
+            "nombre": "Carne de Res Molida",
+            "stockActual": 3000,
+            "stockMinimo": 500,
+            "stockMaximo": 4000,
+            "fechaBaja": null,
+            "unidadMedida": {
+              "idUnidadMedida": 1,
+              "nombre": "gramos"
+            },
+            "rubroInsumo": {
+              "idRubroInsumo": 1,
+              "nombre": "Carnes",
+              "fechaBaja": null,
+              "listaInsumos": []
+            }
+          }
+        },
+        {
+          "idArticuloManufacturadoDetalle": 6,
+          "cantidad": 100,
+          "articuloInsumo": {
+            "idInsumo": 106,
+            "nombre": "Tortillas de Maíz",
+            "stockActual": 100,
+            "stockMinimo": 20,
+            "stockMaximo": 150,
+            "fechaBaja": null,
+            "unidadMedida": {
+              "idUnidadMedida": 2,
+              "nombre": "unidades"
+            },
+            "rubroInsumo": {
+              "idRubroInsumo": 5,
+              "nombre": "Tortillas",
+              "fechaBaja": null,
+              "listaInsumos": []
+            }
+          }
+        }
+      ],
+      "categoria": {
+        "idCategoria": 11,
+        "nombre": "Carne",
+        "margenGanancia": 23,
+        "fechaBaja": null,
+        "listaManufacturados": [],
+        "categoriaPadre": {
+          "idCategoria": 9,
+          "nombre": "Plato",
+          "imagen": "/icons/cubiertos.svg",
+          "margenGanancia": 25,
+          "fechaBaja": null,
+          "listaManufacturados": [],
+          "categoriaPadre": null
+        },
+        "imagen": "https://dinnerthendessert.com/wp-content/uploads/2020/07/Ground-Beef-Tacos-1x1-1.jpg"
+      },
+      "urlImagen": "https://dinnerthendessert.com/wp-content/uploads/2020/07/Ground-Beef-Tacos-1x1-1.jpg"
+    },
+    {
+      "idArticulo": 9,
+      "nombre": "Bowl de Quinoa",
+      "descripcion": "Bowl de quinoa con verduras",
+      "precioVenta": 33585.15,
+      "receta": "Quinoa, verduras, aderezo",
+      "tiempoDeCocina": 15,
+      "detalles": [
+        {
+          "idArticuloManufacturadoDetalle": 7,
+          "cantidad": 150,
+          "articuloInsumo": {
+            "idInsumo": 107,
+            "nombre": "Quinoa",
+            "stockActual": 800,
+            "stockMinimo": 100,
+            "stockMaximo": 1200,
+            "fechaBaja": null,
+            "unidadMedida": {
+              "idUnidadMedida": 1,
+              "nombre": "gramos"
+            },
+            "rubroInsumo": {
+              "idRubroInsumo": 6,
+              "nombre": "Granos",
+              "fechaBaja": null,
+              "listaInsumos": []
+            }
+          }
+        },
+        {
+          "idArticuloManufacturadoDetalle": 8,
+          "cantidad": 200,
+          "articuloInsumo": {
+            "idInsumo": 108,
+            "nombre": "Vegetales Mixtos",
+            "stockActual": 1200,
+            "stockMinimo": 200,
+            "stockMaximo": 1500,
+            "fechaBaja": null,
+            "unidadMedida": {
+              "idUnidadMedida": 1,
+              "nombre": "gramos"
+            },
+            "rubroInsumo": {
+              "idRubroInsumo": 2,
+              "nombre": "Vegetales",
+              "fechaBaja": null,
+              "listaInsumos": []
+            }
+          }
+        }
+      ],
+      "categoria": {
+        "idCategoria": 12,
+        "nombre": "Vegetariana",
+        "imagen": "/icons/vegetariano.svg",
+        "margenGanancia": 25,
+        "fechaBaja": null,
+        "listaManufacturados": [],
+        "categoriaPadre": null
+      },
+      "urlImagen": "https://marleysmenu.com/wp-content/uploads/2023/01/Sweet-Potato-Quinoa-Bowl-Featured-Image.jpg"
+    }
+  ],
+  "totalPages": 7
+}

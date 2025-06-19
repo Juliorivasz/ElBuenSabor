@@ -1,0 +1,47 @@
+{
+  "content": [
+    {
+      "idArticulo": 10,
+      "nombre": "Coca Cola",
+      "descripcion": "Coca-Cola 1L",
+      "precioVenta": 2500,
+      "receta": "Agua carbonatada, azúcar, extracto de cola",
+      "tiempoDeCocina": 5,
+      "detalles": [
+        {
+          "idArticuloManufacturadoDetalle": 9,
+          "cantidad": 10,
+          "articuloInsumo": {
+            "idInsumo": 109,
+            "nombre": "Bebida Coca Cola",
+            "stockActual": 10000,
+            "stockMinimo": 1000,
+            "stockMaximo": 15000,
+            "fechaBaja": null,
+            "unidadMedida": {
+              "idUnidadMedida": 3,
+              "nombre": "ml"
+            },
+            "rubroInsumo": {
+              "idRubroInsumo": 7,
+              "nombre": "Bebidas",
+              "fechaBaja": null,
+              "listaInsumos": []
+            }
+          }
+        }
+      ],
+      "categoria": {
+        "idCategoria": 5,
+        "nombre": "Bebidas",
+        "margenGanancia": 30,
+        "fechaBaja": null,
+        "listaManufacturados": [],
+        "categoriaPadre": null,
+        "imagen": null
+      },
+      "urlImagen": "https://covabra.vtexassets.com/arquivos/ids/158582-800-450?v=638095897869070000&width=800&height=450&aspect=true"
+    }
+  ],
+  "totalPages": 6
+}
