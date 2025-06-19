@@ -1,7 +1,8 @@
-import axios, { AxiosError, AxiosInstance, InternalAxiosRequestConfig } from "axios";
+import axios, { type AxiosError, type AxiosInstance, type InternalAxiosRequestConfig } from "axios";
 import Swal from "sweetalert2";
 import { API_URL } from "..";
 import { createHTTPError } from "../../utils/exceptions/httpError";
+import { useAuth0Store } from "../../store/auth/useAuth0Store";
 
 export const interceptorsApiClient: AxiosInstance = axios.create({
   baseURL: API_URL,
@@ -15,10 +16,18 @@ export const interceptorsApiClient: AxiosInstance = axios.create({
 // Interceptor antes de enviar la solicitud
 interceptorsApiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    const token = "";
-    if (token && config.headers) {
-      config.headers.Authorization = `Bearer ${token}`;
+    const { user, isTokenReady } = useAuth0Store.getState();
+
+    // Si el token no está listo, rechazar la request
+    if (!isTokenReady) {
+      return config;
     }
+
+    // Solo agregar el token si está disponible
+    if (user.token && config.headers) {
+      config.headers.Authorization = `Bearer ${user.token}`;
+    }
+
     return config;
   },
   (error) => Promise.reject(error),
@@ -28,6 +37,11 @@ interceptorsApiClient.interceptors.request.use(
 interceptorsApiClient.interceptors.response.use(
   (response) => response,
   (error: AxiosError) => {
+    // Si el error es porque el token no está listo, no mostrar error
+    if (error.message === "Token not ready") {
+      return Promise.reject(error);
+    }
+
     const status = error.response?.status;
     let message = error.message || error.response?.data;
 

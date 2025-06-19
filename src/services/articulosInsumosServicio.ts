@@ -5,14 +5,15 @@ type InsumoDtoApi = {
   idArticuloInsumo: number;
   unidadDeMedida: string;
   nombre: string;
+  costo: number;
 };
 
 const parseInsumoDTO = (data: InsumoDtoApi) => {
-  return new InsumoDTO(data.idArticuloInsumo, data.unidadDeMedida, data.nombre);
+  return new InsumoDTO(data.idArticuloInsumo, data.unidadDeMedida, data.nombre, data.costo);
 };
 
 export const fetchInsumoAbm = async (): Promise<InsumoDTO[]> => {
-  const response = interceptorsApiClient.get("http://localhost:8080/insumo/lista");
-  const data: InsumoDtoApi[] = (await response).data;
-  return data.map(parseInsumoDTO);
+  const response = await interceptorsApiClient.get("/insumo/lista");
+  const content: InsumoDtoApi[] = response.data.insumos;
+  return content.map(parseInsumoDTO);
 };

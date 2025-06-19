@@ -16,7 +16,7 @@ const parseDetallesDTO = (data: InformacionDetalleDTOApi) => {
 
 const parseInformacionArticuloManufacturadoDTO = (data: InformacionArticuloManufacturadoDtoApi) => {
   const detalles = data.detalles.map(parseDetallesDTO);
-  const imagenDto = new ImagenDTO(data.imagenDto.url);
+  const imagenDto = new ImagenDTO(data.imagenDto?.url);
 
   return new InformacionArticuloManufacturadoDto(
     data.idArticulo,
@@ -36,15 +36,11 @@ const parseInformacionArticuloManufacturadoDTO = (data: InformacionArticuloManuf
 
 export const fetchArticulosManufacturadosAbm = async (
   page: number,
-  itemsPerPage: number,
+  itemsPerPage: number = 12,
 ): Promise<PaginatedResponseAbm> => {
-  const response = await fetch(
-    `http://localhost:8080/articuloManufacturado/abm?page=${page}${itemsPerPage ? `&size=${itemsPerPage}` : ""}`,
-  );
-  if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`);
-  }
-  const data: PaginatedResponseAbmApi = await response.json();
+  const response = await interceptorsApiClient.get(`/articuloManufacturado/abm?page=${page}&size=${itemsPerPage}`);
+  const data: PaginatedResponseAbmApi = response.data;
+  console.log({ ...data, content: data.content });
   const content = data.content.map(parseInformacionArticuloManufacturadoDTO);
 
   return { ...data, content: content };

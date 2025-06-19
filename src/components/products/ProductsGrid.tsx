@@ -54,8 +54,9 @@ export const ProductsGrid: FC<ProductsGridProps> = ({ searchTerm = "", onProduct
       setIsLoading(true);
       try {
         const data = await getAllArticulos(currentPage - 1);
+
         setProductos(data.content);
-        setPagesTotal(data.totalPages);
+        setPagesTotal(data.page.totalPages);
 
         // Notificar al componente padre sobre los productos cargados
         if (onProductsLoad) {

@@ -1,11 +1,15 @@
 import { ArticuloDTO } from "../../../models/dto/ArticuloDTO";
 import { ArticuloDTOJson } from "../../../models/interface/ArticuloDTOJson";
 
-export type PaginatedApiArticulo = {
-  totalPages: number;
-  totalElements: number;
-  size: number;
+export type Page = {
   number: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+};
+
+export type PaginatedApiArticulo = {
+  page: Page;
   content: ArticuloDTOJson[];
   first: boolean;
   last: boolean;
@@ -13,10 +17,7 @@ export type PaginatedApiArticulo = {
 };
 
 export type PaginatedArticulo = {
-  totalPages: number;
-  totalElements: number;
-  size: number;
-  number: number;
+  page: Page;
   content: ArticuloDTO[];
   first: boolean;
   last: boolean;

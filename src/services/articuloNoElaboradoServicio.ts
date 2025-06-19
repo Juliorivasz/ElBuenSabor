@@ -29,9 +29,10 @@ export const fetchArticulosNoElaboradosAbm = async (
   page: number,
   itemsPerPage: number = 12,
 ): Promise<PaginatedResponseAbmNoElaborado> => {
-  const response = interceptorsApiClient.get(`/articuloNoElaborado/abm?page=${page}&size=${itemsPerPage}`);
+  const response = await interceptorsApiClient.get(`/articuloNoElaborado/abm?page=${page}&size=${itemsPerPage}`);
 
-  const data: PaginatedResponseAbmNoElaboradoApi = (await response).data;
+  const data: PaginatedResponseAbmNoElaboradoApi = response.data;
+  console.log(data);
   const content = data.content.map(parseInformacionArticuloNoElaboradoDto);
 
   return { ...data, content: content };

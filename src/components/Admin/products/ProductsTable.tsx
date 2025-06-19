@@ -56,6 +56,9 @@ export function ProductsTable<T extends BaseProduct>({
     return product.getIdArticulo?.() ?? product.getidArticulo?.() ?? 0;
   };
 
+  // Validar que products sea un array
+  const validProducts = Array.isArray(products) ? products : [];
+
   if (loading) {
     return (
       <div className="bg-white shadow rounded-lg p-6">
@@ -73,7 +76,7 @@ export function ProductsTable<T extends BaseProduct>({
     );
   }
 
-  if (products.length === 0) {
+  if (validProducts.length === 0) {
     return (
       <div className="bg-white shadow rounded-lg p-6">
         <div className="text-center py-8">
@@ -126,7 +129,7 @@ export function ProductsTable<T extends BaseProduct>({
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {products.map((product) => (
+            {validProducts.map((product) => (
               <tr
                 key={getProductId(product)}
                 className="hover:bg-gray-50">

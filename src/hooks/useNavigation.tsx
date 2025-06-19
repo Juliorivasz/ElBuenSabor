@@ -88,7 +88,7 @@ export const useNavigation = () => {
 
   const handleLogin = () => {
     loginWithRedirect({
-      appState: { returnTo: "/catalog" },
+      appState: { returnTo: "/redirectRol" },
     });
   };
 
@@ -97,7 +97,7 @@ export const useNavigation = () => {
       authorizationParams: {
         screen_hint: "signup",
       },
-      appState: { returnTo: "/catalog" },
+      appState: { returnTo: "/redirectRol" },
     });
   };
 

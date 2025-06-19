@@ -61,6 +61,8 @@ export const UniversalProductForm: React.FC<UniversalProductFormProps> = ({
   const [activeTab, setActiveTab] = useState<"general" | "detalles">("general");
   const [availableSubcategories, setAvailableSubcategories] = useState<CategoriaDTO[]>([]);
   const [suggestedPrice, setSuggestedPrice] = useState<number>(0);
+  const [costoTotal, setCostoTotal] = useState<number>(0);
+  const [margenGanancia, setMargenGanancia] = useState<number>(1);
 
   // Obtener categorías principales y subcategorías
   const mainCategories = categories.filter((cat) => cat.getIdCategoriaPadre() === 0 || !cat.getIdCategoriaPadre());
@@ -70,7 +72,9 @@ export const UniversalProductForm: React.FC<UniversalProductFormProps> = ({
     if (type === "manufacturado" && formData.detalles && formData.detalles.length > 0) {
       // Por ahora, usar un precio base fijo o lógica alternativa
       // ya que no tenemos acceso a precios de ingredientes
-      const basePrice = 100; // Precio base ejemplo
+
+      setMargenGanancia(2);
+      const basePrice = calcularPrecioSugerido();
       setSuggestedPrice(basePrice);
 
       // Si no es precio modificado (es sugerido), actualizar el precio automáticamente
@@ -269,6 +273,22 @@ export const UniversalProductForm: React.FC<UniversalProductFormProps> = ({
 
       onSubmit(productData);
     }
+  };
+
+  const calcularPrecioSugerido = (): number => {
+    if (!formData.detalles || !formData.idCategoria) return 0;
+
+    // const margen = formData.categoria.margenGanancia || 1;
+    const margen = margenGanancia;
+
+    const costoTotal = formData.detalles.reduce((acc, detalle) => {
+      const insumo = ingredients.find((i) => i.getIdArticuloInsumo() === detalle.idArticuloInsumo);
+      const precio = insumo?.getCosto() || 0;
+      return acc + detalle.cantidad * precio;
+    }, 0);
+    setCostoTotal(costoTotal);
+
+    return costoTotal * margen;
   };
 
   const handleInputChange = (field: keyof FormData, value: string | number | boolean) => {
@@ -483,8 +503,15 @@ export const UniversalProductForm: React.FC<UniversalProductFormProps> = ({
                     <div className="text-sm text-gray-600">
                       <p>
                         Precio sugerido: ${suggestedPrice.toFixed(2)}
-                        {isManufacturado && (
-                          <span className="block text-xs mt-1">Basado en costo de ingredientes + 50% de margen</span>
+                        {isManufacturado ? (
+                          <span className="block text-xs mt-1">
+                            Basado en costo de ingredientes + {(margenGanancia - 1) * 100}% de margen
+                          </span>
+                        ) : (
+                          <span className="block text-xs mt-1">
+                            Basado en la falta de ingredientes <br />({" "}
+                            <strong>se recomienda colocar un precio manual</strong> )
+                          </span>
                         )}
                       </p>
                       {errors.precioTipo && <p className="text-red-500 text-sm mt-1">{errors.precioTipo}</p>}
@@ -729,8 +756,11 @@ export const UniversalProductForm: React.FC<UniversalProductFormProps> = ({
                 <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
                   <h5 className="text-sm font-medium text-blue-900 mb-2">Cálculo de Precio Sugerido</h5>
                   <div className="text-sm text-blue-800">
-                    <p>Costo total de ingredientes: ${(suggestedPrice / 1.5).toFixed(2)}</p>
-                    <p>Margen de ganancia (50%): ${(suggestedPrice - suggestedPrice / 1.5).toFixed(2)}</p>
+                    <p>Costo total de ingredientes: ${costoTotal.toFixed(2)}</p>
+                    <p>
+                      Margen de ganancia ({`${(margenGanancia - 1) * 100}%`}): $
+                      {(suggestedPrice - suggestedPrice / margenGanancia).toFixed(2)}
+                    </p>
                     <p className="font-medium">Precio sugerido: ${suggestedPrice.toFixed(2)}</p>
                   </div>
                 </div>

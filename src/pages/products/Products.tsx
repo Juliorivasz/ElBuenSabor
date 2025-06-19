@@ -1,4 +1,4 @@
-import { FC, useEffect, useState, useCallback } from "react";
+import { type FC, useEffect, useState, useCallback } from "react";
 import { useProductsStore, type ProductType } from "../../store/admin/useProductsStore";
 import { ProductsTable } from "../../components/Admin/products/ProductsTable";
 import { UniversalProductForm } from "../../components/Admin/products/UniversalProductForm";
@@ -52,15 +52,21 @@ export const Products: FC = () => {
   // Estado para forzar re-render
   const [refreshKey, setRefreshKey] = useState(0);
 
-  // Cargar datos iniciales
+  // Validar que los datos sean arrays válidos
+  const validManufacturados = Array.isArray(manufacturados) ? manufacturados : [];
+  const validNoElaborados = Array.isArray(noElaborados) ? noElaborados : [];
+  const validCategories = Array.isArray(categories) ? categories : [];
+  const validIngredients = Array.isArray(ingredients) ? ingredients : [];
+
+  // // Cargar datos iniciales
   useEffect(() => {
-    if (categories.length === 0) {
+    if (validCategories.length === 0) {
       fetchCategories();
     }
-    if (ingredients.length === 0) {
+    if (validIngredients.length === 0) {
       fetchIngredients();
     }
-  }, [categories.length, ingredients.length, fetchCategories, fetchIngredients]);
+  }, [validCategories.length, validIngredients.length, fetchCategories, fetchIngredients]);
 
   // Cargar productos según la pestaña activa
   useEffect(() => {
@@ -295,9 +301,9 @@ export const Products: FC = () => {
                   : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
               }`}>
               Productos Manufacturados
-              {manufacturados.length > 0 && (
+              {validManufacturados.length > 0 && (
                 <span className="ml-2 bg-gray-100 text-gray-900 py-0.5 px-2.5 rounded-full text-xs">
-                  {manufacturados.length}
+                  {validManufacturados.length}
                 </span>
               )}
             </button>
@@ -309,9 +315,9 @@ export const Products: FC = () => {
                   : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
               }`}>
               Productos No Elaborados
-              {noElaborados.length > 0 && (
+              {validNoElaborados.length > 0 && (
                 <span className="ml-2 bg-gray-100 text-gray-900 py-0.5 px-2.5 rounded-full text-xs">
-                  {noElaborados.length}
+                  {validNoElaborados.length}
                 </span>
               )}
             </button>
@@ -349,7 +355,7 @@ export const Products: FC = () => {
         {activeTab === "manufacturados" ? (
           <ProductsTable
             key={`manufacturados-${refreshKey}`} // Key para forzar re-render
-            products={manufacturados}
+            products={validManufacturados}
             loading={currentLoading}
             pagination={currentPagination}
             onPageChange={handlePageChange}
@@ -364,7 +370,7 @@ export const Products: FC = () => {
         ) : (
           <ProductsTable
             key={`noElaborados-${refreshKey}`} // Key para forzar re-render
-            products={noElaborados}
+            products={validNoElaborados}
             loading={currentLoading}
             pagination={currentPagination}
             onPageChange={handlePageChange}
@@ -382,8 +388,8 @@ export const Products: FC = () => {
         {showForm && (
           <UniversalProductForm
             product={currentEditingProduct}
-            categories={categories}
-            ingredients={ingredients}
+            categories={validCategories}
+            ingredients={validIngredients}
             onSubmit={handleUniversalFormSubmit}
             onCancel={handleFormCancel}
             loading={currentLoading}
