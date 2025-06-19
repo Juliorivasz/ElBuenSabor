@@ -102,7 +102,7 @@ Luego, crea un Pull Request (PR) hacia develop desde el github (recomendado).
 
 ---
 
-👨‍🏫 Integrantes del grupo:
+## 👨‍🏫 Integrantes del grupo:
 
 👤 Rivas, Julio
 
