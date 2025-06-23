@@ -34,4 +34,9 @@ export const adminRoutes = [
     path: "/abm",
     element: lazy(() => import("../pages/admin/abm/AbmGeneric").then((module) => ({ default: module.AbmGeneric }))),
   },
+  {
+    path: "/admin/pedidos",
+    element: lazy(() => import("../pages/admin/pedidos/Pedidos").then((module) => ({ default: module.Pedidos }))),
+    allowedRoles: ["admin"],
+  }
 ]
