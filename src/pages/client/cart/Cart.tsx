@@ -17,7 +17,7 @@ export const Cart = () => {
   const totalItems = getTotalItems();
 
   const handleConfirmOrder = () => {
-    alert("¡Pedido confirmado! Redirigiendo al proceso de pago...");
+    alert("¡Pedido confirmado! Gracias por tu compra! ");
   };
 
   const handleChangeAddress = () => {

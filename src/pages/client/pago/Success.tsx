@@ -47,7 +47,7 @@ export const Success = () => {
         <p className="text-sm text-gray-500 mb-8">Serás redirigido automáticamente al catálogo en 5 segundos...</p>
 
         <Link
-          to="/client/catalog"
+          to="/catalog"
           className="inline-block bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-3 px-6 rounded-lg transition-colors shadow-sm"
         >
           Volver al Catálogo
