@@ -35,8 +35,14 @@ export const adminRoutes = [
     element: lazy(() => import("../pages/admin/abm/AbmGeneric").then((module) => ({ default: module.AbmGeneric }))),
   },
   {
+    path: "/admin/categorias",
+    element: lazy(() => import("../pages/admin/categorias/Categorias").then((m) => ({ default: m.Categorias }))),
+    title: "Gestión de Categorías",
+  },
+  {
     path: "/admin/pedidos",
     element: lazy(() => import("../pages/admin/pedidos/Pedidos").then((module) => ({ default: module.Pedidos }))),
     allowedRoles: ["admin"],
   }
+
 ]
