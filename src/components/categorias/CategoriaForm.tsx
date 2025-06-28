@@ -282,8 +282,8 @@ export const CategoriaForm = ({ categoria, categorias, onSubmit, onCancel, loadi
                           message: "El margen debe ser mayor o igual a 0",
                         },
                         max: {
-                          value: 100,
-                          message: "El margen no puede exceder 100%",
+                          value: 200,
+                          message: "El margen no puede exceder 200%",
                         },
                         valueAsNumber: true,
                       })}
@@ -327,11 +327,11 @@ export const CategoriaForm = ({ categoria, categorias, onSubmit, onCancel, loadi
                     disabled={loading}
                   >
                     <option value="" className="text-gray-900">
-                      Sin categoría padre (Categoría principal)
+                      (Categoría principal)
                     </option>
                     {categoriasDisponibles.map((cat) => (
                       <option key={cat.getIdCategoria()} value={cat.getIdCategoria()} className="text-gray-900">
-                        {cat.getNombre()} - Categoría Principal
+                        {cat.getNombre()}
                       </option>
                     ))}
                   </select>

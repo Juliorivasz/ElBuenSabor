@@ -47,7 +47,7 @@ export class CategoriaGestionServicio {
   }
 
   // POST /categoria/nueva
-  static async crearCategoria(nuevaCategoria: NuevaCategoriaDto, archivo: File | undefined): Promise<CategoriaExtendidaDto> {
+  static async crearCategoria(nuevaCategoria: NuevaCategoriaDto): Promise<CategoriaExtendidaDto> {
     try {
       const response = await fetch(`${BASE_URL}/categoria/nueva`, {
         method: "POST",
@@ -80,7 +80,7 @@ export class CategoriaGestionServicio {
   }
 
   // PUT /categoria/actualizar (asumiendo que existe este endpoint para edición)
-  static async actualizarCategoria(idCategoria: number, categoria: NuevaCategoriaDto, archivo: File | undefined): Promise<CategoriaExtendidaDto> {
+  static async actualizarCategoria(idCategoria: number, categoria: NuevaCategoriaDto): Promise<CategoriaExtendidaDto> {
     try {
       console.log("Actualizando categoría:", idCategoria, categoria.toJSON())
 
