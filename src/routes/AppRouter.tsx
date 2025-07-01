@@ -7,13 +7,10 @@ import { publicRoutes } from "./publicRoutes";
 import { clientPrivateRoutes } from "./clientRoutes";
 import { adminRoutes } from "./adminRoutes";
 import { NotFound } from "../pages";
-import { useAuth0Store } from "../store/auth/useAuth0Store";
 import { RedirectByRole } from "./RedirectByRole";
+import { ProfileCompletionForm } from "../pages/client/profile/ProfileCompletionForm";
 
 export const AppRouter = () => {
-  const { user } = useAuth0Store();
-
-  console.log(user);
   return (
     <Suspense
       fallback={<div className="text-4xl flex items-center justify-center min-h-screen text-black">Cargando...</div>}>
@@ -23,6 +20,19 @@ export const AppRouter = () => {
           path="/redirectRol"
           element={<RedirectByRole />}
         />
+
+        {/* registro cliente */}
+        <Route element={<LayoutClient />}>
+          <Route
+            path={"/complete-profile"}
+            element={
+              <PrivateRoute>
+                <ProfileCompletionForm />
+              </PrivateRoute>
+            }
+          />
+        </Route>
+
         {/* Rutas Públicas */}
         <Route element={<LayoutClient />}>
           {publicRoutes.map((route) => (

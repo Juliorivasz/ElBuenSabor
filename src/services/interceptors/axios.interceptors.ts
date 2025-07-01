@@ -2,7 +2,22 @@ import axios, { type AxiosError, type AxiosInstance, type InternalAxiosRequestCo
 import Swal from "sweetalert2";
 import { API_URL } from "..";
 import { createHTTPError } from "../../utils/exceptions/httpError";
-import { useAuth0Store } from "../../store/auth/useAuth0Store";
+let _getAccessTokenSilently:
+  | (typeof import("@auth0/auth0-react").useAuth0 extends () => infer R
+      ? R extends { getAccessTokenSilently: infer F }
+        ? F
+        : never
+      : never)
+  | null = null;
+
+/**
+ * Función para setear la función getAccessTokenSilently de Auth0.
+ * Se debe llamar una vez que Auth0 esté inicializado en tu aplicación.
+ * @param fn La función getAccessTokenSilently de useAuth0().
+ */
+export const setAccessTokenSilently = (fn: typeof _getAccessTokenSilently): void => {
+  _getAccessTokenSilently = fn;
+};
 
 export const interceptorsApiClient: AxiosInstance = axios.create({
   baseURL: API_URL,
@@ -13,24 +28,27 @@ export const interceptorsApiClient: AxiosInstance = axios.create({
   timeout: 15000,
 });
 
-// Interceptor antes de enviar la solicitud
 interceptorsApiClient.interceptors.request.use(
-  (config: InternalAxiosRequestConfig) => {
-    const { user, isTokenReady } = useAuth0Store.getState();
-
-    // Si el token no está listo, rechazar la request
-    if (!isTokenReady) {
-      return config;
+  async (config: InternalAxiosRequestConfig) => {
+    // Si la función _getAccessTokenSilently ha sido inyectada (lo que sucede después de que Auth0 carga)
+    if (_getAccessTokenSilently) {
+      try {
+        // Obtenemos el token de forma asíncrona. Esto esperará hasta que el token esté listo.
+        const token: string = await _getAccessTokenSilently();
+        if (token) {
+          // Si el token se obtuvo con éxito, lo adjuntamos al encabezado de autorización.
+          config.headers.Authorization = `Bearer ${token}`;
+        }
+      } catch (error: unknown) {
+        console.error("Error al obtener el token de Auth0 en el interceptor:", error);
+        // Si hay un error al obtener el token, la solicitud se enviará sin él.
+        // Tu backend debería manejar la ausencia de token con un 401 Unauthorized.
+      }
     }
-
-    // Solo agregar el token si está disponible
-    if (user.token && config.headers) {
-      config.headers.Authorization = `Bearer ${user.token}`;
-    }
-
+    // La configuración de la solicitud se devuelve, ya sea con o sin el token.
     return config;
   },
-  (error) => Promise.reject(error),
+  (error: AxiosError) => Promise.reject(error),
 );
 
 // interceptor al recibir la respuesta
@@ -45,6 +63,10 @@ interceptorsApiClient.interceptors.response.use(
     const status = error.response?.status;
     let message = error.message || error.response?.data;
 
+    if (status === 404 || status === 400) {
+      return Promise.reject(error);
+    }
+
     // Si es un error 500 sin mensaje, damos un mensaje genérico al usuario.
     if (status === 500 && (!message || message === "")) {
       message =
@@ -54,13 +76,13 @@ interceptorsApiClient.interceptors.response.use(
     if (status) {
       const httpError = createHTTPError(status, message as string);
       Swal.fire({
-        icon: "error", // Icono de error.
-        title: "Oops...", // Título de la alerta.
-        text: httpError.message, // Mostramos el mensaje del error.
-        confirmButtonColor: "#d33", // Color del botón de confirmación.
+        icon: "error",
+        title: "Oops...",
+        text: httpError.message,
+        confirmButtonColor: "#d33",
       });
 
-      return Promise.reject(message); // Rechazamos el error para que lo capture quien hizo el request.
+      return Promise.reject(message);
     }
 
     // Si no hay status, probablemente hay un error de red.
@@ -71,6 +93,6 @@ interceptorsApiClient.interceptors.response.use(
       confirmButtonColor: "#d33",
     });
 
-    return Promise.reject(error); // Rechazamos el error sin transformar porque no hay status.
+    return Promise.reject(error);
   },
 );

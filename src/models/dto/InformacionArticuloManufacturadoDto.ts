@@ -2,7 +2,6 @@ import {
   InformacionArticuloManufacturadoDtoJson,
   InformacionDetalleDtoJson,
 } from "../interface/InformacionManufacturadoDtoJson";
-import { ImagenDTO } from "./ImagenDTO";
 import { InformacionDetalleDto } from "./InformacionDetalleDto";
 
 export class InformacionArticuloManufacturadoDto {
@@ -16,7 +15,7 @@ export class InformacionArticuloManufacturadoDto {
   private dadoDeAlta: boolean;
   private idCategoria: number;
   private nombreCategoria: string;
-  private imagenDto: ImagenDTO | null;
+  private imagenUrl: string | null;
   private detalles: InformacionDetalleDto[];
 
   constructor(
@@ -30,7 +29,7 @@ export class InformacionArticuloManufacturadoDto {
     dadoDeAlta: boolean,
     idCategoria: number,
     nombreCategoria: string,
-    imagenDto: ImagenDTO | null,
+    imagenUrl: string | null,
     detalles: InformacionDetalleDto[],
   ) {
     this.idArticulo = idArticulo;
@@ -43,7 +42,7 @@ export class InformacionArticuloManufacturadoDto {
     this.dadoDeAlta = dadoDeAlta;
     this.idCategoria = idCategoria;
     this.nombreCategoria = nombreCategoria;
-    this.imagenDto = imagenDto;
+    this.imagenUrl = imagenUrl;
     this.detalles = detalles;
   }
 
@@ -127,12 +126,12 @@ export class InformacionArticuloManufacturadoDto {
     this.nombreCategoria = value;
   }
 
-  public getImagenDto(): ImagenDTO | null {
-    return this.imagenDto;
+  public getImagenUrl(): string | null {
+    return this.imagenUrl;
   }
 
-  public setImagenDto(value: ImagenDTO): void {
-    this.imagenDto = value;
+  public setImagenUrl(value: string): void {
+    this.imagenUrl = value;
   }
 
   public getDetalles(): InformacionDetalleDto[] {
@@ -154,7 +153,7 @@ export class InformacionArticuloManufacturadoDto {
       dadoDeAlta: this.isDadoDeAlta(),
       idCategoria: this.getIdCategoria(),
       nombreCategoria: this.getNombreCategoria(),
-      imagenDto: this.getImagenDto() ? this.getImagenDto()!.toJSON() : null,
+      imagenUrl: this.imagenUrl || null,
       detalles: this.getDetalles().map((detalle) => detalle.toJSON()),
     };
   }
@@ -171,7 +170,7 @@ export class InformacionArticuloManufacturadoDto {
       json.dadoDeAlta,
       json.idCategoria,
       json.nombreCategoria,
-      ImagenDTO.fromJSON(json.imagenDto),
+      json.imagenUrl,
       json.detalles.map((detalleJson: InformacionDetalleDtoJson) => InformacionDetalleDto.fromJson(detalleJson)),
     );
   }

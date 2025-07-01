@@ -23,7 +23,7 @@ export type InformacionArticuloManufacturadoDtoApi = {
   dadoDeAlta: boolean;
   idCategoria: number;
   nombreCategoria: string;
-  imagenDto: ImagenApi;
+  imagenUrl: string;
   detalles: InformacionDetalleDTOApi[];
 };
 

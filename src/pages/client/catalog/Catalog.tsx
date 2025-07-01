@@ -19,7 +19,7 @@ export const Catalog = () => {
       loginWithRedirect({ appState: { returnTo: window.location.pathname } });
       return;
     }
-    addItem(product, product.getImagenDto()?.getUrl());
+    addItem(product, product.getImagenModel() ?? undefined);
     // Aquí puedes implementar la lógica para agregar al carrito
   };
 

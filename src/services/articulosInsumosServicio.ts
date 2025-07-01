@@ -15,5 +15,6 @@ const parseInsumoDTO = (data: InsumoDtoApi) => {
 export const fetchInsumoAbm = async (): Promise<InsumoDTO[]> => {
   const response = await interceptorsApiClient.get("/insumo/lista");
   const content: InsumoDtoApi[] = response.data.insumos;
+  console.log(content);
   return content.map(parseInsumoDTO);
 };

@@ -1,24 +1,21 @@
-//
+// src/components/header/UserProfileMenu.tsx
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { PersonOutlined, KeyboardArrowDownOutlined, LogoutOutlined } from "@mui/icons-material";
 import { useNavigation } from "../../hooks/useNavigation";
+import { IUser } from "../../store/auth/types/user"; // Importa la interfaz de tu store
 
-interface UserProfileMenuProps {
-  user: Auth0User | undefined;
-  userMenuItems: Array<{
-    name: string;
-    path: string;
-    icon: React.ComponentType<{ className?: string }>;
-  }>;
-  onLogout: () => void;
+// Define una interfaz para los ítems de menú con el tipo de icono correcto
+interface MenuItem {
+  name: string;
+  path: string;
+  icon: React.ComponentType<{ className?: string; sx?: object }>;
 }
 
-interface Auth0User {
-  name?: string;
-  email?: string;
-  picture?: string;
-  [key: string]: unknown;
+interface UserProfileMenuProps {
+  user: IUser | undefined; // Ahora el prop 'user' es de tipo IUser o undefined
+  userMenuItems: MenuItem[]; // Usa la nueva interfaz MenuItem
+  onLogout: () => void;
 }
 
 export const UserProfileMenu: React.FC<UserProfileMenuProps> = ({ user, userMenuItems, onLogout }) => {
@@ -34,9 +31,9 @@ export const UserProfileMenu: React.FC<UserProfileMenuProps> = ({ user, userMenu
         onClick={toggleUserMenu}
         className="hidden sm:flex items-center space-x-2 px-3 py-2 bg-white border border-orange-200 rounded-xl shadow-lg hover:shadow-xl hover:bg-orange-50 transition-all duration-300 group">
         <div className="w-8 h-8 bg-gradient-to-br from-orange-400 to-red-500 rounded-full flex items-center justify-center">
-          {user?.picture ? (
+          {user?.imagen || user?.picture ? (
             <img
-              src={user.picture || "/placeholder.svg"}
+              src={user.imagen || user.picture || "/placeholder.svg"}
               alt={user.name || "Usuario"}
               className="w-full h-full rounded-full object-cover"
             />
@@ -48,7 +45,7 @@ export const UserProfileMenu: React.FC<UserProfileMenuProps> = ({ user, userMenu
           )}
         </div>
         <span className="text-sm font-medium text-gray-700 group-hover:text-orange-600 max-w-20 truncate">
-          {user?.name || "Usuario"}
+          {user?.name || user?.apellido ? `${user?.name ?? ""} ${user?.apellido ?? ""}`.trim() : "Usuario"}
         </span>
         <KeyboardArrowDownOutlined
           className={`text-gray-500 transition-transform duration-200 ${isUserMenuOpen ? "rotate-180" : ""}`}
@@ -69,10 +66,12 @@ export const UserProfileMenu: React.FC<UserProfileMenuProps> = ({ user, userMenu
             <div className="px-4 py-3 border-b border-orange-100">
               <div className="flex items-center space-x-3">
                 <div className="w-10 h-10 bg-gradient-to-br from-orange-400 to-red-500 rounded-full flex items-center justify-center">
-                  {user?.picture ? (
+                  {user?.imagen || user?.picture ? (
                     <img
-                      src={user.picture || "/placeholder.svg"}
-                      alt={user.name || "Usuario"}
+                      src={user.imagen || user.picture || "/placeholder.svg"}
+                      alt={
+                        user?.name || user?.apellido ? `${user?.name ?? ""} ${user?.apellido ?? ""}`.trim() : "Usuario"
+                      }
                       className="w-full h-full rounded-full object-cover"
                     />
                   ) : (
@@ -83,7 +82,9 @@ export const UserProfileMenu: React.FC<UserProfileMenuProps> = ({ user, userMenu
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 truncate">{user?.name || "Usuario"}</p>
+                  <p className="text-sm font-medium text-gray-900 truncate">
+                    {user?.name || user?.apellido ? `${user?.name ?? ""} ${user?.apellido ?? ""}`.trim() : "Usuario"}
+                  </p>
                   <p className="text-xs text-gray-500 truncate">{user?.email}</p>
                 </div>
               </div>

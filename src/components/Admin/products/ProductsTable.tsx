@@ -12,7 +12,7 @@ interface BaseProduct {
   getDescripcion?: () => string;
   getPrecioVenta: () => number;
   isDadoDeAlta: () => boolean;
-  getImagenDto?: () => { getUrl: () => string } | null;
+  getImagenUrl?: () => string | null;
   getNombreCategoria?: () => string;
   getPrecioModificado?: () => boolean;
 }
@@ -138,7 +138,10 @@ export function ProductsTable<T extends BaseProduct>({
                     <div className="flex-shrink-0 h-10 w-10">
                       <img
                         className="h-10 w-10 rounded-full object-cover"
-                        src={product.getImagenDto?.()?.getUrl() || "/placeholder.svg?height=40&width=40"}
+                        src={
+                          (product.getImagenUrl ? product.getImagenUrl() : null) ||
+                          "/placeholder.svg?height=40&width=40"
+                        }
                         alt={product.getNombre()}
                       />
                     </div>

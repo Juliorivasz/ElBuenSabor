@@ -3,7 +3,6 @@ import { InformacionArticuloManufacturadoDto } from "../../../models/dto/Informa
 import { InformacionArticuloNoElaboradoDto } from "../../../models/dto/InformacionArticuloNoElaboradoDto";
 import type { CategoriaDTO } from "../../../models/dto/CategoriaDTO";
 import type { InsumoDTO } from "../../../models/dto/InsumoDTO";
-import { ImagenDTO } from "../../../models/dto/ImagenDTO";
 import { InformacionDetalleDto } from "../../../models/dto/InformacionDetalleDto";
 
 type ProductUnion = InformacionArticuloManufacturadoDto | InformacionArticuloNoElaboradoDto;
@@ -132,7 +131,7 @@ export const UniversalProductForm: React.FC<UniversalProductFormProps> = ({
           precioModificado: manufacturado.getPrecioModificado(),
           idCategoria: productCategoryId,
           idSubcategoria: productSubcategoryId,
-          imagenUrl: manufacturado.getImagenDto()?.getUrl() || "",
+          imagenUrl: manufacturado.getImagenUrl() || "",
           receta: manufacturado.getReceta(),
           tiempoDeCocina: manufacturado.getTiempoDeCocina(),
           detalles: manufacturado.getDetalles().map((detalle) => ({
@@ -225,7 +224,7 @@ export const UniversalProductForm: React.FC<UniversalProductFormProps> = ({
     // Determinar la categoría final (categoría principal o subcategoría)
     const finalCategoryId = formData.idSubcategoria > 0 ? formData.idSubcategoria : formData.idCategoria;
     const selectedCategory = categories.find((cat) => cat.getIdCategoria() === finalCategoryId);
-    const imagenDto = new ImagenDTO(formData.imagenUrl);
+    const imagenUrl = formData.imagenUrl;
 
     // Determinar el precio final según si es manual o sugerido
     const finalPrice = formData.precioModificado ? formData.precioVenta : suggestedPrice;
@@ -253,7 +252,7 @@ export const UniversalProductForm: React.FC<UniversalProductFormProps> = ({
         true, // dadoDeAlta
         finalCategoryId,
         selectedCategory?.getNombre() || "",
-        imagenDto,
+        imagenUrl,
         detalles,
       );
 
@@ -268,7 +267,7 @@ export const UniversalProductForm: React.FC<UniversalProductFormProps> = ({
         true, // dadoDeAlta
         finalCategoryId,
         selectedCategory?.getNombre() || "",
-        imagenDto,
+        null, //arreglar esto
       );
 
       onSubmit(productData);

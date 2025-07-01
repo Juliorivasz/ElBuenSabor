@@ -1,4 +1,3 @@
-import { ImagenDTO } from "../models/dto/ImagenDTO";
 import { InformacionArticuloManufacturadoDto } from "../models/dto/InformacionArticuloManufacturadoDto";
 import { InformacionDetalleDto } from "../models/dto/InformacionDetalleDto";
 import { NuevoArticuloManufacturadoDto } from "../models/dto/NuevoArticuloManufacturadoDto";
@@ -16,7 +15,6 @@ const parseDetallesDTO = (data: InformacionDetalleDTOApi) => {
 
 const parseInformacionArticuloManufacturadoDTO = (data: InformacionArticuloManufacturadoDtoApi) => {
   const detalles = data.detalles.map(parseDetallesDTO);
-  const imagenDto = new ImagenDTO(data.imagenDto?.url);
 
   return new InformacionArticuloManufacturadoDto(
     data.idArticulo,
@@ -29,7 +27,7 @@ const parseInformacionArticuloManufacturadoDTO = (data: InformacionArticuloManuf
     data.dadoDeAlta,
     data.idCategoria,
     data.nombreCategoria,
-    imagenDto,
+    data.imagenUrl,
     detalles,
   );
 };
@@ -58,17 +56,7 @@ export const altaBajaArticuloManufacturado = async (id: number, dadoDeAlta: bool
 export const crearArticuloManufacturado = async (producto: NuevoArticuloManufacturadoDto) => {
   // Convertir el DTO a la estructura requerida por la API
 
-  const response = await fetch("http://localhost:8080/articuloManufacturado/nuevo", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(producto.toJSON()),
-  });
-
-  if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`);
-  }
+  await interceptorsApiClient.post("/articuloManufacturado/nuevo", producto.toJSON());
 };
 
 // Función para actualizar un artículo manufacturado
@@ -88,11 +76,7 @@ export const actualizarArticuloManufacturado = async (
     dadoDeAlta: producto.isDadoDeAlta(),
     idCategoria: producto.getIdCategoria(),
     nombreCategoria: producto.getNombreCategoria(),
-    imagenDto: producto.getImagenDto()
-      ? {
-          url: producto.getImagenDto()!.getUrl(),
-        }
-      : null,
+    imagenUrl: producto.getImagenUrl() || null,
     detalles: producto.getDetalles().map((detalle) => ({
       idArticuloInsumo: detalle.getIdArticuloInsumo(),
       nombreInsumo: detalle.getNombreInsumo(),
