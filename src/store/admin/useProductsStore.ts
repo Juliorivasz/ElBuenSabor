@@ -1,13 +1,11 @@
 import { create } from "zustand";
 import {
   actualizarArticuloManufacturado,
-  altaBajaArticuloManufacturado,
   crearArticuloManufacturado,
   fetchArticulosManufacturadosAbm,
 } from "../../services/articuloManufacturadoServicio";
 import {
   actualizarArticuloNoElaborado,
-  altaBajaArticuloNoElaborado,
   crearArticuloNoElaborado,
   fetchArticulosNoElaboradosAbm,
 } from "../../services/articuloNoElaboradoServicio";
@@ -19,6 +17,8 @@ import { fetchInsumoAbm } from "../../services/articulosInsumosServicio";
 import type { InsumoDTO } from "../../models/dto/InsumoDTO";
 import { mapperInformacionArticuloManufacturadoDtoToNuevoArticuloManufacturadoDto } from "../../utils/mapper/articulosManufacturadosMapper";
 import { mapperInformacionArticuloNoElaboradoDtoToNuevoArticuloNoElaboradoDto } from "../../utils/mapper/articuloNoElaboradoMapper";
+import { useAuth0Store } from "../auth/useAuth0Store";
+import { altaBajaArticulo } from "../../services/articuloServicio";
 
 export type ProductType = "manufacturados" | "noManufacturados";
 
@@ -28,6 +28,21 @@ interface PaginationState {
   totalItems: number;
   totalPages: number;
 }
+
+// Helper function to wait for token to be ready
+const waitForToken = (): Promise<void> => {
+  return new Promise((resolve) => {
+    const checkToken = () => {
+      const { isTokenReady } = useAuth0Store.getState();
+      if (isTokenReady) {
+        resolve();
+      } else {
+        setTimeout(checkToken, 100); // Check every 100ms
+      }
+    };
+    checkToken();
+  });
+};
 
 interface ProductsStore {
   // Estados para productos manufacturados
@@ -97,17 +112,20 @@ export const useProductsStore = create<ProductsStore>((set, get) => ({
 
   // Actions para productos manufacturados
   fetchManufacturadosPaginated: async (page, itemsPerPage) => {
+    // Wait for token to be ready before making the request
+    await waitForToken();
+
     set({ manufacturadosLoading: true, error: null });
     try {
       const response = await fetchArticulosManufacturadosAbm(page - 1, itemsPerPage);
       set({
-        manufacturados: response.content,
+        manufacturados: Array.isArray(response.content) ? response.content : [],
         manufacturadosLoading: false,
         manufacturadosPagination: {
           currentPage: page,
           itemsPerPage,
-          totalItems: response.totalElements,
-          totalPages: response.totalPages,
+          totalItems: response.page.totalElements,
+          totalPages: response.page.totalPages,
         },
       });
     } catch (error) {
@@ -117,6 +135,8 @@ export const useProductsStore = create<ProductsStore>((set, get) => ({
   },
 
   createManufacturado: async (productData) => {
+    await waitForToken();
+
     set({ manufacturadosLoading: true, error: null });
     try {
       const newProduct = mapperInformacionArticuloManufacturadoDtoToNuevoArticuloManufacturadoDto(productData);
@@ -131,6 +151,8 @@ export const useProductsStore = create<ProductsStore>((set, get) => ({
   },
 
   updateManufacturado: async (id, product) => {
+    await waitForToken();
+
     set({ manufacturadosLoading: true, error: null });
     try {
       await actualizarArticuloManufacturado(id, product);
@@ -144,6 +166,8 @@ export const useProductsStore = create<ProductsStore>((set, get) => ({
   },
 
   toggleManufacturadoStatus: async (id) => {
+    await waitForToken();
+
     try {
       const currentProduct = get().manufacturados.find((product) => product.getidArticulo() === id);
       if (!currentProduct) {
@@ -168,7 +192,7 @@ export const useProductsStore = create<ProductsStore>((set, get) => ({
       }));
 
       // Realizar la operación en el backend
-      await altaBajaArticuloManufacturado(id, newStatus);
+      await altaBajaArticulo(id);
     } catch (error) {
       console.error("Error en toggleManufacturadoStatus:", error);
       set({ error: (error as Error).message });
@@ -186,17 +210,19 @@ export const useProductsStore = create<ProductsStore>((set, get) => ({
 
   // Actions para productos no elaborados
   fetchNoElaboradosPaginated: async (page, itemsPerPage) => {
+    await waitForToken();
+
     set({ noElaboradosLoading: true, error: null });
     try {
       const response = await fetchArticulosNoElaboradosAbm(page - 1, itemsPerPage);
       set({
-        noElaborados: response.content,
+        noElaborados: Array.isArray(response.content) ? response.content : [],
         noElaboradosLoading: false,
         noElaboradosPagination: {
           currentPage: page,
           itemsPerPage,
-          totalItems: response.totalElements,
-          totalPages: response.totalPages,
+          totalItems: response.page.totalElements,
+          totalPages: response.page.totalPages,
         },
       });
     } catch (error) {
@@ -206,6 +232,8 @@ export const useProductsStore = create<ProductsStore>((set, get) => ({
   },
 
   createNoElaborado: async (productData) => {
+    await waitForToken();
+
     set({ noElaboradosLoading: true, error: null });
     try {
       const newProduct = mapperInformacionArticuloNoElaboradoDtoToNuevoArticuloNoElaboradoDto(productData);
@@ -220,6 +248,8 @@ export const useProductsStore = create<ProductsStore>((set, get) => ({
   },
 
   updateNoElaborado: async (id, product) => {
+    await waitForToken();
+
     set({ noElaboradosLoading: true, error: null });
     try {
       await actualizarArticuloNoElaborado(id, product);
@@ -233,6 +263,8 @@ export const useProductsStore = create<ProductsStore>((set, get) => ({
   },
 
   toggleNoElaboradoStatus: async (id) => {
+    await waitForToken();
+
     try {
       const currentProduct = get().noElaborados.find((product) => product.getIdArticulo() === id);
       if (!currentProduct) {
@@ -256,7 +288,7 @@ export const useProductsStore = create<ProductsStore>((set, get) => ({
         }),
       }));
 
-      await altaBajaArticuloNoElaborado(id, newStatus);
+      await altaBajaArticulo(id);
     } catch (error) {
       console.error("Error en toggleNoElaboradoStatus:", error);
       set({ error: (error as Error).message });
@@ -274,6 +306,8 @@ export const useProductsStore = create<ProductsStore>((set, get) => ({
 
   // Actions compartidas
   fetchCategories: async () => {
+    await waitForToken();
+
     try {
       const categories = await fetchCategoriasAbm();
       set({ categories });
@@ -284,6 +318,8 @@ export const useProductsStore = create<ProductsStore>((set, get) => ({
   },
 
   fetchIngredients: async () => {
+    await waitForToken();
+
     try {
       const ingredientes = await fetchInsumoAbm();
       set({ ingredients: ingredientes });
@@ -297,7 +333,8 @@ export const useProductsStore = create<ProductsStore>((set, get) => ({
   // Getters para compatibilidad
   getProductsByType: (type) => {
     const state = get();
-    return type === "manufacturados" ? state.manufacturados : state.noElaborados;
+    const products = type === "manufacturados" ? state.manufacturados : state.noElaborados;
+    return Array.isArray(products) ? products : [];
   },
 
   getPaginationByType: (type) => {

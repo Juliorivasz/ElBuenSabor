@@ -7,6 +7,13 @@ export type Page = {
   totalPages: number;
 };
 
+export type Page = {
+  number: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+};
+
 export type PaginatedApiArticulo = {
   page: Page;
   content: ArticuloDTOJson[];

@@ -2,7 +2,7 @@ import { articuloMapper } from "../utils/mapper/articuloMapper";
 import { interceptorsApiClient } from "./interceptors/axios.interceptors";
 import { PaginatedApiArticulo, PaginatedArticulo } from "./types/catalog/articulos";
 
-export const getAllArticulos = async (page: number, size: number = 9): Promise<PaginatedArticulo> => {
+export const getAllArticulos = async (page: number, size: number = 6): Promise<PaginatedArticulo> => {
   const response = await interceptorsApiClient.get(`/articulo/catalogo?page=${page}&size=${size}`);
   const data: PaginatedApiArticulo = response.data;
   const content = data.content.map(articuloMapper);

@@ -184,7 +184,7 @@ export const PopularProductsCarousel: React.FC<PopularProductsCarouselProps> = (
                   {/* Product Image */}
                   <div className="relative">
                     <img
-                      src={product.getImagenDto()?.getUrl() || "/placeholder.svg?height=200&width=300"}
+                      src={product.getImagenModel() || "/placeholder.svg?height=200&width=300"}
                       alt={product.getNombre()}
                       className="w-full h-48 object-cover"
                     />

@@ -8,7 +8,7 @@ export const ProductsCard: FC<ProductCardProps> = memo(({ product, onClick }) =>
       className="bg-transparent rounded-xl p-4 cursor-pointer hover:shadow-md relative w-full max-w-sm mx-auto transform transition-transform duration-300 hover:scale-105">
       <div className="h-40 bg-gray-300 rounded-lg mb-3 relative overflow-hidden">
         <img
-          src={product.getImagenDto()?.getUrl() || "/placeholder.svg"}
+          src={product.getImagenModel() || "/placeholder.svg"}
           alt={product.getNombre()}
           className={`w-full h-full object-cover ${product.getPuedeElaborarse() ? "" : "grayscale-100"}`}
           loading="lazy"

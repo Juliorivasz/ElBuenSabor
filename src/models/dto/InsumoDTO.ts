@@ -2,11 +2,13 @@ export class InsumoDTO {
   private idArticuloInsumo: number;
   private unidadDeMedida: string;
   private nombre: string;
+  private costo: number;
 
-  constructor(idArticuloInsumo: number, unidadDeMedida: string, nombre: string) {
+  constructor(idArticuloInsumo: number, unidadDeMedida: string, nombre: string, costo: number) {
     this.idArticuloInsumo = idArticuloInsumo;
     this.unidadDeMedida = unidadDeMedida;
     this.nombre = nombre;
+    this.costo = costo;
   }
 
   // Getter y Setter para idArticuloInsumo
@@ -33,5 +35,13 @@ export class InsumoDTO {
 
   public setNombre(nombre: string): void {
     this.nombre = nombre;
+  }
+
+  public getCosto(): number {
+    return this.costo;
+  }
+
+  public setCosto(nuevoCosto: number): void {
+    this.costo = nuevoCosto;
   }
 }
