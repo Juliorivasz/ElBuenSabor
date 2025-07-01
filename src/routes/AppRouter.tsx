@@ -36,11 +36,12 @@ export const AppRouter = () => {
         {/* Rutas Públicas */}
         <Route element={<LayoutClient />}>
           {publicRoutes.map((route) => (
-            <Route
-              key={route.path}
-              path={route.path}
-              element={<route.element />}
-            />
+            <Route key={route.path} path={route.path} element={<route.element />} />
+          ))}
+
+          {/* Rutas de Pago */}
+          {pagoRoutes.map((route) => (
+            <Route key={route.path} path={route.path} element={<route.element />} />
           ))}
         </Route>
 
@@ -75,11 +76,8 @@ export const AppRouter = () => {
         </Route>
 
         {/* Ruta por defecto para páginas no encontradas */}
-        <Route
-          path="*"
-          element={<NotFound />}
-        />
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </Suspense>
-  );
-};
+  )
+}
