@@ -9,10 +9,16 @@ import { EstadoPedido } from "../../../models/enum/EstadoPedido"
 interface PedidosTableProps {
   pedidos: PedidoDTO[]
   onVerDetalles: (pedido: PedidoDTO) => void
-  indiceDivision?: number
+  indicePrimeraDivision?: number
+  indiceSegundaDivision?: number
 }
 
-export const PedidosTable: React.FC<PedidosTableProps> = ({ pedidos, onVerDetalles, indiceDivision = -1 }) => {
+export const PedidosTable: React.FC<PedidosTableProps> = ({
+  pedidos,
+  onVerDetalles,
+  indicePrimeraDivision = -1,
+  indiceSegundaDivision = -1,
+}) => {
   const getEstadoColor = (estado: string) => {
     switch (estado) {
       case EstadoPedido.LISTO:
@@ -22,7 +28,7 @@ export const PedidosTable: React.FC<PedidosTableProps> = ({ pedidos, onVerDetall
       case EstadoPedido.CANCELADO:
         return "bg-red-100 border-red-300"
       case EstadoPedido.RECHAZADO:
-        return "bg-purple-100 border-purple-300"
+        return "bg-red-100 border-red-300"
       case EstadoPedido.EN_PREPARACION:
         return "bg-yellow-100 border-yellow-300"
       case EstadoPedido.EN_CAMINO:
@@ -43,7 +49,7 @@ export const PedidosTable: React.FC<PedidosTableProps> = ({ pedidos, onVerDetall
       case EstadoPedido.CANCELADO:
         return "bg-red-100 text-red-800"
       case EstadoPedido.RECHAZADO:
-        return "bg-purple-100 text-purple-800"
+        return "bg-red-100 text-red-800"
       case EstadoPedido.EN_PREPARACION:
         return "bg-yellow-100 text-yellow-800"
       case EstadoPedido.EN_CAMINO:
@@ -165,8 +171,16 @@ export const PedidosTable: React.FC<PedidosTableProps> = ({ pedidos, onVerDetall
                     </button>
                   </td>
                 </tr>
-                {/* Línea divisoria después del último pedido A_CONFIRMAR */}
-                {index === indiceDivision && (
+                {/* Primera línea divisoria después del último pedido A_CONFIRMAR */}
+                {index === indicePrimeraDivision && (
+                  <tr>
+                    <td colSpan={8} className="p-0">
+                      <div className="border-t-4 border-black"></div>
+                    </td>
+                  </tr>
+                )}
+                {/* Segunda línea divisoria después del último pedido activo */}
+                {index === indiceSegundaDivision && (
                   <tr>
                     <td colSpan={8} className="p-0">
                       <div className="border-t-4 border-black"></div>

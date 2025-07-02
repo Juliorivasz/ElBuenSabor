@@ -13,7 +13,7 @@ export const pedidoServicio = {
       params.append("estado", estado)
     }
 
-    const response = await interceptorsApiClient.get(`/pedido/lista?${params.toString()}`)
+    const response = await interceptorsApiClient.get(`/pedido/cajero?${params.toString()}`)
     return response.data
   },
 
