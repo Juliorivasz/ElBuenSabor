@@ -1,5 +1,4 @@
 import { ArticuloDTOJson } from "../interface/ArticuloDTOJson";
-import { ImagenDTO } from "./ImagenDTO";
 
 export class ArticuloDTO {
   private idArticulo: number;
@@ -8,7 +7,7 @@ export class ArticuloDTO {
   private precioVenta: number;
   private tiempoDeCocina: number;
   private idCategoria: number;
-  private imagenDto: ImagenDTO | null;
+  private imagenModel: string | null;
   private puedeElaborarse: boolean;
 
   constructor(
@@ -18,7 +17,7 @@ export class ArticuloDTO {
     precioVenta: number,
     tiempoDeCocina: number,
     idCategoria: number,
-    imagenDto: ImagenDTO | null,
+    imagenModel: string | null,
     puedeElaborarse: boolean,
   ) {
     this.idArticulo = idArticulo;
@@ -27,7 +26,7 @@ export class ArticuloDTO {
     this.precioVenta = precioVenta;
     this.tiempoDeCocina = tiempoDeCocina;
     this.idCategoria = idCategoria;
-    this.imagenDto = imagenDto;
+    this.imagenModel = imagenModel;
     this.puedeElaborarse = puedeElaborarse;
   }
 
@@ -56,8 +55,8 @@ export class ArticuloDTO {
     return this.idCategoria;
   }
 
-  public getImagenDto(): ImagenDTO | null {
-    return this.imagenDto;
+  public getImagenModel(): string | null {
+    return this.imagenModel;
   }
 
   public getPuedeElaborarse(): boolean {
@@ -89,8 +88,8 @@ export class ArticuloDTO {
     this.idCategoria = idCategoria;
   }
 
-  public setImagenDto(imagenDto: ImagenDTO): void {
-    this.imagenDto = imagenDto;
+  public setImagenModel(nuevoImagenModel: string): void {
+    this.imagenModel = nuevoImagenModel;
   }
 
   public setPuedeElaborarse(puedeElaborarse: boolean): void {
@@ -106,15 +105,13 @@ export class ArticuloDTO {
       precioVenta: this.precioVenta,
       tiempoDeCocina: this.tiempoDeCocina,
       idCategoria: this.idCategoria,
-      imagenDto: this.imagenDto ? this.imagenDto.toJSON?.() || this.imagenDto : null,
+      imagenModel: this.imagenModel || null,
       puedeElaborarse: this.puedeElaborarse,
     };
   }
 
   // Crear desde un JSON plano
   public static fromJSON(json: ArticuloDTOJson): ArticuloDTO {
-    const imagenDto = ImagenDTO.fromJSON(json.imagenDto);
-
     return new ArticuloDTO(
       json.idArticulo,
       json.nombre,
@@ -122,7 +119,7 @@ export class ArticuloDTO {
       json.precioVenta,
       json.tiempoDeCocina,
       json.idCategoria,
-      imagenDto,
+      json.imagenModel,
       json.puedeElaborarse,
     );
   }

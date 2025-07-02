@@ -1,4 +1,3 @@
-//
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -10,15 +9,16 @@ import {
   VisibilityOutlined,
   VisibilityOffOutlined,
 } from "@mui/icons-material";
+// No necesitamos importar Swal aquí, ya que las notificaciones las maneja el padre
 
 type EditableField = "telefono" | "password" | "urlImagen";
 
 interface ProfileEditModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (field: EditableField, value: string) => void;
+  onSave: (field: EditableField, value: string | File) => void;
   field: EditableField | null;
-  currentValue: string;
+  currentValue: string; // current value of the field being edited (can be URL for image)
 }
 
 interface FormErrors {
@@ -40,38 +40,37 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({ isOpen, onCl
   useEffect(() => {
     if (isOpen && field) {
       if (field === "password") {
-        setValue("");
+        setValue(""); // Siempre resetear contraseñas
         setConfirmPassword("");
       } else if (field === "urlImagen") {
-        setImagePreview(currentValue);
-        setValue(currentValue);
+        setImagePreview(currentValue); // Usa el currentValue (URL de imagen) para la preview
+        setImageFile(null); // Resetea el archivo seleccionado
       } else {
-        setValue(currentValue);
+        setValue(currentValue); // Para teléfono, usa el valor actual
       }
-      setErrors({});
-      setImageFile(null);
+      setErrors({}); // Limpiar errores al abrir el modal
     }
   }, [isOpen, field, currentValue]);
 
   const validatePhone = (phone: string): string | undefined => {
-    if (!/^\d{8,}$/.test(phone.trim())) {
-      return "El teléfono debe contener solo números (mínimo 8 dígitos)";
+    if (!/^[\d\s-]{8,}$/.test(phone.trim())) {
+      return "El teléfono debe contener solo números, espacios o guiones (mínimo 8 dígitos).";
     }
     return undefined;
   };
 
   const validatePassword = (password: string): string | undefined => {
     if (password.length < 8) {
-      return "La contraseña debe tener al menos 8 caracteres";
+      return "La contraseña debe tener al menos 8 caracteres.";
     }
     if (!/(?=.*[a-z])/.test(password)) {
-      return "La contraseña debe contener al menos una letra minúscula";
+      return "La contraseña debe contener al menos una letra minúscula.";
     }
     if (!/(?=.*[A-Z])/.test(password)) {
-      return "La contraseña debe contener al menos una letra mayúscula";
+      return "La contraseña debe contener al menos una letra mayúscula.";
     }
     if (!/(?=.*[!@#$%^&*(),.?":{}|<>])/.test(password)) {
-      return "La contraseña debe contener al menos un símbolo";
+      return "La contraseña debe contener al menos un símbolo (!@#$%^&*).";
     }
     return undefined;
   };
@@ -79,14 +78,13 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({ isOpen, onCl
   const validateImage = (file: File): string | undefined => {
     const validTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
     if (!validTypes.includes(file.type)) {
-      return "Solo se permiten archivos JPG, JPEG, PNG o WebP";
+      return "Solo se permiten archivos JPG, JPEG, PNG o WebP.";
     }
 
     const maxSize = 5 * 1024 * 1024; // 5MB
     if (file.size > maxSize) {
-      return "El archivo no debe superar los 5MB";
+      return "El archivo no debe superar los 5MB.";
     }
-
     return undefined;
   };
 
@@ -96,20 +94,26 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({ isOpen, onCl
       const error = validateImage(file);
       if (error) {
         setErrors((prev) => ({ ...prev, urlImagen: error }));
+        setImageFile(null);
+        setImagePreview(currentValue); // Restaura la preview a la imagen actual si hay error
         return;
       }
 
       setImageFile(file);
-      setErrors((prev) => ({ ...prev, urlImagen: undefined }));
+      setErrors((prev) => ({ ...prev, urlImagen: undefined })); // Limpiar error si se selecciona un archivo válido
 
       // Create preview
       const reader = new FileReader();
       reader.onload = (e) => {
         const result = e.target?.result as string;
         setImagePreview(result);
-        setValue(result);
       };
       reader.readAsDataURL(file);
+    } else {
+      // Si el usuario cancela la selección de archivo, vuelve a la imagen actual
+      setImageFile(null);
+      setImagePreview(currentValue);
+      setErrors((prev) => ({ ...prev, urlImagen: undefined }));
     }
   };
 
@@ -130,18 +134,43 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({ isOpen, onCl
       }
 
       if (value !== confirmPassword) {
-        newErrors.confirmPassword = "Las contraseñas no coinciden";
+        newErrors.confirmPassword = "Las contraseñas no coinciden.";
       }
     } else if (field === "urlImagen") {
-      if (!value && !imageFile) {
-        newErrors.urlImagen = "Debe seleccionar una imagen";
+      if (imageFile) {
+        const imageError = validateImage(imageFile);
+        if (imageError) {
+          newErrors.urlImagen = imageError;
+        }
       }
+      // No se agrega un error si no hay imagen y no se selecciona una nueva,
+      // ya que la lógica de eliminación se maneja en el componente padre con la confirmación de Swal.
     }
 
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length === 0) {
-      onSave(field, value);
+      if (field === "urlImagen") {
+        if (imageFile) {
+          onSave(field, imageFile);
+        } else if (!imageFile && currentValue) {
+          // Si no se selecciona nuevo archivo pero ya había una imagen,
+          // y el usuario decide no seleccionar nada, asumimos que quiere eliminar la imagen existente.
+          // Aquí se pasa un string vacío para indicar la eliminación.
+          onSave(field, "");
+        } else if (!imageFile && !currentValue) {
+          // Si no hay archivo nuevo y no hay imagen actual, y el campo no es obligatorio,
+          // puedes considerar que no hay cambio o que se mantiene vacío.
+          // Por simplicidad, si no hay archivo y no hay current value, cerramos el modal.
+          onClose();
+        } else {
+          // Este caso es cuando no hay un nuevo archivo y el currentValue es la URL de la imagen existente,
+          // lo que implica que el usuario no hizo cambios, solo cerramos el modal.
+          onClose();
+        }
+      } else {
+        onSave(field, value);
+      }
     }
   };
 
@@ -351,6 +380,9 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({ isOpen, onCl
                       <li>
                         • <strong>Tamaño máximo:</strong> 5MB
                       </li>
+                      {currentValue && ( // Mostrar opción de eliminar si hay una imagen actual
+                        <li>• **Deja el campo vacío para eliminar la foto actual.**</li>
+                      )}
                     </ul>
                   </div>
                 </div>

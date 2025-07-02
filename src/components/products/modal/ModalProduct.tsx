@@ -99,7 +99,7 @@ export const ModalProduct: React.FC<ModalProductProps> = ({ product, onClose, on
 
             <div className="relative bg-gray-300">
               <img
-                src={product.getImagenDto()?.getUrl() || "/placeholder.svg"}
+                src={product.getImagenModel() || "/placeholder.svg"}
                 alt={product.getNombre()}
                 className={`w-full h-48 object-cover ${product.getPuedeElaborarse() ? "" : "grayscale-100"}`}
               />

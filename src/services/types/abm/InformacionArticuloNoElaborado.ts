@@ -1,5 +1,6 @@
 import { ImagenApi } from "./InformacionArticulosManufacturadoDto";
 import { InformacionArticuloNoElaboradoDto } from "../../../models/dto/InformacionArticuloNoElaboradoDto";
+import { Page } from "../catalog/articulos";
 
 export type InformacionArticuloNoElaboradoApi = {
   idArticulo: number;
@@ -14,23 +15,11 @@ export type InformacionArticuloNoElaboradoApi = {
 };
 
 export type PaginatedResponseAbmNoElaboradoApi = {
-  totalPages: number;
-  totalElements: number;
-  size: number;
-  number: number;
+  page: Page;
   content: InformacionArticuloNoElaboradoApi[];
-  first: boolean;
-  last: boolean;
-  empty: boolean;
 };
 
 export type PaginatedResponseAbmNoElaborado = {
-  totalPages: number;
-  totalElements: number;
-  size: number;
-  number: number;
+  page: Page;
   content: InformacionArticuloNoElaboradoDto[];
-  first: boolean;
-  last: boolean;
-  empty: boolean;
 };
