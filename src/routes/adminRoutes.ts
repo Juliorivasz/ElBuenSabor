@@ -33,17 +33,17 @@ export const adminRoutes = [
   {
     path: "/admin/cocina",
     element: lazy(() => import("../pages/admin/kitchen/Kitchen").then((module) => ({ default: module.Kitchen }))),
-    allowedRoles: ["cocinero"],
+    allowedRoles: ["administrador","cocinero"],
   },
   {
-    path: "empleado/delivery",
-    element: lazy(() => import("../pages/admin/abm/AbmGeneric").then((module) => ({ default: module.AbmGeneric }))),
-    allowedRoles: ["repartidor"],
+    path: "/admin/repartidor",
+    element: lazy(() => import("../pages/admin/delivery/Delivery").then((module) => ({ default: module.Delivery }))),
+    allowedRoles: ["repartidor", "administrador"],
   },
   {
     path: "empleado/caja",
     element: lazy(() => import("../pages/admin/abm/AbmGeneric").then((module) => ({ default: module.AbmGeneric }))),
-    allowedRoles: ["cajero"],
+    allowedRoles: ["cajero", "administrador"],
   },
   {
     path: "/admin/categorias",
@@ -56,5 +56,4 @@ export const adminRoutes = [
     element: lazy(() => import("../pages/admin/pedidos/Pedidos").then((module) => ({ default: module.Pedidos }))),
     allowedRoles: ["administrador"],
   }
-
 ]
