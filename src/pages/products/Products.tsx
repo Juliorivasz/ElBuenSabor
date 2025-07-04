@@ -1,3 +1,5 @@
+"use client";
+
 import { type FC, useEffect, useState, useCallback } from "react";
 import { useProductsStore, type ProductType } from "../../store/admin/useProductsStore";
 import { ProductsTable } from "../../components/Admin/products/ProductsTable";
@@ -58,7 +60,7 @@ export const Products: FC = () => {
   const validCategories = Array.isArray(categories) ? categories : [];
   const validIngredients = Array.isArray(ingredients) ? ingredients : [];
 
-  // // Cargar datos iniciales
+  // Cargar datos iniciales
   useEffect(() => {
     if (validCategories.length === 0) {
       fetchCategories();
@@ -173,22 +175,22 @@ export const Products: FC = () => {
     [toggleNoElaboradoStatus],
   );
 
+  // Updated handlers to include file parameter
   const handleFormSubmitManufacturado = useCallback(
-    async (productData: InformacionArticuloManufacturadoDto) => {
+    async (productData: InformacionArticuloManufacturadoDto, file?: File) => {
       try {
         if (editingManufacturado) {
           const id = editingManufacturado.getidArticulo();
           if (id !== undefined) {
-            await updateManufacturado(id, productData);
+            await updateManufacturado(id, productData, file);
           } else {
             throw new Error("El ID del producto a editar es undefined.");
           }
         } else {
-          await createManufacturado(productData);
+          await createManufacturado(productData, file);
         }
         setShowForm(false);
         setEditingManufacturado(undefined);
-
         // Forzar actualización de la UI
         forceUpdate();
       } catch (error) {
@@ -199,21 +201,20 @@ export const Products: FC = () => {
   );
 
   const handleFormSubmitNoElaborado = useCallback(
-    async (productData: InformacionArticuloNoElaboradoDto) => {
+    async (productData: InformacionArticuloNoElaboradoDto, file?: File) => {
       try {
         if (editingNoElaborado) {
           const id = editingNoElaborado.getIdArticulo();
           if (id !== undefined) {
-            await updateNoElaborado(id, productData);
+            await updateNoElaborado(id, productData, file);
           } else {
             throw new Error("El ID del producto a editar es undefined.");
           }
         } else {
-          await createNoElaborado(productData);
+          await createNoElaborado(productData, file);
         }
         setShowForm(false);
         setEditingNoElaborado(undefined);
-
         // Forzar actualización de la UI
         forceUpdate();
       } catch (error) {
@@ -223,13 +224,13 @@ export const Products: FC = () => {
     [editingNoElaborado, updateNoElaborado, createNoElaborado, forceUpdate],
   );
 
-  // Función wrapper universal para manejar el submit del formulario
+  // Updated universal form submit handler to include file parameter
   const handleUniversalFormSubmit = useCallback(
-    async (productData: ProductUnion) => {
+    async (productData: ProductUnion, file?: File) => {
       if (activeTab === "manufacturados") {
-        await handleFormSubmitManufacturado(productData as InformacionArticuloManufacturadoDto);
+        await handleFormSubmitManufacturado(productData as InformacionArticuloManufacturadoDto, file);
       } else {
-        await handleFormSubmitNoElaborado(productData as InformacionArticuloNoElaboradoDto);
+        await handleFormSubmitNoElaborado(productData as InformacionArticuloNoElaboradoDto, file);
       }
     },
     [activeTab, handleFormSubmitManufacturado, handleFormSubmitNoElaborado],

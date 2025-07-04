@@ -1,8 +1,8 @@
 import { InformacionArticuloManufacturadoDto } from "../models/dto/InformacionArticuloManufacturadoDto";
 import { InformacionDetalleDto } from "../models/dto/InformacionDetalleDto";
-import { NuevoArticuloManufacturadoDto } from "../models/dto/NuevoArticuloManufacturadoDto";
+import type { NuevoArticuloManufacturadoDto } from "../models/dto/NuevoArticuloManufacturadoDto";
 import { interceptorsApiClient } from "./interceptors/axios.interceptors";
-import {
+import type {
   InformacionArticuloManufacturadoDtoApi,
   InformacionDetalleDTOApi,
   PaginatedResponseAbm,
@@ -34,7 +34,7 @@ const parseInformacionArticuloManufacturadoDTO = (data: InformacionArticuloManuf
 
 export const fetchArticulosManufacturadosAbm = async (
   page: number,
-  itemsPerPage: number = 12,
+  itemsPerPage = 12,
 ): Promise<PaginatedResponseAbm> => {
   const response = await interceptorsApiClient.get(`/articuloManufacturado/abm?page=${page}&size=${itemsPerPage}`);
   const data: PaginatedResponseAbmApi = response.data;
@@ -53,24 +53,45 @@ export const altaBajaArticuloManufacturado = async (id: number, dadoDeAlta: bool
 };
 
 // Función para crear un nuevo artículo manufacturado
-export const crearArticuloManufacturado = async (producto: NuevoArticuloManufacturadoDto) => {
-  // Convertir el DTO a la estructura requerida por la API
+export const crearArticuloManufacturado = async (producto: NuevoArticuloManufacturadoDto, file?: File) => {
+  const formData = new FormData();
 
-  await interceptorsApiClient.post("/articuloManufacturado/nuevo", producto.toJSON());
+  // Agregar el JSON del artículo como string
+  formData.append("articulo", JSON.stringify(producto.toJSON()));
+
+  // Agregar el archivo si existe
+  if (file) {
+    formData.append("file", file);
+    console.log("Archivo adjuntado:", file.name, file.type, file.size);
+  }
+
+  console.log("Enviando datos:", JSON.stringify(producto.toJSON()));
+
+  const response = await interceptorsApiClient.post("/articuloManufacturado/nuevo", formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+
+  console.log("Respuesta del servidor:", response.data);
+  return response.data;
 };
 
 // Función para actualizar un artículo manufacturado
 export const actualizarArticuloManufacturado = async (
   id: number,
   producto: InformacionArticuloManufacturadoDto,
+  file?: File,
 ): Promise<boolean> => {
-  // Convertir el DTO a la estructura requerida por la API
+  const formData = new FormData();
 
+  // Convertir el DTO a la estructura requerida por la API
   const requestBody = {
     idArticulo: producto.getidArticulo(),
     nombre: producto.getNombre(),
     descripcion: producto.getDescripcion(),
     precioVenta: producto.getPrecioVenta(),
+    precioModificado: producto.getPrecioModificado(),
     receta: producto.getReceta(),
     tiempoDeCocina: producto.getTiempoDeCocina(),
     dadoDeAlta: producto.isDadoDeAlta(),
@@ -85,7 +106,22 @@ export const actualizarArticuloManufacturado = async (
     })),
   };
 
-  interceptorsApiClient.put(`/articuloManufacturado/modificar/${id}`, requestBody);
+  // Agregar el JSON del artículo
+  formData.append("articulo", JSON.stringify(requestBody));
 
+  // Agregar el archivo si existe
+  if (file) {
+    formData.append("file", file);
+    console.log("Archivo adjuntado para actualización:", file.name, file.type, file.size);
+  }
+  console.log(requestBody);
+
+  const response = await interceptorsApiClient.put(`/articuloManufacturado/modificar/${id}`, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+
+  console.log("Respuesta del servidor para actualización:", response.data);
   return true;
 };

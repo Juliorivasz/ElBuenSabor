@@ -126,7 +126,10 @@ export const Profile: React.FC = () => {
           telefono: updatedCliente.telefono,
         }));
 
-        setProfileData({ telefono: updatedCliente.telefono });
+        setProfileData({
+          ...userProfile,
+          telefono: updatedCliente.telefono,
+        });
 
         Swal.fire({
           icon: "success",

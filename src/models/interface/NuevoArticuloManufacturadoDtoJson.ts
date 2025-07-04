@@ -1,5 +1,4 @@
 import { ArticuloManufacturadoDetalleDtoJson } from "./ArticuloManufacturadoDetalleDtoJson";
-import { ImagenDTOJson } from "./ImagenDTOJson";
 
 export interface NuevoArticuloManufacturadoDtoJson {
   nombre: string;
@@ -9,6 +8,6 @@ export interface NuevoArticuloManufacturadoDtoJson {
   tiempoDeCocina: number;
   dadoDeAlta: boolean;
   idCategoria: number;
-  imagenDto: ImagenDTOJson;
+  imagenUrl?: string;
   detalles: ArticuloManufacturadoDetalleDtoJson[];
 }

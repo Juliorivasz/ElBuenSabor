@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, FC } from "react";
 import { InformacionArticuloManufacturadoDto } from "../../../models/dto/InformacionArticuloManufacturadoDto";
 import { InformacionArticuloNoElaboradoDto } from "../../../models/dto/InformacionArticuloNoElaboradoDto";
 import type { CategoriaDTO } from "../../../models/dto/CategoriaDTO";
@@ -11,7 +11,7 @@ interface UniversalProductFormProps {
   product?: ProductUnion;
   categories: CategoriaDTO[];
   ingredients?: InsumoDTO[]; // Solo para manufacturados
-  onSubmit: (product: ProductUnion) => void;
+  onSubmit: (product: ProductUnion, file?: File) => void;
   onCancel: () => void;
   loading: boolean;
   type: "manufacturado" | "noElaborado";
@@ -34,7 +34,7 @@ interface FormData {
   }>;
 }
 
-export const UniversalProductForm: React.FC<UniversalProductFormProps> = ({
+export const UniversalProductForm: FC<UniversalProductFormProps> = ({
   product,
   categories,
   ingredients = [],
@@ -47,7 +47,7 @@ export const UniversalProductForm: React.FC<UniversalProductFormProps> = ({
     nombre: "",
     descripcion: "",
     precioVenta: 0,
-    precioModificado: true, // Por defecto es precio manual
+    precioModificado: true,
     idCategoria: 0,
     idSubcategoria: 0,
     imagenUrl: "",
@@ -62,6 +62,8 @@ export const UniversalProductForm: React.FC<UniversalProductFormProps> = ({
   const [suggestedPrice, setSuggestedPrice] = useState<number>(0);
   const [costoTotal, setCostoTotal] = useState<number>(0);
   const [margenGanancia, setMargenGanancia] = useState<number>(1);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [imageSource, setImageSource] = useState<"url" | "file">("url");
 
   // Obtener categorías principales y subcategorías
   const mainCategories = categories.filter((cat) => cat.getIdCategoriaPadre() === 0 || !cat.getIdCategoriaPadre());
@@ -156,7 +158,7 @@ export const UniversalProductForm: React.FC<UniversalProductFormProps> = ({
           precioModificado: noElaborado.getPrecioModificado(),
           idCategoria: productCategoryId,
           idSubcategoria: productSubcategoryId,
-          imagenUrl: noElaborado.getImagenDto()?.getUrl() || "",
+          imagenUrl: noElaborado.getImagenUrl() || "",
           detalles: [],
         });
       }
@@ -182,8 +184,13 @@ export const UniversalProductForm: React.FC<UniversalProductFormProps> = ({
       newErrors.idCategoria = "Debe seleccionar una categoría";
     }
 
-    if (!formData.imagenUrl.trim()) {
+    // Validar imagen: debe tener URL o archivo seleccionado
+    if (imageSource === "url" && !formData.imagenUrl.trim()) {
       newErrors.imagenUrl = "La URL de la imagen es requerida";
+    }
+
+    if (imageSource === "file" && !selectedFile && !product) {
+      newErrors.file = "Debe seleccionar un archivo de imagen";
     }
 
     if (type === "manufacturado") {
@@ -214,6 +221,7 @@ export const UniversalProductForm: React.FC<UniversalProductFormProps> = ({
     return Object.keys(newErrors).length === 0;
   };
 
+  // Update the handleSubmit function to ensure it passes the file:
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -221,12 +229,14 @@ export const UniversalProductForm: React.FC<UniversalProductFormProps> = ({
       return;
     }
 
-    // Determinar la categoría final (categoría principal o subcategoría)
+    // Determine the category final (main category or subcategory)
     const finalCategoryId = formData.idSubcategoria > 0 ? formData.idSubcategoria : formData.idCategoria;
     const selectedCategory = categories.find((cat) => cat.getIdCategoria() === finalCategoryId);
-    const imagenUrl = formData.imagenUrl;
 
-    // Determinar el precio final según si es manual o sugerido
+    // Use URL only if no file selected
+    const imagenUrl = imageSource === "file" ? "" : formData.imagenUrl;
+
+    // Determine the price final according to whether it is manual or suggested
     const finalPrice = formData.precioModificado ? formData.precioVenta : suggestedPrice;
 
     if (type === "manufacturado") {
@@ -256,7 +266,8 @@ export const UniversalProductForm: React.FC<UniversalProductFormProps> = ({
         detalles,
       );
 
-      onSubmit(productData);
+      // Pass the file only if imageSource is "file" and a file is selected
+      onSubmit(productData, imageSource === "file" ? selectedFile || undefined : undefined);
     } else {
       const productData = new InformacionArticuloNoElaboradoDto(
         (product as InformacionArticuloNoElaboradoDto)?.getIdArticulo() || 0,
@@ -267,10 +278,11 @@ export const UniversalProductForm: React.FC<UniversalProductFormProps> = ({
         true, // dadoDeAlta
         finalCategoryId,
         selectedCategory?.getNombre() || "",
-        null, //arreglar esto
+        imagenUrl, //arreglar esto
       );
 
-      onSubmit(productData);
+      // Pass the file only if imageSource is "file" and a file is selected
+      onSubmit(productData, imageSource === "file" ? selectedFile || undefined : undefined);
     }
   };
 
@@ -325,6 +337,29 @@ export const UniversalProductForm: React.FC<UniversalProductFormProps> = ({
       ...prev,
       idSubcategoria: subcategoryId,
     }));
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+      if (errors.file) {
+        setErrors((prev) => ({ ...prev, file: "" }));
+      }
+    }
+  };
+
+  const handleImageSourceChange = (source: "url" | "file") => {
+    setImageSource(source);
+    setSelectedFile(null);
+    setFormData((prev) => ({ ...prev, imagenUrl: "" }));
+    // Limpiar errores relacionados con imagen
+    setErrors((prev) => {
+      const newErrors = { ...prev };
+      delete newErrors.imagenUrl;
+      delete newErrors.file;
+      return newErrors;
+    });
   };
 
   const addIngredient = () => {
@@ -548,7 +583,7 @@ export const UniversalProductForm: React.FC<UniversalProductFormProps> = ({
                         className={`w-full px-3 py-2 border rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-orange-500 ${
                           errors.receta ? "border-red-500" : "border-gray-300"
                         }`}
-                        placeholder="Instrucciones de la receta..."
+                        placeholder="Instrucciones de preparación..."
                         disabled={loading}
                       />
                       {errors.receta && <p className="text-red-500 text-sm mt-1">{errors.receta}</p>}
@@ -559,9 +594,9 @@ export const UniversalProductForm: React.FC<UniversalProductFormProps> = ({
 
               {/* Columna Derecha */}
               <div className="space-y-4">
-                {/* Categoría */}
+                {/* Categoría Principal */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Categoría *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Categoría Principal *</label>
                   <select
                     value={formData.idCategoria}
                     onChange={(e) => handleCategoryChange(Number.parseInt(e.target.value))}
@@ -581,21 +616,16 @@ export const UniversalProductForm: React.FC<UniversalProductFormProps> = ({
                   {errors.idCategoria && <p className="text-red-500 text-sm mt-1">{errors.idCategoria}</p>}
                 </div>
 
-                {/* Subcategoría - Solo se muestra si hay subcategorías disponibles */}
+                {/* Subcategoría (opcional) */}
                 {availableSubcategories.length > 0 && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Subcategoría
-                      <span className="text-xs text-gray-500 ml-1">
-                        ({availableSubcategories.length} disponible{availableSubcategories.length !== 1 ? "s" : ""})
-                      </span>
-                    </label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Subcategoría (opcional)</label>
                     <select
                       value={formData.idSubcategoria}
                       onChange={(e) => handleSubcategoryChange(Number.parseInt(e.target.value))}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
                       disabled={loading}>
-                      <option value={0}>Usar categoría principal</option>
+                      <option value={0}>Sin subcategoría</option>
                       {availableSubcategories.map((subcategory) => (
                         <option
                           key={subcategory.getIdCategoria()}
@@ -607,58 +637,113 @@ export const UniversalProductForm: React.FC<UniversalProductFormProps> = ({
                   </div>
                 )}
 
-                {/* URL de Imagen */}
+                {/* Imagen */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">URL de Imagen *</label>
-                  <input
-                    type="url"
-                    value={formData.imagenUrl}
-                    onChange={(e) => handleInputChange("imagenUrl", e.target.value)}
-                    className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 ${
-                      errors.imagenUrl ? "border-red-500" : "border-gray-300"
-                    }`}
-                    placeholder="https://ejemplo.com/imagen.jpg"
-                    disabled={loading}
-                  />
-                  {errors.imagenUrl && <p className="text-red-500 text-sm mt-1">{errors.imagenUrl}</p>}
-                </div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Imagen *</label>
 
-                {/* Preview de imagen */}
-                {formData.imagenUrl && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Vista Previa</label>
-                    <div className="border rounded-lg p-4 bg-gray-50">
+                  {/* Selector de tipo de imagen */}
+                  <div className="flex space-x-4 mb-3">
+                    <label className="flex items-center">
+                      <input
+                        type="radio"
+                        name="imageSource"
+                        value="url"
+                        checked={imageSource === "url"}
+                        onChange={() => handleImageSourceChange("url")}
+                        className="mr-2"
+                        disabled={loading}
+                      />
+                      URL
+                    </label>
+                    <label className="flex items-center">
+                      <input
+                        type="radio"
+                        name="imageSource"
+                        value="file"
+                        checked={imageSource === "file"}
+                        onChange={() => handleImageSourceChange("file")}
+                        className="mr-2"
+                        disabled={loading}
+                      />
+                      Archivo
+                    </label>
+                  </div>
+
+                  {/* Campo de URL */}
+                  {imageSource === "url" && (
+                    <div>
+                      <input
+                        type="url"
+                        value={formData.imagenUrl}
+                        onChange={(e) => handleInputChange("imagenUrl", e.target.value)}
+                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 ${
+                          errors.imagenUrl ? "border-red-500" : "border-gray-300"
+                        }`}
+                        placeholder="https://ejemplo.com/imagen.jpg"
+                        disabled={loading}
+                      />
+                      {errors.imagenUrl && <p className="text-red-500 text-sm mt-1">{errors.imagenUrl}</p>}
+                    </div>
+                  )}
+
+                  {/* Campo de archivo */}
+                  {imageSource === "file" && (
+                    <div>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleFileChange}
+                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 ${
+                          errors.file ? "border-red-500" : "border-gray-300"
+                        }`}
+                        disabled={loading}
+                      />
+                      {errors.file && <p className="text-red-500 text-sm mt-1">{errors.file}</p>}
+                      {selectedFile && (
+                        <p className="text-sm text-gray-600 mt-1">Archivo seleccionado: {selectedFile.name}</p>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Vista previa de imagen */}
+                  {((imageSource === "url" && formData.imagenUrl) ||
+                    (imageSource === "file" && selectedFile) ||
+                    (product &&
+                      (product as ProductUnion).getImagenUrl?.() &&
+                      !selectedFile &&
+                      imageSource === "url")) && (
+                    <div className="mt-3">
+                      <p className="text-sm text-gray-600 mb-2">Vista previa:</p>
                       <img
-                        src={formData.imagenUrl || "/placeholder.svg"}
-                        alt="Preview"
-                        className="w-full h-48 object-cover rounded-md"
+                        src={
+                          imageSource === "file" && selectedFile
+                            ? URL.createObjectURL(selectedFile)
+                            : imageSource === "url" && formData.imagenUrl
+                            ? formData.imagenUrl
+                            : (product as ProductUnion)?.getImagenUrl?.() || ""
+                        }
+                        alt="Vista previa"
+                        className="w-32 h-32 object-cover rounded-md border border-gray-300"
                         onError={(e) => {
-                          (e.target as HTMLImageElement).src = "/placeholder.svg?height=192&width=300";
+                          (e.target as HTMLImageElement).style.display = "none";
                         }}
                       />
                     </div>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             </div>
           )}
 
-          {/* Ingredientes (solo para manufacturados) */}
+          {/* Tab de Ingredientes (solo para manufacturados) */}
           {isManufacturado && activeTab === "detalles" && (
             <div className="space-y-4">
               <div className="flex justify-between items-center">
-                <div>
-                  <h4 className="text-lg font-medium text-gray-900">Ingredientes</h4>
-                  {!formData.precioModificado && (
-                    <p className="text-sm text-gray-600">
-                      Los cambios en ingredientes actualizarán el precio automáticamente
-                    </p>
-                  )}
-                </div>
+                <h4 className="text-lg font-medium text-gray-900">Ingredientes</h4>
                 <button
                   type="button"
                   onClick={addIngredient}
-                  className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
+                  className="bg-orange-500 text-white px-4 py-2 rounded-md hover:bg-orange-600 transition-colors"
                   disabled={loading}>
                   Agregar Ingrediente
                 </button>
@@ -666,11 +751,11 @@ export const UniversalProductForm: React.FC<UniversalProductFormProps> = ({
 
               {errors.detalles && <p className="text-red-500 text-sm">{errors.detalles}</p>}
 
-              <div className="space-y-3 max-h-80 overflow-y-auto">
+              <div className="space-y-3 max-h-96 overflow-y-auto">
                 {formData.detalles?.map((detalle, index) => (
                   <div
                     key={index}
-                    className="flex items-center space-x-3 p-4 border rounded-lg bg-gray-50">
+                    className="flex items-center space-x-3 p-3 border border-gray-200 rounded-md">
                     <div className="flex-1">
                       <select
                         value={detalle.idArticuloInsumo}
@@ -689,10 +774,11 @@ export const UniversalProductForm: React.FC<UniversalProductFormProps> = ({
                         ))}
                       </select>
                       {errors[`detalle_${index}_insumo`] && (
-                        <p className="text-red-500 text-xs mt-1">{errors[`detalle_${index}_insumo`]}</p>
+                        <p className="text-red-500 text-sm mt-1">{errors[`detalle_${index}_insumo`]}</p>
                       )}
                     </div>
-                    <div className="w-32">
+
+                    <div className="w-24">
                       <input
                         type="number"
                         step="0.01"
@@ -702,17 +788,18 @@ export const UniversalProductForm: React.FC<UniversalProductFormProps> = ({
                         className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 ${
                           errors[`detalle_${index}_cantidad`] ? "border-red-500" : "border-gray-300"
                         }`}
-                        placeholder="Cantidad"
+                        placeholder="0"
                         disabled={loading}
                       />
                       {errors[`detalle_${index}_cantidad`] && (
-                        <p className="text-red-500 text-xs mt-1">{errors[`detalle_${index}_cantidad`]}</p>
+                        <p className="text-red-500 text-sm mt-1">{errors[`detalle_${index}_cantidad`]}</p>
                       )}
                     </div>
+
                     <button
                       type="button"
                       onClick={() => removeIngredient(index)}
-                      className="text-red-500 hover:text-red-700 p-2"
+                      className="text-red-500 hover:text-red-700 transition-colors"
                       disabled={loading}>
                       <svg
                         className="w-5 h-5"
@@ -729,56 +816,34 @@ export const UniversalProductForm: React.FC<UniversalProductFormProps> = ({
                     </button>
                   </div>
                 ))}
-
-                {(!formData.detalles || formData.detalles.length === 0) && (
-                  <div className="text-center py-8 text-gray-500">
-                    <svg
-                      className="mx-auto h-12 w-12 text-gray-400"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
-                      />
-                    </svg>
-                    <p className="mt-2">No hay ingredientes agregados</p>
-                    <p className="text-sm">Haz clic en "Agregar Ingrediente" para comenzar</p>
-                  </div>
-                )}
               </div>
 
-              {/* Resumen de costos para precio sugerido */}
-              {!formData.precioModificado && formData.detalles && formData.detalles.length > 0 && (
-                <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                  <h5 className="text-sm font-medium text-blue-900 mb-2">Cálculo de Precio Sugerido</h5>
-                  <div className="text-sm text-blue-800">
+              {/* Resumen de costos para manufacturados */}
+              {isManufacturado && formData.detalles && formData.detalles.length > 0 && (
+                <div className="bg-gray-50 p-4 rounded-md">
+                  <h5 className="font-medium text-gray-900 mb-2">Resumen de Costos</h5>
+                  <div className="text-sm text-gray-600 space-y-1">
                     <p>Costo total de ingredientes: ${costoTotal.toFixed(2)}</p>
-                    <p>
-                      Margen de ganancia ({`${(margenGanancia - 1) * 100}%`}): $
-                      {(suggestedPrice - suggestedPrice / margenGanancia).toFixed(2)}
-                    </p>
-                    <p className="font-medium">Precio sugerido: ${suggestedPrice.toFixed(2)}</p>
+                    <p>Margen de ganancia: {(margenGanancia - 1) * 100}%</p>
+                    <p className="font-medium text-gray-900">Precio sugerido: ${suggestedPrice.toFixed(2)}</p>
                   </div>
                 </div>
               )}
             </div>
           )}
 
-          {/* Botones */}
-          <div className="flex justify-end space-x-3 pt-6 border-t">
+          {/* Botones de acción */}
+          <div className="flex justify-end space-x-3 pt-6 border-t border-gray-200">
             <button
               type="button"
               onClick={onCancel}
-              className="px-6 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 transition-colors"
+              className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
               disabled={loading}>
               Cancelar
             </button>
             <button
               type="submit"
-              className="px-6 py-2 text-sm font-medium text-white bg-orange-600 border border-transparent rounded-md hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="px-4 py-2 bg-orange-500 text-white rounded-md hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={loading}>
               {loading ? "Guardando..." : product ? "Actualizar" : "Crear"}
             </button>
