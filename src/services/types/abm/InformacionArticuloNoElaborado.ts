@@ -1,4 +1,3 @@
-import { ImagenApi } from "./InformacionArticulosManufacturadoDto";
 import { InformacionArticuloNoElaboradoDto } from "../../../models/dto/InformacionArticuloNoElaboradoDto";
 import { Page } from "../catalog/articulos";
 
@@ -11,7 +10,7 @@ export type InformacionArticuloNoElaboradoApi = {
   dadoDeAlta: boolean;
   idCategoria: number;
   nombreCategoria: string;
-  imagenDto: ImagenApi;
+  imagenUrl: string;
 };
 
 export type PaginatedResponseAbmNoElaboradoApi = {

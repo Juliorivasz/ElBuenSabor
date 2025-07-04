@@ -1,6 +1,5 @@
 import { NuevoArticuloManufacturadoDtoJson } from "../interface/NuevoArticuloManufacturadoDtoJson";
-import { ArticuloManufacturadoDetalleDto } from "./ArticuloManufacturadoDetalleDto";
-import { ImagenDTO } from "./ImagenDTO";
+import type { ArticuloManufacturadoDetalleDto } from "./ArticuloManufacturadoDetalleDto";
 
 export class NuevoArticuloManufacturadoDto {
   private nombre: string;
@@ -10,7 +9,7 @@ export class NuevoArticuloManufacturadoDto {
   private tiempoDeCocina: number;
   private dadoDeAlta: boolean;
   private idCategoria: number;
-  private imagenDto: ImagenDTO;
+  private imagenUrl?: string;
   private detalles: ArticuloManufacturadoDetalleDto[];
 
   constructor(
@@ -21,8 +20,8 @@ export class NuevoArticuloManufacturadoDto {
     tiempoDeCocina: number,
     dadoDeAlta: boolean,
     idCategoria: number,
-    imagenDto: ImagenDTO,
     detalles: ArticuloManufacturadoDetalleDto[],
+    imagenUrl?: string,
   ) {
     this.nombre = nombre;
     this.descripcion = descripcion;
@@ -31,7 +30,7 @@ export class NuevoArticuloManufacturadoDto {
     this.tiempoDeCocina = tiempoDeCocina;
     this.dadoDeAlta = dadoDeAlta;
     this.idCategoria = idCategoria;
-    this.imagenDto = imagenDto;
+    this.imagenUrl = imagenUrl;
     this.detalles = detalles;
   }
 
@@ -55,7 +54,7 @@ export class NuevoArticuloManufacturadoDto {
     this.receta = receta;
   }
 
-  public getPrecioVenta(): number | undefined {
+  public getPrecioVenta(): number {
     return this.precioVenta;
   }
   public setPrecioVenta(precio: number): void {
@@ -88,11 +87,11 @@ export class NuevoArticuloManufacturadoDto {
     this.idCategoria = idCategoria;
   }
 
-  public getImagenDto(): ImagenDTO {
-    return this.imagenDto;
+  public getImagenUrl(): string | undefined {
+    return this.imagenUrl;
   }
-  public setImagenDto(imagenDto: ImagenDTO): void {
-    this.imagenDto = imagenDto;
+  public setImagenUrl(imagenUrl: string): void {
+    this.imagenUrl = imagenUrl;
   }
 
   public toJSON(): NuevoArticuloManufacturadoDtoJson {
@@ -100,11 +99,11 @@ export class NuevoArticuloManufacturadoDto {
       nombre: this.getNombre(),
       descripcion: this.getDescripcion(),
       receta: this.getReceta(),
-      precioVenta: this.getPrecioVenta()!,
+      precioVenta: this.getPrecioVenta(),
       tiempoDeCocina: this.getTiempoDeCocina(),
       dadoDeAlta: this.getDadoDeAlta(),
       idCategoria: this.getIdCategoria(),
-      imagenDto: this.getImagenDto().toJSON(),
+      imagenUrl: this.getImagenUrl(),
       detalles: this.getDetalles().map((detalle) => detalle.toJSON()),
     };
   }

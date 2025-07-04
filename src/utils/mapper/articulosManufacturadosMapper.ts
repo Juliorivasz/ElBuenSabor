@@ -1,24 +1,24 @@
 import { ArticuloManufacturadoDetalleDto } from "../../models/dto/ArticuloManufacturadoDetalleDto";
-import { InformacionArticuloManufacturadoDto } from "../../models/dto/InformacionArticuloManufacturadoDto";
+import type { InformacionArticuloManufacturadoDto } from "../../models/dto/InformacionArticuloManufacturadoDto";
 import { NuevoArticuloManufacturadoDto } from "../../models/dto/NuevoArticuloManufacturadoDto";
 
 export const mapperInformacionArticuloManufacturadoDtoToNuevoArticuloManufacturadoDto = (
-  data: InformacionArticuloManufacturadoDto,
-) => {
-  const detalles = data.getDetalles().map((articulo) => {
-    const newDetalles = new ArticuloManufacturadoDetalleDto(articulo.getIdArticuloInsumo(), articulo.getCantidad());
-    return newDetalles;
+  informacion: InformacionArticuloManufacturadoDto,
+): NuevoArticuloManufacturadoDto => {
+  // Mapear los detalles
+  const detalles = informacion.getDetalles().map((detalle) => {
+    return new ArticuloManufacturadoDetalleDto(detalle.getIdArticuloInsumo(), detalle.getCantidad());
   });
-  const newProduct = new NuevoArticuloManufacturadoDto(
-    data.getNombre(),
-    data.getDescripcion(),
-    data.getReceta(),
-    data.getPrecioVenta(),
-    data.getTiempoDeCocina(),
-    data.isDadoDeAlta(),
-    data.getIdCategoria(),
-    data.getImagenDto()!,
+
+  return new NuevoArticuloManufacturadoDto(
+    informacion.getNombre(),
+    informacion.getDescripcion(),
+    informacion.getReceta(),
+    informacion.getPrecioVenta(),
+    informacion.getTiempoDeCocina(),
+    informacion.isDadoDeAlta(),
+    informacion.getIdCategoria(),
     detalles,
+    informacion.getImagenUrl() || undefined,
   );
-  return newProduct;
 };

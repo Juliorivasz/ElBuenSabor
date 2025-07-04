@@ -1,3 +1,6 @@
+"use client";
+
+import type React from "react";
 import type { InformacionArticuloManufacturadoDto } from "../../../models/dto/InformacionArticuloManufacturadoDto";
 import type { InformacionArticuloNoElaboradoDto } from "../../../models/dto/InformacionArticuloNoElaboradoDto";
 
@@ -14,22 +17,136 @@ export const UniversalProductDetailsModal: React.FC<UniversalProductDetailsModal
   onClose,
   type,
 }) => {
-  const isManufacturado = type === "manufacturado";
-  const manufacturado = isManufacturado ? (product as InformacionArticuloManufacturadoDto) : null;
-  const noElaborado = !isManufacturado ? (product as InformacionArticuloNoElaboradoDto) : null;
+  if (!product) {
+    return null;
+  }
 
-  // Funciones helper para obtener datos según el tipo
-  const getId = () => (isManufacturado ? manufacturado?.getidArticulo() : noElaborado?.getIdArticulo());
-  const getNombre = () => (isManufacturado ? manufacturado?.getNombre() : noElaborado?.getNombre());
-  const getDescripcion = () => (isManufacturado ? manufacturado?.getDescripcion() : noElaborado?.getDescripcion());
-  const getPrecioVenta = () => (isManufacturado ? manufacturado?.getPrecioVenta() : noElaborado?.getPrecioVenta());
-  const getNombreCategoria = () =>
-    isManufacturado ? manufacturado?.getNombreCategoria() : noElaborado?.getNombreCategoria();
-  const getImagenUrl = () =>
-    isManufacturado ? manufacturado?.getImagenDto()?.getUrl() : noElaborado?.getImagenDto()?.getUrl();
-  const isDadoDeAlta = () => (isManufacturado ? manufacturado?.isDadoDeAlta() : noElaborado?.isDadoDeAlta());
-  const getPrecioModificado = () =>
-    isManufacturado ? manufacturado?.getPrecioModificado() : noElaborado?.getPrecioModificado();
+  const isManufacturado = type === "manufacturado";
+
+  // Helper functions to safely get data
+  const getId = () => {
+    try {
+      if (isManufacturado) {
+        const manufacturado = product as InformacionArticuloManufacturadoDto;
+        return manufacturado.getidArticulo?.() || manufacturado.getidArticulo() || 0;
+      } else {
+        const noElaborado = product as InformacionArticuloNoElaboradoDto;
+        return noElaborado.getIdArticulo?.() || noElaborado.getIdArticulo() || 0;
+      }
+    } catch (error) {
+      console.error("Error getting ID:", error);
+      return 0;
+    }
+  };
+
+  const getNombre = () => {
+    try {
+      return product.getNombre?.() || "Sin nombre";
+    } catch (error) {
+      console.error("Error getting nombre:", error);
+      return "Sin nombre";
+    }
+  };
+
+  const getDescripcion = () => {
+    try {
+      return product.getDescripcion?.() || "Sin descripción";
+    } catch (error) {
+      console.error("Error getting descripcion:", error);
+      return "Sin descripción";
+    }
+  };
+
+  const getPrecioVenta = () => {
+    try {
+      return product.getPrecioVenta?.() || 0;
+    } catch (error) {
+      console.error("Error getting precio:", error);
+      return 0;
+    }
+  };
+
+  const getNombreCategoria = () => {
+    try {
+      return product.getNombreCategoria?.() || "Sin categoría";
+    } catch (error) {
+      console.error("Error getting categoria:", error);
+      return "Sin categoría";
+    }
+  };
+
+  const getImagenUrl = () => {
+    try {
+      if (isManufacturado) {
+        const manufacturado = product as InformacionArticuloManufacturadoDto;
+        return manufacturado.getImagenUrl() || manufacturado.getImagenUrl?.() || null;
+      } else {
+        const noElaborado = product as InformacionArticuloNoElaboradoDto;
+        return noElaborado.getImagenUrl() || noElaborado.getImagenUrl?.() || null;
+      }
+    } catch (error) {
+      console.error("Error getting imagen:", error);
+      return null;
+    }
+  };
+
+  const isDadoDeAlta = () => {
+    try {
+      return product.isDadoDeAlta?.() || false;
+    } catch (error) {
+      console.error("Error getting estado:", error);
+      return false;
+    }
+  };
+
+  const getPrecioModificado = () => {
+    try {
+      return product.getPrecioModificado?.() || false;
+    } catch (error) {
+      console.error("Error getting precio modificado:", error);
+      return false;
+    }
+  };
+
+  // Specific functions for manufacturado products
+  const getTiempoDeCocina = () => {
+    try {
+      if (isManufacturado) {
+        const manufacturado = product as InformacionArticuloManufacturadoDto;
+        return manufacturado.getTiempoDeCocina?.() || 0;
+      }
+      return 0;
+    } catch (error) {
+      console.error("Error getting tiempo cocina:", error);
+      return 0;
+    }
+  };
+
+  const getReceta = () => {
+    try {
+      if (isManufacturado) {
+        const manufacturado = product as InformacionArticuloManufacturadoDto;
+        return manufacturado.getReceta?.() || "Sin receta";
+      }
+      return "Sin receta";
+    } catch (error) {
+      console.error("Error getting receta:", error);
+      return "Sin receta";
+    }
+  };
+
+  const getDetalles = () => {
+    try {
+      if (isManufacturado) {
+        const manufacturado = product as InformacionArticuloManufacturadoDto;
+        return manufacturado.getDetalles?.() || [];
+      }
+      return [];
+    } catch (error) {
+      console.error("Error getting detalles:", error);
+      return [];
+    }
+  };
 
   return (
     <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
@@ -89,7 +206,7 @@ export const UniversalProductDetailsModal: React.FC<UniversalProductDetailsModal
               <div className="flex justify-between items-center">
                 <span className="text-sm font-medium text-gray-500">Precio de Venta</span>
                 <div className="text-right">
-                  <span className="text-2xl font-bold text-green-600">${getPrecioVenta()?.toFixed(2)}</span>
+                  <span className="text-2xl font-bold text-green-600">${getPrecioVenta().toFixed(2)}</span>
                   {getPrecioModificado() && (
                     <div className="flex items-center text-xs text-yellow-600 mt-1">
                       <svg
@@ -128,7 +245,7 @@ export const UniversalProductDetailsModal: React.FC<UniversalProductDetailsModal
             </div>
 
             {/* Información específica para manufacturados */}
-            {isManufacturado && manufacturado && (
+            {isManufacturado && (
               <>
                 <div>
                   <h4 className="text-lg font-semibold text-gray-900 mb-4">Detalles de Preparación</h4>
@@ -148,39 +265,41 @@ export const UniversalProductDetailsModal: React.FC<UniversalProductDetailsModal
                             d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
                           />
                         </svg>
-                        <span className="text-gray-900">{manufacturado.getTiempoDeCocina()} minutos</span>
+                        <span className="text-gray-900">{getTiempoDeCocina()} minutos</span>
                       </div>
                     </div>
                     <div>
                       <span className="text-sm font-medium text-gray-500">Receta</span>
                       <div className="mt-2 p-3 bg-gray-50 rounded-md">
-                        <p className="text-gray-900 text-sm leading-relaxed whitespace-pre-wrap">
-                          {manufacturado.getReceta()}
-                        </p>
+                        <p className="text-gray-900 text-sm leading-relaxed whitespace-pre-wrap">{getReceta()}</p>
                       </div>
                     </div>
                   </div>
                 </div>
 
                 {/* Ingredientes */}
-                <div>
-                  <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                    Ingredientes ({manufacturado.getDetalles().length})
-                  </h4>
-                  <div className="space-y-2">
-                    {manufacturado.getDetalles().map((detalle, index) => (
-                      <div
-                        key={index}
-                        className="flex justify-between items-center p-3 bg-gray-50 rounded-md">
-                        <div>
-                          <span className="font-medium text-gray-900">{detalle.getNombreInsumo()}</span>
-                          <span className="text-sm text-gray-500 ml-2">({detalle.getUnidadDeMedida()})</span>
+                {getDetalles().length > 0 && (
+                  <div>
+                    <h4 className="text-lg font-semibold text-gray-900 mb-4">Ingredientes ({getDetalles().length})</h4>
+                    <div className="space-y-2">
+                      {getDetalles().map((detalle, index) => (
+                        <div
+                          key={index}
+                          className="flex justify-between items-center p-3 bg-gray-50 rounded-md">
+                          <div>
+                            <span className="font-medium text-gray-900">
+                              {detalle.getNombreInsumo?.() || "Sin nombre"}
+                            </span>
+                            <span className="text-sm text-gray-500 ml-2">
+                              ({detalle.getUnidadDeMedida?.() || "Sin unidad"})
+                            </span>
+                          </div>
+                          <span className="font-semibold text-gray-900">{detalle.getCantidad?.() || 0}</span>
                         </div>
-                        <span className="font-semibold text-gray-900">{detalle.getCantidad()}</span>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
               </>
             )}
 

@@ -62,15 +62,15 @@ interface ProductsStore {
 
   // Actions para productos manufacturados
   fetchManufacturadosPaginated: (page: number, itemsPerPage: number) => Promise<void>;
-  createManufacturado: (product: InformacionArticuloManufacturadoDto) => Promise<void>;
-  updateManufacturado: (id: number, product: InformacionArticuloManufacturadoDto) => Promise<void>;
+  createManufacturado: (product: InformacionArticuloManufacturadoDto, file?: File) => Promise<void>;
+  updateManufacturado: (id: number, product: InformacionArticuloManufacturadoDto, file?: File) => Promise<void>;
   toggleManufacturadoStatus: (id: number) => Promise<void>;
   setManufacturadosPagination: (pagination: Partial<PaginationState>) => void;
 
   // Actions para productos no elaborados
   fetchNoElaboradosPaginated: (page: number, itemsPerPage: number) => Promise<void>;
-  createNoElaborado: (product: InformacionArticuloNoElaboradoDto) => Promise<void>;
-  updateNoElaborado: (id: number, product: InformacionArticuloNoElaboradoDto) => Promise<void>;
+  createNoElaborado: (product: InformacionArticuloNoElaboradoDto, file?: File) => Promise<void>;
+  updateNoElaborado: (id: number, product: InformacionArticuloNoElaboradoDto, file?: File) => Promise<void>;
   toggleNoElaboradoStatus: (id: number) => Promise<void>;
   setNoElaboradosPagination: (pagination: Partial<PaginationState>) => void;
 
@@ -134,32 +134,37 @@ export const useProductsStore = create<ProductsStore>((set, get) => ({
     }
   },
 
-  createManufacturado: async (productData) => {
+  createManufacturado: async (productData, file) => {
     await waitForToken();
 
     set({ manufacturadosLoading: true, error: null });
     try {
       const newProduct = mapperInformacionArticuloManufacturadoDtoToNuevoArticuloManufacturadoDto(productData);
-      await crearArticuloManufacturado(newProduct);
+      console.log("Creando producto manufacturado con imagen:", file ? "Sí" : "No");
+      await crearArticuloManufacturado(newProduct, file);
 
       // Forzar actualización inmediata
       await get().forceRefreshManufacturados();
     } catch (error) {
+      console.error("Error al crear producto manufacturado:", error);
       set({ error: (error as Error).message, manufacturadosLoading: false });
       throw error;
     }
   },
 
-  updateManufacturado: async (id, product) => {
+  updateManufacturado: async (id, product, file) => {
     await waitForToken();
 
     set({ manufacturadosLoading: true, error: null });
     try {
-      await actualizarArticuloManufacturado(id, product);
+      console.log("Actualizando producto manufacturado con imagen:", file ? "Sí" : "No");
+      console.log(product);
+      await actualizarArticuloManufacturado(id, product, file);
 
       // Forzar actualización inmediata
       await get().forceRefreshManufacturados();
     } catch (error) {
+      console.error("Error al actualizar producto manufacturado:", error);
       set({ error: (error as Error).message, manufacturadosLoading: false });
       throw error;
     }
@@ -231,32 +236,37 @@ export const useProductsStore = create<ProductsStore>((set, get) => ({
     }
   },
 
-  createNoElaborado: async (productData) => {
+  createNoElaborado: async (productData, file) => {
     await waitForToken();
 
     set({ noElaboradosLoading: true, error: null });
     try {
       const newProduct = mapperInformacionArticuloNoElaboradoDtoToNuevoArticuloNoElaboradoDto(productData);
-      await crearArticuloNoElaborado(newProduct);
+      console.log("Creando producto no elaborado con imagen:", file ? "Sí" : "No");
+      await crearArticuloNoElaborado(newProduct, file);
 
       // Forzar actualización inmediata
       await get().forceRefreshNoElaborados();
     } catch (error) {
+      console.error("Error al crear producto no elaborado:", error);
       set({ error: (error as Error).message, noElaboradosLoading: false });
       throw error;
     }
   },
 
-  updateNoElaborado: async (id, product) => {
+  updateNoElaborado: async (id, product, file) => {
     await waitForToken();
 
     set({ noElaboradosLoading: true, error: null });
     try {
-      await actualizarArticuloNoElaborado(id, product);
+      console.log("Actualizando producto no elaborado con imagen:", file ? "Sí" : "No");
+      console.log(product);
+      await actualizarArticuloNoElaborado(id, product, file);
 
       // Forzar actualización inmediata
       await get().forceRefreshNoElaborados();
     } catch (error) {
+      console.error("Error al actualizar producto no elaborado:", error);
       set({ error: (error as Error).message, noElaboradosLoading: false });
       throw error;
     }
