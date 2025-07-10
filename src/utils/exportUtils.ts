@@ -1,85 +1,78 @@
-import { saveAs } from "file-saver"
-import * as XLSX from "xlsx"
-import type { Empleado } from "../services/empleadoServicio"
+import * as XLSX from "xlsx";
+import type { EmpleadoResponseDto } from "../models/dto/Empleado/EmpleadoResponseDto";
 
-export const exportarEmpleadosAExcel = (empleados: Empleado[]) => {
-  try {
-    // Transformar los datos de empleados al formato requerido para Excel
-    const datosParaExcel = empleados.map((empleado) => {
-      // Formatear la dirección
-      let direccionCompleta = ""
-      if (empleado.calle && empleado.numero) {
-        direccionCompleta = `${empleado.calle} ${empleado.numero}`
+export const exportarEmpleadosAExcel = (empleados: EmpleadoResponseDto[]): string => {
+  // Preparar los datos para exportar
+  const datosParaExportar = empleados.map((empleado, index) => ({
+    "N°": index + 1,
+    "ID Usuario": empleado.getIdUsuario(),
+    "Auth0 ID": empleado.getAuth0Id() || "N/A",
+    Nombre: empleado.getNombre(),
+    Apellido: empleado.getApellido(),
+    Email: empleado.getEmail(),
+    Teléfono: empleado.getTelefono(),
+    Rol: empleado.getRol() || "Sin rol",
+    Estado:
+      empleado.getFechaBaja() === null || new Date(empleado.getFechaBaja()).getTime() === 0 ? "Activo" : "Inactivo",
+    "Fecha Alta": new Date().toLocaleDateString("es-AR"),
+    "Fecha Baja":
+      empleado.getFechaBaja() && new Date(empleado.getFechaBaja()).getTime() !== 0
+        ? new Date(empleado.getFechaBaja()).toLocaleDateString("es-AR")
+        : "N/A",
+    Imagen: empleado.getImagen() || "Sin imagen",
+  }));
 
-        // Agregar piso y departamento si existen
-        const detalles = []
-        if (empleado.piso) detalles.push(`Piso ${empleado.piso}`)
-        if (empleado.dpto) detalles.push(`Dpto ${empleado.dpto}`)
+  // Crear el libro de trabajo
+  const workbook = XLSX.utils.book_new();
 
-        if (detalles.length > 0) {
-          direccionCompleta += `, ${detalles.join(", ")}`
-        }
+  // Crear la hoja de trabajo
+  const worksheet = XLSX.utils.json_to_sheet(datosParaExportar);
 
-        // Agregar departamento
-        if (empleado.departamentoNombre) {
-          direccionCompleta += `, ${empleado.departamentoNombre}`
-        }
-      } else {
-        direccionCompleta = "Sin dirección"
-      }
+  // Configurar el ancho de las columnas
+  const columnWidths = [
+    { wch: 5 }, // N°
+    { wch: 12 }, // ID Usuario
+    { wch: 25 }, // Auth0 ID
+    { wch: 15 }, // Nombre
+    { wch: 15 }, // Apellido
+    { wch: 30 }, // Email
+    { wch: 15 }, // Teléfono
+    { wch: 15 }, // Rol
+    { wch: 10 }, // Estado
+    { wch: 12 }, // Fecha Alta
+    { wch: 12 }, // Fecha Baja
+    { wch: 20 }, // Imagen
+  ];
 
-      return {
-        Nombre: empleado.nombre || "",
-        Apellido: empleado.apellido || "",
-        Email: empleado.email || "",
-        Rol: empleado.rol || "",
-        Estado: empleado.activo ? "Activo" : "Inactivo",
-        Teléfono: empleado.telefono || "",
-        Dirección: direccionCompleta,
-      }
-    })
+  worksheet["!cols"] = columnWidths;
 
-    // Crear un nuevo libro de trabajo
-    const workbook = XLSX.utils.book_new()
+  // Agregar la hoja al libro
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Empleados");
 
-    // Crear una hoja de trabajo con los datos
-    const worksheet = XLSX.utils.json_to_sheet(datosParaExcel)
+  // Generar el nombre del archivo con fecha y hora
+  const fechaActual = new Date();
+  const fechaFormateada = fechaActual.toISOString().split("T")[0]; // YYYY-MM-DD
+  const horaFormateada = fechaActual.toTimeString().split(" ")[0].replace(/:/g, "-"); // HH-MM-SS
+  const nombreArchivo = `empleados_${fechaFormateada}_${horaFormateada}.xlsx`;
 
-    // Configurar el ancho de las columnas para mejor visualización
-    const columnWidths = [
-      { wch: 15 }, // Nombre
-      { wch: 15 }, // Apellido
-      { wch: 25 }, // Email
-      { wch: 15 }, // Rol
-      { wch: 10 }, // Estado
-      { wch: 15 }, // Teléfono
-      { wch: 40 }, // Dirección
-    ]
-    worksheet["!cols"] = columnWidths
+  // Descargar el archivo
+  XLSX.writeFile(workbook, nombreArchivo);
 
-    // Agregar la hoja al libro
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Empleados")
+  return nombreArchivo;
+};
 
-    // Generar el archivo Excel
-    const excelBuffer = XLSX.write(workbook, {
-      bookType: "xlsx",
-      type: "array",
-    })
+// Función auxiliar para exportar otros tipos de datos (mantenemos compatibilidad)
+export const exportarDatosAExcel = (datos: any[], nombreHoja: string, nombreArchivo?: string): string => {
+  const workbook = XLSX.utils.book_new();
+  const worksheet = XLSX.utils.json_to_sheet(datos);
 
-    // Crear un blob y descargarlo
-    const data = new Blob([excelBuffer], {
-      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    })
+  XLSX.utils.book_append_sheet(workbook, worksheet, nombreHoja);
 
-    // Generar nombre del archivo con fecha actual
-    const fechaActual = new Date().toISOString().split("T")[0]
-    const nombreArchivo = `empleados_${fechaActual}.xlsx`
+  const fechaActual = new Date();
+  const fechaFormateada = fechaActual.toISOString().split("T")[0];
+  const archivo = nombreArchivo || `${nombreHoja.toLowerCase()}_${fechaFormateada}.xlsx`;
 
-    saveAs(data, nombreArchivo)
+  XLSX.writeFile(workbook, archivo);
 
-    console.log(`Archivo Excel exportado exitosamente: ${nombreArchivo}`)
-  } catch (error) {
-    console.error("Error al exportar a Excel:", error)
-    throw new Error("Error al generar el archivo Excel")
-  }
-}
+  return archivo;
+};

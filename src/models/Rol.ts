@@ -1,25 +1,25 @@
 import { Usuario } from "./Usuario";
 
-export class Roles {
-  private id: number;
-  private name: string;
+export class Rol {
+  private idRol: number;
+  private nombre: string;
   private auth0RoleId: string;
-  private usuarios: Usuario[];
+  private usuarios: Usuario[] = [];
 
-  constructor(id: number, name: string, auth0RoleId: string, usuarios: Usuario[]) {
-    this.id = id;
-    this.name = name;
+  constructor(idRol: number, nombre: string, auth0RoleId: string, usuarios: Usuario[]) {
+    this.idRol = idRol;
+    this.nombre = nombre;
     this.auth0RoleId = auth0RoleId;
     this.usuarios = usuarios;
   }
 
   // Getters
-  public getId(): number {
-    return this.id;
+  public getIdRol(): number {
+    return this.idRol;
   }
 
-  public getName(): string {
-    return this.name;
+  public getNombre(): string {
+    return this.nombre;
   }
 
   public getAuth0RoleId(): string {
@@ -31,12 +31,12 @@ export class Roles {
   }
 
   // Setters
-  public setId(id: number): void {
-    this.id = id;
+  public setId(idRol: number): void {
+    this.idRol = idRol;
   }
 
-  public setName(name: string): void {
-    this.name = name;
+  public setNombre(nombre: string): void {
+    this.nombre = nombre;
   }
 
   public setAuth0RoleId(auth0RoleId: string): void {

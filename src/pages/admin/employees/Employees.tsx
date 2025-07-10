@@ -1,222 +1,188 @@
-"use client"
+"use client";
 
-import { Add } from "@mui/icons-material"
-import { useEffect, useState } from "react"
-import { useNavigate } from "react-router-dom"
-import { Pagination } from "../../../components/Admin/products/Pagination"
-import { EmpleadosFilters } from "../../../components/empleados/EmpleadosFilters"
-import { EmpleadosTable } from "../../../components/empleados/EmpleadosTable"
-import { empleadoServicio, type Empleado } from "../../../services/empleadoServicio"
+import type React from "react";
+import { useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
+import { Plus, Download, ArrowLeft } from "lucide-react";
+import { PageHeader } from "../../../components/shared/PageHeader";
+import { EmpleadosFilters } from "../../../components/empleados/EmpleadosFilters";
+import { EmpleadosTable } from "../../../components/empleados/EmpleadosTable";
+import type { EmpleadoResponseDto } from "../../../models/dto/Empleado/EmpleadoResponseDto";
+import { empleadoServicio } from "../../../services/empleadoServicio";
+import { NotificationService } from "../../../utils/notifications";
+import { exportarEmpleadosAExcel } from "../../../utils/exportUtils";
 
-export const Employees = () => {
-  const navigate = useNavigate()
+export const Employees: React.FC = () => {
+  const navigate = useNavigate();
+  const [empleados, setEmpleados] = useState<EmpleadoResponseDto[]>([]);
+  const [empleadosFiltrados, setEmpleadosFiltrados] = useState<EmpleadoResponseDto[]>([]);
+  const [cargando, setCargando] = useState(true);
+  const [exportando, setExportando] = useState(false);
 
-  // Estados principales
-  const [empleados, setEmpleados] = useState<Empleado[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [actionLoading, setActionLoading] = useState<number | null>(null)
+  // Cargar empleados al montar el componente
+  useEffect(() => {
+    cargarEmpleados();
+  }, []);
 
-  // Estados de filtros
-  const [filtroEstado, setFiltroEstado] = useState<"todos" | "activos" | "inactivos">("todos")
-  const [busqueda, setBusqueda] = useState("")
-
-  // Estados de paginación
-  const [currentPage, setCurrentPage] = useState(1)
-  const [itemsPerPage, setItemsPerPage] = useState(10)
-
-  // Cargar empleados
   const cargarEmpleados = async () => {
     try {
-      setLoading(true)
-      setError(null)
-      const data = await empleadoServicio.obtenerEmpleados()
-      setEmpleados(data)
-    } catch (err) {
-      setError("Error al cargar los empleados")
-      console.error("Error:", err)
+      setCargando(true);
+      const empleadosObtenidos = await empleadoServicio.obtenerEmpleados();
+      console.log("Empleados obtenidos:", empleadosObtenidos);
+      setEmpleados(empleadosObtenidos);
+      setEmpleadosFiltrados(empleadosObtenidos);
+    } catch (error) {
+      console.error("Error al cargar empleados:", error);
+      await NotificationService.error("Error", "No se pudieron cargar los empleados");
     } finally {
-      setLoading(false)
+      setCargando(false);
     }
-  }
+  };
 
-  // Filtrar empleados
-  const empleadosFiltrados = empleados.filter((empleado) => {
-    // Filtro por estado
-    let pasaFiltroEstado = true
-    if (filtroEstado === "activos") {
-      pasaFiltroEstado = empleado.activo
-    } else if (filtroEstado === "inactivos") {
-      pasaFiltroEstado = !empleado.activo
-    }
+  const manejarFiltrar = useCallback((empleadosFiltrados: EmpleadoResponseDto[]) => {
+    setEmpleadosFiltrados(empleadosFiltrados);
+  }, []);
 
-    // Filtro por búsqueda
-    const pasaFiltroBusqueda =
-      busqueda === "" || `${empleado.nombre} ${empleado.apellido}`.toLowerCase().includes(busqueda.toLowerCase())
+  const manejarEmpleadoEditado = () => {
+    cargarEmpleados(); // Recargar la lista después de editar
+  };
 
-    return pasaFiltroEstado && pasaFiltroBusqueda
-  })
+  const navegarANuevoEmpleado = () => {
+    navigate("/admin/empleados/nuevo");
+  };
 
-  // Paginación
-  const totalItems = empleadosFiltrados.length
-  const totalPages = Math.ceil(totalItems / itemsPerPage)
-  const startIndex = (currentPage - 1) * itemsPerPage
-  const endIndex = startIndex + itemsPerPage
-  const empleadosPaginados = empleadosFiltrados.slice(startIndex, endIndex)
+  const navegarADashboard = () => {
+    navigate("/admin/dashboard");
+  };
 
-  // Estadísticas
-  const totalEmpleados = empleados.length
-  const empleadosActivos = empleados.filter((emp) => emp.activo).length
-  const empleadosInactivos = empleados.filter((emp) => !emp.activo).length
-
-  // Handlers
-  const handleToggleEstado = async (id: number) => {
+  const exportarEmpleados = async () => {
     try {
-      setActionLoading(id)
-      setError(null)
-      await empleadoServicio.toggleAltaBaja(id)
-      await cargarEmpleados()
-    } catch (err) {
-      setError("Error al cambiar el estado del empleado")
-      console.error("Error:", err)
+      setExportando(true);
+
+      // Usar los empleados filtrados si hay filtros activos, sino todos
+      const empleadosAExportar = empleadosFiltrados.length < empleados.length ? empleadosFiltrados : empleados;
+
+      if (empleadosAExportar.length === 0) {
+        await NotificationService.warning("Sin datos", "No hay empleados para exportar");
+        return;
+      }
+
+      const nombreArchivo = exportarEmpleadosAExcel(empleadosAExportar);
+      await NotificationService.success(
+        "¡Exportación exitosa!",
+        `El archivo ${nombreArchivo} se ha descargado correctamente.`,
+      );
+    } catch (error) {
+      console.error("Error al exportar empleados:", error);
+      await NotificationService.error("Error", "No se pudo exportar el archivo");
     } finally {
-      setActionLoading(null)
+      setExportando(false);
     }
-  }
+  };
 
-  const handleEditar = (id: number) => {
-    navigate(`/admin/empleados/editar/${id}`)
-  }
-
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page)
-  }
-
-  const handleItemsPerPageChange = (items: number) => {
-    setItemsPerPage(items)
-    setCurrentPage(1)
-  }
-
-  const handleFiltroChange = (filtro: "todos" | "activos" | "inactivos") => {
-    setFiltroEstado(filtro)
-    setCurrentPage(1)
-  }
-
-  const handleBusquedaChange = (busquedaValue: string) => {
-    setBusqueda(busquedaValue)
-    setCurrentPage(1)
-  }
-
-  // Efectos
-  useEffect(() => {
-    cargarEmpleados()
-  }, [])
-
-  // Reset página cuando cambian los filtros
-  useEffect(() => {
-    if (currentPage > totalPages && totalPages > 0) {
-      setCurrentPage(1)
-    }
-  }, [currentPage, totalPages])
-
-  if (loading) {
+  if (cargando) {
     return (
-      <div className="min-h-screen bg-gray-50 py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-center items-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600"></div>
-            <span className="ml-2 text-gray-600">Cargando empleados...</span>
-          </div>
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Cargando empleados...</p>
         </div>
       </div>
-    )
+    );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Gestión de Empleados</h1>
-              <p className="text-gray-600 mt-1">Administra los empleados del sistema</p>
-            </div>
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+        {/* Navegación móvil */}
+        <div className="lg:hidden">
+          <button
+            onClick={navegarADashboard}
+            className="inline-flex items-center text-sm font-medium text-gray-500 hover:text-gray-700 mb-4 transition-colors">
+            <ArrowLeft className="h-4 w-4 mr-1" />
+            Volver al Dashboard
+          </button>
+        </div>
+
+        <PageHeader
+          title="Gestión de Empleados"
+          subtitle="Administra los empleados del sistema"
+        />
+
+        {/* Botones de acción - Mobile First */}
+        <div className="flex flex-col sm:flex-row gap-3 sm:justify-between sm:items-center">
+          <div className="order-2 sm:order-1">
             <button
-              onClick={() => navigate("/admin/empleados/nuevo")}
-              className="bg-orange-600 text-white px-6 py-3 rounded-lg hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 transition-colors font-medium flex items-center gap-2"
-            >
-              <Add />
+              onClick={navegarANuevoEmpleado}
+              className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+              <Plus className="h-4 w-4 mr-2" />
               Nuevo Empleado
+            </button>
+          </div>
+
+          <div className="order-1 sm:order-2">
+            <button
+              onClick={exportarEmpleados}
+              disabled={exportando || empleados.length === 0}
+              className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+              {exportando ? (
+                <>
+                  <div className="animate-spin h-4 w-4 border-2 border-gray-600 border-t-transparent rounded-full mr-2" />
+                  Exportando...
+                </>
+              ) : (
+                <>
+                  <Download className="h-4 w-4 mr-2" />
+                  Exportar ({empleadosFiltrados.length})
+                </>
+              )}
             </button>
           </div>
         </div>
 
-        {/* Error */}
-        {error && (
-          <div className="mb-6 bg-red-50 border border-red-200 rounded-md p-4">
+        {/* Filtros */}
+        <EmpleadosFilters
+          empleados={empleados}
+          onFiltrar={manejarFiltrar}
+        />
+
+        {/* Tabla de empleados */}
+        <EmpleadosTable
+          empleados={empleadosFiltrados}
+          onEmpleadoEditado={manejarEmpleadoEditado}
+        />
+
+        {/* Información adicional - Solo desktop */}
+        <div className="hidden lg:block">
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
             <div className="flex">
               <div className="flex-shrink-0">
-                <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                <svg
+                  className="h-5 w-5 text-blue-400"
+                  viewBox="0 0 20 20"
+                  fill="currentColor">
                   <path
                     fillRule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
                     clipRule="evenodd"
                   />
                 </svg>
               </div>
               <div className="ml-3">
-                <h3 className="text-sm font-medium text-red-800">Error</h3>
-                <div className="mt-2 text-sm text-red-700">
-                  <p>{error}</p>
-                </div>
-                <div className="mt-4">
-                  <button
-                    onClick={cargarEmpleados}
-                    className="bg-red-100 px-3 py-2 rounded-md text-sm font-medium text-red-800 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-                  >
-                    Reintentar
-                  </button>
+                <h3 className="text-sm font-medium text-blue-800">Información</h3>
+                <div className="mt-2 text-sm text-blue-700">
+                  <ul className="list-disc list-inside space-y-1">
+                    <li>Usa los filtros para encontrar empleados específicos</li>
+                    <li>Los empleados desactivados pueden ser reactivados en cualquier momento</li>
+                    <li>La exportación incluye todos los empleados filtrados actualmente</li>
+                    <li>Los cambios se reflejan inmediatamente en el sistema</li>
+                  </ul>
                 </div>
               </div>
             </div>
           </div>
-        )}
-
-        {/* Filtros */}
-        <EmpleadosFilters
-          totalEmpleados={totalEmpleados}
-          empleadosActivos={empleadosActivos}
-          empleadosInactivos={empleadosInactivos}
-          filtroActual={filtroEstado}
-          onFiltroChange={handleFiltroChange}
-          busqueda={busqueda}
-          onBusquedaChange={handleBusquedaChange}
-        />
-
-        {/* Tabla */}
-        <EmpleadosTable
-          empleados={empleadosPaginados}
-          onEditar={handleEditar}
-          onToggleEstado={handleToggleEstado}
-          actionLoading={actionLoading}
-        />
-
-        {/* Paginación */}
-        {totalItems > 0 && (
-          <div className="mt-6">
-            <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              totalItems={totalItems}
-              itemsPerPage={itemsPerPage}
-              onPageChange={handlePageChange}
-              onItemsPerPageChange={handleItemsPerPageChange}
-              itemsPerPageOptions={[5, 10, 25, 50]}
-            />
-          </div>
-        )}
+        </div>
       </div>
     </div>
-  )
-}
+  );
+};

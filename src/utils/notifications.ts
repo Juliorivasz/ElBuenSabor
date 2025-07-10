@@ -1,5 +1,5 @@
 // Sistema de notificaciones usando SweetAlert2 que ya está instalado
-import Swal from "sweetalert2"
+import Swal from "sweetalert2";
 
 export class NotificationService {
   static success(message: string, title = "Éxito") {
@@ -12,7 +12,7 @@ export class NotificationService {
       showConfirmButton: false,
       toast: true,
       position: "bottom-end",
-    })
+    });
   }
 
   static error(message: string, title = "Error") {
@@ -25,7 +25,7 @@ export class NotificationService {
       showConfirmButton: false,
       toast: true,
       position: "bottom-end",
-    })
+    });
   }
 
   static warning(message: string, title = "Advertencia") {
@@ -38,7 +38,7 @@ export class NotificationService {
       showConfirmButton: false,
       toast: true,
       position: "bottom-end",
-    })
+    });
   }
 
   static info(message: string, title = "Información") {
@@ -51,7 +51,7 @@ export class NotificationService {
       showConfirmButton: false,
       toast: true,
       position: "bottom-end",
-    })
+    });
   }
 
   static async confirm(message: string, title = "Confirmar acción"): Promise<boolean> {
@@ -64,8 +64,8 @@ export class NotificationService {
       cancelButtonColor: "#6b7280",
       confirmButtonText: "Sí, continuar",
       cancelButtonText: "Cancelar",
-    })
+    });
 
-    return result.isConfirmed
+    return result.isConfirmed;
   }
 }

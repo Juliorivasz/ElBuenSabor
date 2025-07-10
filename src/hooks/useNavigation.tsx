@@ -98,7 +98,7 @@ export const useNavigation = () => {
             roles: backendProfile.roles,
             email: backendProfile.email, // Incluirlos por si setProfileData los usa para fusionar
             name: backendProfile.nombre,
-            id: backendProfile.idAuth0,
+            id: backendProfile.auth0Id,
             picture: backendProfile.imagen ?? undefined, // Mapeo de imagen a picture, convierte null a undefined
           });
 
