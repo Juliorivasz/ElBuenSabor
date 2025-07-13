@@ -126,7 +126,6 @@ export const EmpleadoForm: React.FC<IEmpleadoFormProps> = ({
       console.error("Error en el formulario:", error);
     }
   };
-  console.log(roles.find((rol) => rol.getNombre() === formData.rol)?.getAuth0RoleId());
 
   return (
     <form
@@ -266,7 +265,7 @@ export const EmpleadoForm: React.FC<IEmpleadoFormProps> = ({
           </label>
           <select
             id="rol"
-            value={formData.rol}
+            value={roles.find((rol) => rol.getNombre() === formData.rol)?.getAuth0RoleId()}
             onChange={(e) => manejarCambio("rol", e.target.value)}
             className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
               errores.rol ? "border-red-500" : "border-gray-300"

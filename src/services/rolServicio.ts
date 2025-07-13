@@ -19,7 +19,6 @@ export class RolServicio {
   async obtenerRoles(): Promise<RolDto[]> {
     try {
       const response = await interceptorsApiClient.get<IRolDto[]>(`${this.baseUrl}/todosRoles`);
-      console.log("Roles obtenidos:", response.data);
       return response.data.map(irolDtoToRolDto);
     } catch (error) {
       console.error("Error al obtener roles:", error);
@@ -43,7 +42,6 @@ export class RolServicio {
   async obtenerRolPorId(idRol: number): Promise<RolDto> {
     try {
       const response = await interceptorsApiClient.get<IRolDto>(`${this.baseUrl}/${idRol}`);
-      console.log("Rol obtenido por ID:", response.data);
       return irolDtoToRolDto(response.data);
     } catch (error) {
       console.error("Error al obtener rol por ID:", error);

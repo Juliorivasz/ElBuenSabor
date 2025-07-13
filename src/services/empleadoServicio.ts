@@ -100,7 +100,6 @@ class EmpleadoServicio {
   async obtenerEmpleados(): Promise<EmpleadoResponseDto[]> {
     try {
       const response = await interceptorsApiClient.get<IEmpleadoResponseDto[]>(this.baseUrl);
-      console.log("Respuesta del backend - empleados:", response.data);
 
       return response.data.map((empleadoData) => this.mapearEmpleadoDesdeBackend(empleadoData));
     } catch (error) {
@@ -113,7 +112,6 @@ class EmpleadoServicio {
   async obtenerEmpleadoPorId(id: number): Promise<EmpleadoResponseDto> {
     try {
       const response = await interceptorsApiClient.get<IEmpleadoResponseDto>(`${this.baseUrl}/${id}`);
-      console.log("Empleado obtenido por ID:", response.data);
       return this.mapearEmpleadoDesdeBackend(response.data);
     } catch (error) {
       console.error("Error al obtener empleado por ID:", error);
@@ -124,9 +122,7 @@ class EmpleadoServicio {
   // 3. Crear nuevo empleado (POST /empleado/nuevo) - Solo devuelve status
   async crearEmpleado(nuevoEmpleadoDto: NuevoEmpleadoDto): Promise<void> {
     try {
-      console.log("Creando empleado:", nuevoEmpleadoDto.toJson());
       await interceptorsApiClient.post(`${this.baseUrl}/nuevo`, nuevoEmpleadoDto.toJson());
-      console.log("Empleado creado exitosamente");
     } catch (error) {
       console.error("Error al crear empleado:", error);
       throw error;
@@ -136,9 +132,7 @@ class EmpleadoServicio {
   // 4. Actualizar empleado (PUT /empleado/{id}) - Solo devuelve status
   async actualizarEmpleado(id: number, actualizarEmpleadoDto: ActualizarEmpleadoDto): Promise<void> {
     try {
-      console.log("Actualizando empleado:", id, actualizarEmpleadoDto.toJson());
       await interceptorsApiClient.put(`${this.baseUrl}/${id}`, actualizarEmpleadoDto.toJson());
-      console.log("Empleado actualizado exitosamente");
     } catch (error) {
       console.error("Error al actualizar empleado:", error);
       throw error;
@@ -148,9 +142,7 @@ class EmpleadoServicio {
   // 5. Alta/Baja lógica (POST /empleado/altaBaja/{id}) - Solo devuelve status
   async toggleAltaBaja(id: number): Promise<void> {
     try {
-      console.log(`Ejecutando toggle alta/baja para empleado ID: ${id}`);
       await interceptorsApiClient.post(`${this.baseUrl}/altaBaja/${id}`);
-      console.log("Toggle alta/baja ejecutado exitosamente");
     } catch (error) {
       console.error("Error en toggle alta/baja:", error);
       throw error;
@@ -163,7 +155,6 @@ class EmpleadoServicio {
       const formData = new FormData();
       formData.append("file", file);
 
-      console.log(`Subiendo imagen para empleado ID: ${id}`);
       const response = await interceptorsApiClient.post<IImagenUploadResponse>(
         `${this.baseUrl}/${id}/imagen/upload`,
         formData,
@@ -174,7 +165,6 @@ class EmpleadoServicio {
         },
       );
 
-      console.log("Imagen subida exitosamente:", response.data);
       return response.data;
     } catch (error) {
       console.error("Error al subir imagen del empleado:", error);

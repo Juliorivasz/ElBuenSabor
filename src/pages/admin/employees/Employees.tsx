@@ -28,7 +28,6 @@ export const Employees: React.FC = () => {
     try {
       setCargando(true);
       const empleadosObtenidos = await empleadoServicio.obtenerEmpleados();
-      console.log("Empleados obtenidos:", empleadosObtenidos);
       setEmpleados(empleadosObtenidos);
       setEmpleadosFiltrados(empleadosObtenidos);
     } catch (error) {

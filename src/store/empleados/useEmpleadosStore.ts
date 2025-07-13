@@ -112,8 +112,6 @@ export const useEmpleadosStore = create<EmpleadosState>((set, get) => ({
 
       // Llamada al backend
       await empleadoServicio.toggleAltaBaja(id);
-
-      console.log(`Toggle activo/inactivo exitoso para empleado ID: ${id}`);
     } catch (error) {
       console.error("Error en toggle activo/inactivo:", error);
 
