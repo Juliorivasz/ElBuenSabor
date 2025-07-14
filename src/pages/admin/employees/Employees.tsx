@@ -3,7 +3,7 @@
 import type React from "react";
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, Download, ArrowLeft } from "lucide-react";
+import { Plus, Download } from "lucide-react";
 import { PageHeader } from "../../../components/shared/PageHeader";
 import { EmpleadosFilters } from "../../../components/empleados/EmpleadosFilters";
 import { EmpleadosTable } from "../../../components/empleados/EmpleadosTable";
@@ -11,6 +11,7 @@ import type { EmpleadoResponseDto } from "../../../models/dto/Empleado/EmpleadoR
 import { empleadoServicio } from "../../../services/empleadoServicio";
 import { NotificationService } from "../../../utils/notifications";
 import { exportarEmpleadosAExcel } from "../../../utils/exportUtils";
+import { PeopleAlt as PeopleIcon } from "@mui/icons-material";
 
 export const Employees: React.FC = () => {
   const navigate = useNavigate();
@@ -48,10 +49,6 @@ export const Employees: React.FC = () => {
 
   const navegarANuevoEmpleado = () => {
     navigate("/admin/empleados/nuevo");
-  };
-
-  const navegarADashboard = () => {
-    navigate("/admin/dashboard");
   };
 
   const exportarEmpleados = async () => {
@@ -94,18 +91,18 @@ export const Employees: React.FC = () => {
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
         {/* Navegación móvil */}
-        <div className="lg:hidden">
-          <button
-            onClick={navegarADashboard}
-            className="inline-flex items-center text-sm font-medium text-gray-500 hover:text-gray-700 mb-4 transition-colors">
-            <ArrowLeft className="h-4 w-4 mr-1" />
-            Volver al Dashboard
-          </button>
-        </div>
-
         <PageHeader
           title="Gestión de Empleados"
           subtitle="Administra los empleados del sistema"
+          showBackButton={true}
+          backTo="/admin/dashboard"
+          icon={
+            <PeopleIcon
+              className="text-black mr-3"
+              fontSize="large"
+            />
+          }
+          breadcrumbs={[{ label: "Dashboard", href: "/admin/dashboard" }, { label: "Empleados" }]}
         />
 
         {/* Botones de acción - Mobile First */}
@@ -113,7 +110,7 @@ export const Employees: React.FC = () => {
           <div className="order-2 sm:order-1">
             <button
               onClick={navegarANuevoEmpleado}
-              className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+              className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200 flex items-center space-x-2">
               <Plus className="h-4 w-4 mr-2" />
               Nuevo Empleado
             </button>

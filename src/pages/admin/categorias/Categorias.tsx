@@ -1,14 +1,15 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import { CategoriaDetailsModal } from "../../../components/categorias/CategoriaDetailsModal"
-import { CategoriaForm } from "../../../components/categorias/CategoriaForm"
-import { CategoriasFilters } from "../../../components/categorias/CategoriasFilters"
-import { CategoriasTable } from "../../../components/categorias/CategoriasTable"
-import { PageHeader } from "../../../components/shared/PageHeader"
-import type { CategoriaExtendidaDto } from "../../../models/dto/CategoriaExtendidaDto"
-import type { NuevaCategoriaDto } from "../../../models/dto/NuevaCategoriaDto"
-import { useCategoriasStore } from "../../../store/categorias/useCategoriasStore"
+import { useEffect, useState } from "react";
+import { CategoriaDetailsModal } from "../../../components/categorias/CategoriaDetailsModal";
+import { CategoriaForm } from "../../../components/categorias/CategoriaForm";
+import { CategoriasFilters } from "../../../components/categorias/CategoriasFilters";
+import { CategoriasTable } from "../../../components/categorias/CategoriasTable";
+import { PageHeader } from "../../../components/shared/PageHeader";
+import type { CategoriaExtendidaDto } from "../../../models/dto/CategoriaExtendidaDto";
+import type { NuevaCategoriaDto } from "../../../models/dto/NuevaCategoriaDto";
+import { useCategoriasStore } from "../../../store/categorias/useCategoriasStore";
+import { Category as CategoryIcon } from "@mui/icons-material";
 
 export const Categorias = () => {
   const {
@@ -28,74 +29,74 @@ export const Categorias = () => {
     getCategoriasPaginadas,
     getEstadisticas,
     getPaginationInfo,
-  } = useCategoriasStore()
+  } = useCategoriasStore();
 
-  const [showForm, setShowForm] = useState(false)
-  const [showDetails, setShowDetails] = useState(false)
-  const [selectedCategoria, setSelectedCategoria] = useState<CategoriaExtendidaDto | null>(null)
-  const [isEditing, setIsEditing] = useState(false)
+  const [showForm, setShowForm] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
+  const [selectedCategoria, setSelectedCategoria] = useState<CategoriaExtendidaDto | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
 
   // Cargar categorías al montar el componente
   useEffect(() => {
-    fetchCategorias()
-  }, [fetchCategorias])
+    fetchCategorias();
+  }, [fetchCategorias]);
 
-  const estadisticas = getEstadisticas()
-  const paginationInfo = getPaginationInfo()
-  const categoriasPaginadas = getCategoriasPaginadas()
+  const estadisticas = getEstadisticas();
+  const paginationInfo = getPaginationInfo();
+  const categoriasPaginadas = getCategoriasPaginadas();
 
   const handleNuevaCategoria = () => {
-    setSelectedCategoria(null)
-    setIsEditing(false)
-    setShowForm(true)
-  }
+    setSelectedCategoria(null);
+    setIsEditing(false);
+    setShowForm(true);
+  };
 
   const handleEditCategoria = (categoria: CategoriaExtendidaDto) => {
-    setSelectedCategoria(categoria)
-    setIsEditing(true)
-    setShowForm(true)
-  }
+    setSelectedCategoria(categoria);
+    setIsEditing(true);
+    setShowForm(true);
+  };
 
   const handleViewDetails = (categoria: CategoriaExtendidaDto) => {
-    setSelectedCategoria(categoria)
-    setShowDetails(true)
-  }
+    setSelectedCategoria(categoria);
+    setShowDetails(true);
+  };
 
   const handleToggleStatus = async (categoria: CategoriaExtendidaDto) => {
     try {
-      await toggleEstadoCategoria(categoria.getIdCategoria())
+      await toggleEstadoCategoria(categoria.getIdCategoria());
     } catch (error) {
       // El error ya se maneja en el store con notificaciones
-      console.error("Error al cambiar estado:", error)
+      console.error("Error al cambiar estado:", error);
     }
-  }
+  };
 
   const handleSubmitForm = async (categoria: NuevaCategoriaDto, archivo?: File) => {
     try {
       if (isEditing && selectedCategoria) {
-        await actualizarCategoria(selectedCategoria.getIdCategoria(), categoria, archivo)
+        await actualizarCategoria(selectedCategoria.getIdCategoria(), categoria, archivo);
       } else {
-        await crearCategoria(categoria, archivo)
+        await crearCategoria(categoria, archivo);
       }
-      setShowForm(false)
-      setSelectedCategoria(null)
-      setIsEditing(false)
+      setShowForm(false);
+      setSelectedCategoria(null);
+      setIsEditing(false);
     } catch (error) {
       // El error ya se maneja en el store con notificaciones
-      console.error("Error al guardar categoría:", error)
+      console.error("Error al guardar categoría:", error);
     }
-  }
+  };
 
   const handleCancelForm = () => {
-    setShowForm(false)
-    setSelectedCategoria(null)
-    setIsEditing(false)
-  }
+    setShowForm(false);
+    setSelectedCategoria(null);
+    setIsEditing(false);
+  };
 
   const handleCloseDetails = () => {
-    setShowDetails(false)
-    setSelectedCategoria(null)
-  }
+    setShowDetails(false);
+    setSelectedCategoria(null);
+  };
 
   if (error) {
     return (
@@ -104,7 +105,11 @@ export const Categorias = () => {
           <PageHeader title="Gestión de Categorías" />
           <div className="bg-red-50 border border-red-200 rounded-lg p-8 text-center">
             <div className="text-red-600 mb-4">
-              <svg className="mx-auto h-16 w-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg
+                className="mx-auto h-16 w-16"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -117,9 +122,12 @@ export const Categorias = () => {
             <p className="text-red-700 mb-6">{error}</p>
             <button
               onClick={fetchCategorias}
-              className="inline-flex items-center px-6 py-3 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
-            >
-              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              className="inline-flex items-center px-6 py-3 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors">
+              <svg
+                className="w-4 h-4 mr-2"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -132,13 +140,25 @@ export const Categorias = () => {
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
-        <PageHeader title="Gestión de Categorías" />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+        <PageHeader
+          title="Panel de Categorías"
+          subtitle="Gestiona las categorías de productos"
+          showBackButton={true}
+          backTo="admin/dashboard"
+          icon={
+            <CategoryIcon
+              className="text-black mr-3"
+              fontSize="large"
+            />
+          }
+          breadcrumbs={[{ label: "Dashboard", href: "/admin/dashboard" }, { label: "Categorias" }]}
+        />
 
         {/* Filtros */}
         <CategoriasFilters
@@ -170,7 +190,7 @@ export const Categorias = () => {
         {/* Modal de formulario */}
         {showForm && (
           <CategoriaForm
-            categoria={isEditing ? (selectedCategoria ?? undefined) : undefined}
+            categoria={isEditing ? selectedCategoria ?? undefined : undefined}
             categorias={categorias}
             onSubmit={handleSubmitForm}
             onCancel={handleCancelForm}
@@ -180,9 +200,13 @@ export const Categorias = () => {
 
         {/* Modal de detalles */}
         {showDetails && selectedCategoria && (
-          <CategoriaDetailsModal categoria={selectedCategoria} categorias={categorias} onClose={handleCloseDetails} />
+          <CategoriaDetailsModal
+            categoria={selectedCategoria}
+            categorias={categorias}
+            onClose={handleCloseDetails}
+          />
         )}
       </div>
     </div>
-  )
-}
+  );
+};

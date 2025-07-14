@@ -42,7 +42,7 @@ export const adminRoutes = [
   },
   {
     path: "empleado/caja",
-    element: lazy(() => import("../pages/admin/abm/AbmGeneric").then((module) => ({ default: module.AbmGeneric }))),
+    element: lazy(() => import("../pages/admin/pedidos/Pedidos").then((module) => ({ default: module.Pedidos }))),
     allowedRoles: ["cajero", "administrador"],
   },
   {
