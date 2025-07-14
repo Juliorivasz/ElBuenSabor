@@ -1,10 +1,11 @@
 import { useAuth0 } from "@auth0/auth0-react";
-import { FC, JSX, useEffect, useRef } from "react";
+import { type FC, type JSX, useEffect, useRef } from "react";
 import { useAuth0Store } from "../store/auth/useAuth0Store";
 import { setAccessTokenSilently } from "../services/interceptors/axios.interceptors";
 import { useNavigate, useLocation } from "react-router-dom";
 import type { IUser } from "../store/auth/types/user";
 import { fetchUserProfile } from "../services/clienteServicio";
+import { isEmployee } from "../constants/roles";
 
 interface Auth0BridgeProps {
   children: JSX.Element;
@@ -16,33 +17,51 @@ export const Auth0Bridge: FC<Auth0BridgeProps> = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const profileCheckPerformed = useRef(false);
+  const authProcessed = useRef(false);
 
   useEffect(() => {
-    const processAuthAndProfile = async () => {
+    const processAuthentication = async () => {
+      // Si está cargando, marcar token como no listo
       if (auth0Loading) {
         setTokenReady(false);
         return;
       }
 
+      // Si no está autenticado, limpiar estado
       if (!isAuthenticated) {
         clearUser();
         setAccessTokenSilently(null);
-        profileCheckPerformed.current = false;
+        authProcessed.current = false;
 
-        if (location.pathname !== "/" && !location.pathname.startsWith("/public")) {
+        // Solo redirigir si no está en rutas públicas
+        const publicPaths = [
+          "/",
+          "/about",
+          "/contact",
+          "/catalog",
+          "/delivery",
+          "/help",
+          "/faq",
+          "/terms",
+          "/privacy",
+          "/cookies",
+        ];
+        if (!publicPaths.includes(location.pathname)) {
           navigate("/", { replace: true });
         }
+
         setTokenReady(true);
         return;
       }
 
-      if (profileCheckPerformed.current && location.pathname !== "/redirectRol") {
+      // Si ya se procesó la autenticación y no estamos en redirectRol, marcar como listo
+      if (authProcessed.current && location.pathname !== "/redirectRol") {
         setTokenReady(true);
         return;
       }
 
-      if (isAuthenticated && user) {
+      // Procesar usuario autenticado
+      if (isAuthenticated && user && !authProcessed.current) {
         try {
           const accessToken = await getAccessTokenSilently({
             authorizationParams: {
@@ -64,42 +83,44 @@ export const Auth0Bridge: FC<Auth0BridgeProps> = ({ children }) => {
 
           setUser(userForZustand);
 
-          try {
-            const profile = await fetchUserProfile();
+          // Solo los clientes necesitan verificar/completar perfil
+          const userRoles = userForZustand.roles;
+          const isUserEmployee = isEmployee(userRoles);
 
-            setProfileData({
-              apellido: profile.apellido,
-              telefono: profile.telefono ?? undefined,
-              roles: profile.roles || userForZustand.roles,
-              imagen: profile.imagen,
-            });
-            setIsProfileComplete(true);
-          } catch (profileError: unknown) {
-            console.warn(
-              "Perfil de usuario no encontrado en el backend o error al obtenerlo. Se asume perfil incompleto.",
-              profileError,
-            );
-            setIsProfileComplete(false);
-
-            if (location.pathname !== "/complete-profile") {
-              navigate("/complete-profile", { replace: true });
+          if (!isUserEmployee) {
+            // Es cliente o no tiene roles - verificar perfil
+            try {
+              const profile = await fetchUserProfile();
+              setProfileData({
+                apellido: profile.apellido,
+                telefono: profile.telefono ?? undefined,
+                roles: profile.roles || userForZustand.roles,
+                imagen: profile.imagen,
+              });
+              setIsProfileComplete(true);
+            } catch (profileError) {
+              console.warn("Perfil no encontrado - usuario necesita completar registro", profileError);
+              setIsProfileComplete(false);
             }
-          } finally {
-            profileCheckPerformed.current = true;
-            setTokenReady(true);
+          } else {
+            // Es empleado/admin - no necesita completar perfil
+            setIsProfileComplete(true);
           }
+
+          authProcessed.current = true;
         } catch (tokenError) {
           console.error("Error al obtener el access token:", tokenError);
           clearUser();
           setAccessTokenSilently(null);
-          profileCheckPerformed.current = false;
-          setTokenReady(true);
+          authProcessed.current = false;
           navigate("/", { replace: true });
+        } finally {
+          setTokenReady(true);
         }
       }
     };
 
-    processAuthAndProfile();
+    processAuthentication();
   }, [
     isAuthenticated,
     auth0Loading,

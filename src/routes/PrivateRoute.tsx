@@ -3,13 +3,16 @@ import type { ReactNode } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth0Store } from "../store/auth/useAuth0Store";
 import Swal from "sweetalert2";
+import { EmployeeRoute } from "../auth/EmployeeRoute";
+import { ClientRoute } from "../auth/ClientRoute";
 
 interface PrivateRouteProps {
   children: ReactNode;
   requiredRole?: string[];
+  type?: "client" | "employee";
 }
 
-export const PrivateRoute = ({ children, requiredRole }: PrivateRouteProps) => {
+export const PrivateRoute = ({ children, requiredRole = [], type = "client" }: PrivateRouteProps) => {
   const { isAuthenticated, isLoading: auth0Loading } = useAuth0();
   const location = useLocation();
 
@@ -104,5 +107,9 @@ export const PrivateRoute = ({ children, requiredRole }: PrivateRouteProps) => {
   }
 
   // 8. Si todo está bien, renderizar el componente
-  return <>{children}</>;
+  if (type === "employee") {
+    return <EmployeeRoute requiredRoles={requiredRole}>{children}</EmployeeRoute>;
+  }
+
+  return <ClientRoute>{children}</ClientRoute>;
 };
