@@ -217,7 +217,7 @@ export const KitchenOrderCard: React.FC<KitchenOrderCardProps> = ({ pedido, onPe
             className="flex items-center px-3 py-2 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
           >
             <CheckCircleOutlined className="mr-1" fontSize="small" />
-            {loading ? "Marcando..." : "Marcar como Listo"}
+            {loading ? "Marcando..." : "Pedido Listo"}
           </button>
         )}
       </div>

@@ -96,7 +96,7 @@ export const Delivery: React.FC = () => {
         {/* Sección de pedidos en camino */}
         <div className="mb-8">
           <div className="bg-orange-100 rounded-lg shadow-sm border border-orange-200 p-6">
-            <h2 className="text-xl font-bold text-green-800 mb-4">
+            <h2 className="text-xl font-bold text-orange-800 mb-4">
               <LocalShippingOutlined className="text-black mr-2" fontSize="small" />
               Pedidos En Camino</h2>
             {pedidosEnCamino.length === 0 ? (
