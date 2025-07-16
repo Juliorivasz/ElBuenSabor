@@ -1,5 +1,3 @@
-import { ImagenDTOJson } from "./ImagenDTOJson";
-
 export interface ArticuloDTOJson {
   idArticulo: number;
   nombre: string;
@@ -7,6 +5,6 @@ export interface ArticuloDTOJson {
   precioVenta: number;
   tiempoDeCocina: number;
   idCategoria: number;
-  imagenDto: ImagenDTOJson | null;
+  imagenModel: string | null;
   puedeElaborarse: boolean;
 }

@@ -1,4 +1,3 @@
-import { ImagenDTO } from "./ImagenDTO";
 import { NuevoArticuloNoElaboradoDtoJson } from "../interface/NuevoArticuloNoElaboradoDtoJson";
 
 export class NuevoArticuloNoElaboradoDto {
@@ -7,7 +6,7 @@ export class NuevoArticuloNoElaboradoDto {
   private precioVenta: number;
   private dadoDeAlta: boolean;
   private idCategoria: number;
-  private imagenDto: ImagenDTO;
+  private imagenUrl?: string;
 
   constructor(
     nombre: string,
@@ -15,14 +14,14 @@ export class NuevoArticuloNoElaboradoDto {
     precioVenta: number,
     dadoDeAlta: boolean,
     idCategoria: number,
-    imagenDto: ImagenDTO,
+    imagenUrl?: string,
   ) {
     this.nombre = nombre;
     this.descripcion = descripcion;
     this.precioVenta = precioVenta;
     this.dadoDeAlta = dadoDeAlta;
     this.idCategoria = idCategoria;
-    this.imagenDto = imagenDto;
+    this.imagenUrl = imagenUrl;
   }
   // Getters
   public getNombre(): string {
@@ -45,8 +44,8 @@ export class NuevoArticuloNoElaboradoDto {
     return this.idCategoria;
   }
 
-  public getImagenDto(): ImagenDTO {
-    return this.imagenDto;
+  public getImagenUrl(): string | undefined {
+    return this.imagenUrl;
   }
 
   // Setters
@@ -70,8 +69,8 @@ export class NuevoArticuloNoElaboradoDto {
     this.idCategoria = idCategoria;
   }
 
-  public setImagenDto(imagenDto: ImagenDTO): void {
-    this.imagenDto = imagenDto;
+  public setImagenUrl(imagenUrl: string): void {
+    this.imagenUrl = imagenUrl;
   }
 
   public toJSON(): NuevoArticuloNoElaboradoDtoJson {
@@ -81,22 +80,18 @@ export class NuevoArticuloNoElaboradoDto {
       precioVenta: this.precioVenta,
       dadoDeAlta: this.dadoDeAlta,
       idCategoria: this.idCategoria,
-      imagenDto: this.imagenDto.toJSON(),
+      imagenUrl: this.imagenUrl,
     };
   }
 
   public static fromJSON(json: NuevoArticuloNoElaboradoDtoJson): NuevoArticuloNoElaboradoDto {
-    const imagenDto = ImagenDTO.fromJSON(json.imagenDto);
-    if (!imagenDto) {
-      throw new Error("imagenDto no puede ser null");
-    }
     return new NuevoArticuloNoElaboradoDto(
       json.nombre,
       json.descripcion,
       json.precioVenta,
       json.dadoDeAlta,
       json.idCategoria,
-      imagenDto,
+      json.imagenUrl,
     );
   }
 }

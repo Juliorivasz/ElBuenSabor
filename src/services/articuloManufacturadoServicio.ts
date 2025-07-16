@@ -1,9 +1,8 @@
-import { ImagenDTO } from "../models/dto/ImagenDTO";
 import { InformacionArticuloManufacturadoDto } from "../models/dto/InformacionArticuloManufacturadoDto";
 import { InformacionDetalleDto } from "../models/dto/InformacionDetalleDto";
-import { NuevoArticuloManufacturadoDto } from "../models/dto/NuevoArticuloManufacturadoDto";
+import type { NuevoArticuloManufacturadoDto } from "../models/dto/NuevoArticuloManufacturadoDto";
 import { interceptorsApiClient } from "./interceptors/axios.interceptors";
-import {
+import type {
   InformacionArticuloManufacturadoDtoApi,
   InformacionDetalleDTOApi,
   PaginatedResponseAbm,
@@ -16,7 +15,6 @@ const parseDetallesDTO = (data: InformacionDetalleDTOApi) => {
 
 const parseInformacionArticuloManufacturadoDTO = (data: InformacionArticuloManufacturadoDtoApi) => {
   const detalles = data.detalles.map(parseDetallesDTO);
-  const imagenDto = new ImagenDTO(data.imagenDto.url);
 
   return new InformacionArticuloManufacturadoDto(
     data.idArticulo,
@@ -29,22 +27,18 @@ const parseInformacionArticuloManufacturadoDTO = (data: InformacionArticuloManuf
     data.dadoDeAlta,
     data.idCategoria,
     data.nombreCategoria,
-    imagenDto,
+    data.imagenUrl,
     detalles,
   );
 };
 
 export const fetchArticulosManufacturadosAbm = async (
   page: number,
-  itemsPerPage: number,
+  itemsPerPage = 12,
 ): Promise<PaginatedResponseAbm> => {
-  const response = await fetch(
-    `http://localhost:8080/articuloManufacturado/abm?page=${page}${itemsPerPage ? `&size=${itemsPerPage}` : ""}`,
-  );
-  if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`);
-  }
-  const data: PaginatedResponseAbmApi = await response.json();
+  const response = await interceptorsApiClient.get(`/articuloManufacturado/abm?page=${page}&size=${itemsPerPage}`);
+  const data: PaginatedResponseAbmApi = response.data;
+  console.log({ ...data, content: data.content });
   const content = data.content.map(parseInformacionArticuloManufacturadoDTO);
 
   return { ...data, content: content };
@@ -59,44 +53,51 @@ export const altaBajaArticuloManufacturado = async (id: number, dadoDeAlta: bool
 };
 
 // Función para crear un nuevo artículo manufacturado
-export const crearArticuloManufacturado = async (producto: NuevoArticuloManufacturadoDto) => {
-  // Convertir el DTO a la estructura requerida por la API
+export const crearArticuloManufacturado = async (producto: NuevoArticuloManufacturadoDto, file?: File) => {
+  const formData = new FormData();
 
-  const response = await fetch("http://localhost:8080/articuloManufacturado/nuevo", {
-    method: "POST",
+  // Agregar el JSON del artículo como string
+  formData.append("articulo", JSON.stringify(producto.toJSON()));
+
+  // Agregar el archivo si existe
+  if (file) {
+    formData.append("file", file);
+    console.log("Archivo adjuntado:", file.name, file.type, file.size);
+  }
+
+  console.log("Enviando datos:", JSON.stringify(producto.toJSON()));
+
+  const response = await interceptorsApiClient.post("/articuloManufacturado/nuevo", formData, {
     headers: {
-      "Content-Type": "application/json",
+      "Content-Type": "multipart/form-data",
     },
-    body: JSON.stringify(producto.toJSON()),
   });
 
-  if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`);
-  }
+  console.log("Respuesta del servidor:", response.data);
+  return response.data;
 };
 
 // Función para actualizar un artículo manufacturado
 export const actualizarArticuloManufacturado = async (
   id: number,
   producto: InformacionArticuloManufacturadoDto,
+  file?: File,
 ): Promise<boolean> => {
-  // Convertir el DTO a la estructura requerida por la API
+  const formData = new FormData();
 
+  // Convertir el DTO a la estructura requerida por la API
   const requestBody = {
     idArticulo: producto.getidArticulo(),
     nombre: producto.getNombre(),
     descripcion: producto.getDescripcion(),
     precioVenta: producto.getPrecioVenta(),
+    precioModificado: producto.getPrecioModificado(),
     receta: producto.getReceta(),
     tiempoDeCocina: producto.getTiempoDeCocina(),
     dadoDeAlta: producto.isDadoDeAlta(),
     idCategoria: producto.getIdCategoria(),
     nombreCategoria: producto.getNombreCategoria(),
-    imagenDto: producto.getImagenDto()
-      ? {
-          url: producto.getImagenDto()!.getUrl(),
-        }
-      : null,
+    imagenUrl: producto.getImagenUrl() || null,
     detalles: producto.getDetalles().map((detalle) => ({
       idArticuloInsumo: detalle.getIdArticuloInsumo(),
       nombreInsumo: detalle.getNombreInsumo(),
@@ -105,7 +106,22 @@ export const actualizarArticuloManufacturado = async (
     })),
   };
 
-  interceptorsApiClient.put(`/articuloManufacturado/modificar/${id}`, requestBody);
+  // Agregar el JSON del artículo
+  formData.append("articulo", JSON.stringify(requestBody));
 
+  // Agregar el archivo si existe
+  if (file) {
+    formData.append("file", file);
+    console.log("Archivo adjuntado para actualización:", file.name, file.type, file.size);
+  }
+  console.log(requestBody);
+
+  const response = await interceptorsApiClient.put(`/articuloManufacturado/modificar/${id}`, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+
+  console.log("Respuesta del servidor para actualización:", response.data);
   return true;
 };

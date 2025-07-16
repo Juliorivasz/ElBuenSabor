@@ -111,7 +111,7 @@ export const SearchSection: React.FC<SearchSectionProps> = ({ products, onSearch
 
   const handleAddToCart = (product: ArticuloDTO, quantity: number) => {
     for (let i = 0; i < quantity; i++) {
-      addItem(product, product.getImagenDto()?.getUrl() || "https://placehold.co/150");
+      addItem(product, product.getImagenModel() || "https://placehold.co/150");
     }
     setSelectedProduct(null);
   };
@@ -181,7 +181,7 @@ export const SearchSection: React.FC<SearchSectionProps> = ({ products, onSearch
                         index === selectedIndex ? "bg-orange-50 border-l-4 border-orange-500" : "hover:bg-gray-50"
                       }`}>
                       <img
-                        src={product.getImagenDto()?.getUrl() || "https://placehold.co/400"}
+                        src={product.getImagenModel() || "https://placehold.co/400"}
                         alt={product.getNombre()}
                         className="w-12 h-12 object-cover rounded-lg"
                       />

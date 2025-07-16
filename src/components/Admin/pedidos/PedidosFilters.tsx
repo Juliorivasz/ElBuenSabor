@@ -6,9 +6,16 @@ import { EstadoPedido } from "../../../models/enum/EstadoPedido"
 interface PedidosFiltersProps {
   estadoSeleccionado: string
   onEstadoChange: (estado: string) => void
+  onRefresh: () => void
+  refreshing?: boolean
 }
 
-export const PedidosFilters: React.FC<PedidosFiltersProps> = ({ estadoSeleccionado, onEstadoChange }) => {
+export const PedidosFilters: React.FC<PedidosFiltersProps> = ({
+  estadoSeleccionado,
+  onEstadoChange,
+  onRefresh,
+  refreshing = false,
+}) => {
   const getEstadoColor = (estado: string) => {
     switch (estado) {
       case EstadoPedido.LISTO:
@@ -18,7 +25,7 @@ export const PedidosFilters: React.FC<PedidosFiltersProps> = ({ estadoSelecciona
       case EstadoPedido.CANCELADO:
         return "bg-red-200 text-red-800 border-red-300"
       case EstadoPedido.RECHAZADO:
-        return "bg-purple-200 text-purple-800 border-purple-300"
+        return "bg-red-200 text-red-800 border-red-300"
       case EstadoPedido.EN_PREPARACION:
         return "bg-yellow-200 text-yellow-800 border-yellow-300"
       case EstadoPedido.EN_CAMINO:
@@ -61,7 +68,9 @@ export const PedidosFilters: React.FC<PedidosFiltersProps> = ({ estadoSelecciona
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
-      <h3 className="text-base font-semibold text-gray-800 mb-3">Filtrar por Estado</h3>
+      <div className="flex justify-between items-center mb-3">
+        <h3 className="text-base font-semibold text-gray-800 mb-3">Filtrar por Estado</h3>
+      </div>
       <div className="flex flex-wrap gap-2">
         {estados.map((estado) => {
           const isSelected = estadoSeleccionado === estado

@@ -12,7 +12,7 @@ interface BaseProduct {
   getDescripcion?: () => string;
   getPrecioVenta: () => number;
   isDadoDeAlta: () => boolean;
-  getImagenDto?: () => { getUrl: () => string } | null;
+  getImagenUrl?: () => string | null;
   getNombreCategoria?: () => string;
   getPrecioModificado?: () => boolean;
 }
@@ -56,6 +56,9 @@ export function ProductsTable<T extends BaseProduct>({
     return product.getIdArticulo?.() ?? product.getidArticulo?.() ?? 0;
   };
 
+  // Validar que products sea un array
+  const validProducts = Array.isArray(products) ? products : [];
+
   if (loading) {
     return (
       <div className="bg-white shadow rounded-lg p-6">
@@ -73,7 +76,7 @@ export function ProductsTable<T extends BaseProduct>({
     );
   }
 
-  if (products.length === 0) {
+  if (validProducts.length === 0) {
     return (
       <div className="bg-white shadow rounded-lg p-6">
         <div className="text-center py-8">
@@ -126,7 +129,7 @@ export function ProductsTable<T extends BaseProduct>({
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {products.map((product) => (
+            {validProducts.map((product) => (
               <tr
                 key={getProductId(product)}
                 className="hover:bg-gray-50">
@@ -135,7 +138,10 @@ export function ProductsTable<T extends BaseProduct>({
                     <div className="flex-shrink-0 h-10 w-10">
                       <img
                         className="h-10 w-10 rounded-full object-cover"
-                        src={product.getImagenDto?.()?.getUrl() || "/placeholder.svg?height=40&width=40"}
+                        src={
+                          (product.getImagenUrl ? product.getImagenUrl() : null) ||
+                          "/placeholder.svg?height=40&width=40"
+                        }
                         alt={product.getNombre()}
                       />
                     </div>

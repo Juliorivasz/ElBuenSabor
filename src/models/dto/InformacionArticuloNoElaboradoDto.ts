@@ -1,5 +1,4 @@
 import { IInformacionArticuloNoElaboradoDtoJson } from "../interface/InformacionArticuloNoElaboradoDtoJson";
-import { ImagenDTO } from "./ImagenDTO";
 
 export class InformacionArticuloNoElaboradoDto {
   private idArticulo: number;
@@ -10,7 +9,7 @@ export class InformacionArticuloNoElaboradoDto {
   private dadoDeAlta: boolean;
   private idCategoria: number;
   private nombreCategoria: string;
-  private imagenDto: ImagenDTO | null;
+  private imagenUrl: string | null;
 
   constructor(
     idArticulo: number,
@@ -21,7 +20,7 @@ export class InformacionArticuloNoElaboradoDto {
     dadoDeAlta: boolean,
     idCategoria: number,
     nombreCategoria: string,
-    imagenDto: ImagenDTO | null,
+    imagenUrl: string | null,
   ) {
     this.idArticulo = idArticulo;
     this.nombre = nombre;
@@ -31,7 +30,7 @@ export class InformacionArticuloNoElaboradoDto {
     this.dadoDeAlta = dadoDeAlta;
     this.idCategoria = idCategoria;
     this.nombreCategoria = nombreCategoria;
-    this.imagenDto = imagenDto;
+    this.imagenUrl = imagenUrl;
   }
 
   // Getters y setters si los necesitas
@@ -99,12 +98,12 @@ export class InformacionArticuloNoElaboradoDto {
     this.nombreCategoria = value;
   }
 
-  public getImagenDto(): ImagenDTO | null {
-    return this.imagenDto;
+  public getImagenUrl(): string | null {
+    return this.imagenUrl;
   }
 
-  public setImagenDto(value: ImagenDTO): void {
-    this.imagenDto = value;
+  public setImagenUrl(value: string): void {
+    this.imagenUrl = value;
   }
 
   public toJSON(): IInformacionArticuloNoElaboradoDtoJson {
@@ -117,7 +116,7 @@ export class InformacionArticuloNoElaboradoDto {
       dadoDeAlta: this.dadoDeAlta,
       idCategoria: this.idCategoria,
       nombreCategoria: this.nombreCategoria,
-      imagenDto: this.imagenDto ? this.imagenDto.toJSON() : null,
+      imagenUrl: this.imagenUrl || null,
     };
   }
 
@@ -131,7 +130,7 @@ export class InformacionArticuloNoElaboradoDto {
       json.dadoDeAlta,
       json.idCategoria,
       json.nombreCategoria,
-      ImagenDTO.fromJSON(json.imagenDto),
+      json.imagenUrl,
     );
   }
 }

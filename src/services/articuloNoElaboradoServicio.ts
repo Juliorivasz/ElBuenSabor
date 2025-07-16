@@ -1,17 +1,14 @@
-import { ImagenDTO } from "../models/dto/ImagenDTO";
 import { interceptorsApiClient } from "./interceptors/axios.interceptors";
 import { InformacionArticuloNoElaboradoDto } from "../models/dto/InformacionArticuloNoElaboradoDto";
 
-import {
+import type {
   InformacionArticuloNoElaboradoApi,
   PaginatedResponseAbmNoElaborado,
   PaginatedResponseAbmNoElaboradoApi,
 } from "./types/abm/InformacionArticuloNoElaborado";
-import { NuevoArticuloNoElaboradoDto } from "../models/dto/NuevoArticuloNoElaboradoDto";
+import type { NuevoArticuloNoElaboradoDto } from "../models/dto/NuevoArticuloNoElaboradoDto";
 
 const parseInformacionArticuloNoElaboradoDto = (data: InformacionArticuloNoElaboradoApi) => {
-  const imagenDto = new ImagenDTO(data.imagenDto?.url);
-
   return new InformacionArticuloNoElaboradoDto(
     data.idArticulo,
     data.nombre,
@@ -21,17 +18,18 @@ const parseInformacionArticuloNoElaboradoDto = (data: InformacionArticuloNoElabo
     data.dadoDeAlta,
     data.idCategoria,
     data.nombreCategoria,
-    imagenDto,
+    data.imagenUrl,
   );
 };
 
 export const fetchArticulosNoElaboradosAbm = async (
   page: number,
-  itemsPerPage: number = 12,
+  itemsPerPage = 12,
 ): Promise<PaginatedResponseAbmNoElaborado> => {
-  const response = interceptorsApiClient.get(`/articuloNoElaborado/abm?page=${page}&size=${itemsPerPage}`);
+  const response = await interceptorsApiClient.get(`/articuloNoElaborado/abm?page=${page}&size=${itemsPerPage}`);
 
-  const data: PaginatedResponseAbmNoElaboradoApi = (await response).data;
+  const data: PaginatedResponseAbmNoElaboradoApi = response.data;
+  console.log(data);
   const content = data.content.map(parseInformacionArticuloNoElaboradoDto);
 
   return { ...data, content: content };
@@ -46,12 +44,55 @@ export const altaBajaArticuloNoElaborado = async (id: number, dadoDeAlta: boolea
 };
 
 // Función para crear un nuevo artículo no elaborado
-export const crearArticuloNoElaborado = async (producto: NuevoArticuloNoElaboradoDto) => {
-  // Convertir el DTO a la estructura requerida por la API
-  interceptorsApiClient.post("/articuloNoElaborado/nuevo", producto.toJSON());
+export const crearArticuloNoElaborado = async (producto: NuevoArticuloNoElaboradoDto, file?: File) => {
+  const formData = new FormData();
+
+  // Agregar el JSON del artículo
+  formData.append("articulo", JSON.stringify(producto.toJSON()));
+
+  // Agregar el archivo si existe
+  if (file) {
+    formData.append("file", file);
+    console.log("Archivo adjuntado:", file.name, file.type, file.size);
+  }
+
+  console.log("Enviando datos:", JSON.stringify(producto.toJSON()));
+
+  const response = await interceptorsApiClient.post("/articuloNoElaborado/nuevo", formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+
+  console.log("Respuesta del servidor:", response.data);
+  return response.data;
 };
 
 // Función para actualizar un artículo no elaborado
-export const actualizarArticuloNoElaborado = async (id: number, producto: InformacionArticuloNoElaboradoDto) => {
-  interceptorsApiClient.put(`/articuloNoElaborado/modificar/${id}`, producto.toJSON());
+export const actualizarArticuloNoElaborado = async (
+  id: number,
+  producto: InformacionArticuloNoElaboradoDto,
+  file?: File,
+) => {
+  const formData = new FormData();
+
+  // Convertir el DTO a la estructura requerida por la API
+  formData.append("articulo", JSON.stringify(producto.toJSON()));
+
+  console.log("Respuesta del servidor para actualización:", producto.toJSON());
+
+  // Agregar el archivo si existe
+  if (file) {
+    formData.append("file", file);
+    console.log("Archivo adjuntado para actualización:", file.name, file.type, file.size);
+  }
+
+  const response = await interceptorsApiClient.put(`/articuloNoElaborado/modificar/${id}`, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+
+  console.log("Respuesta del servidor para actualización:", response.data);
+  return true;
 };

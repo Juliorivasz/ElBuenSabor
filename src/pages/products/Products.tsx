@@ -1,4 +1,6 @@
-import { FC, useEffect, useState, useCallback } from "react";
+"use client";
+
+import { type FC, useEffect, useState, useCallback } from "react";
 import { useProductsStore, type ProductType } from "../../store/admin/useProductsStore";
 import { ProductsTable } from "../../components/Admin/products/ProductsTable";
 import { UniversalProductForm } from "../../components/Admin/products/UniversalProductForm";
@@ -52,15 +54,21 @@ export const Products: FC = () => {
   // Estado para forzar re-render
   const [refreshKey, setRefreshKey] = useState(0);
 
+  // Validar que los datos sean arrays válidos
+  const validManufacturados = Array.isArray(manufacturados) ? manufacturados : [];
+  const validNoElaborados = Array.isArray(noElaborados) ? noElaborados : [];
+  const validCategories = Array.isArray(categories) ? categories : [];
+  const validIngredients = Array.isArray(ingredients) ? ingredients : [];
+
   // Cargar datos iniciales
   useEffect(() => {
-    if (categories.length === 0) {
+    if (validCategories.length === 0) {
       fetchCategories();
     }
-    if (ingredients.length === 0) {
+    if (validIngredients.length === 0) {
       fetchIngredients();
     }
-  }, [categories.length, ingredients.length, fetchCategories, fetchIngredients]);
+  }, [validCategories.length, validIngredients.length, fetchCategories, fetchIngredients]);
 
   // Cargar productos según la pestaña activa
   useEffect(() => {
@@ -167,22 +175,22 @@ export const Products: FC = () => {
     [toggleNoElaboradoStatus],
   );
 
+  // Updated handlers to include file parameter
   const handleFormSubmitManufacturado = useCallback(
-    async (productData: InformacionArticuloManufacturadoDto) => {
+    async (productData: InformacionArticuloManufacturadoDto, file?: File) => {
       try {
         if (editingManufacturado) {
           const id = editingManufacturado.getidArticulo();
           if (id !== undefined) {
-            await updateManufacturado(id, productData);
+            await updateManufacturado(id, productData, file);
           } else {
             throw new Error("El ID del producto a editar es undefined.");
           }
         } else {
-          await createManufacturado(productData);
+          await createManufacturado(productData, file);
         }
         setShowForm(false);
         setEditingManufacturado(undefined);
-
         // Forzar actualización de la UI
         forceUpdate();
       } catch (error) {
@@ -193,21 +201,20 @@ export const Products: FC = () => {
   );
 
   const handleFormSubmitNoElaborado = useCallback(
-    async (productData: InformacionArticuloNoElaboradoDto) => {
+    async (productData: InformacionArticuloNoElaboradoDto, file?: File) => {
       try {
         if (editingNoElaborado) {
           const id = editingNoElaborado.getIdArticulo();
           if (id !== undefined) {
-            await updateNoElaborado(id, productData);
+            await updateNoElaborado(id, productData, file);
           } else {
             throw new Error("El ID del producto a editar es undefined.");
           }
         } else {
-          await createNoElaborado(productData);
+          await createNoElaborado(productData, file);
         }
         setShowForm(false);
         setEditingNoElaborado(undefined);
-
         // Forzar actualización de la UI
         forceUpdate();
       } catch (error) {
@@ -217,13 +224,13 @@ export const Products: FC = () => {
     [editingNoElaborado, updateNoElaborado, createNoElaborado, forceUpdate],
   );
 
-  // Función wrapper universal para manejar el submit del formulario
+  // Updated universal form submit handler to include file parameter
   const handleUniversalFormSubmit = useCallback(
-    async (productData: ProductUnion) => {
+    async (productData: ProductUnion, file?: File) => {
       if (activeTab === "manufacturados") {
-        await handleFormSubmitManufacturado(productData as InformacionArticuloManufacturadoDto);
+        await handleFormSubmitManufacturado(productData as InformacionArticuloManufacturadoDto, file);
       } else {
-        await handleFormSubmitNoElaborado(productData as InformacionArticuloNoElaboradoDto);
+        await handleFormSubmitNoElaborado(productData as InformacionArticuloNoElaboradoDto, file);
       }
     },
     [activeTab, handleFormSubmitManufacturado, handleFormSubmitNoElaborado],
@@ -295,9 +302,9 @@ export const Products: FC = () => {
                   : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
               }`}>
               Productos Manufacturados
-              {manufacturados.length > 0 && (
+              {validManufacturados.length > 0 && (
                 <span className="ml-2 bg-gray-100 text-gray-900 py-0.5 px-2.5 rounded-full text-xs">
-                  {manufacturados.length}
+                  {validManufacturados.length}
                 </span>
               )}
             </button>
@@ -309,9 +316,9 @@ export const Products: FC = () => {
                   : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
               }`}>
               Productos No Elaborados
-              {noElaborados.length > 0 && (
+              {validNoElaborados.length > 0 && (
                 <span className="ml-2 bg-gray-100 text-gray-900 py-0.5 px-2.5 rounded-full text-xs">
-                  {noElaborados.length}
+                  {validNoElaborados.length}
                 </span>
               )}
             </button>
@@ -349,7 +356,7 @@ export const Products: FC = () => {
         {activeTab === "manufacturados" ? (
           <ProductsTable
             key={`manufacturados-${refreshKey}`} // Key para forzar re-render
-            products={manufacturados}
+            products={validManufacturados}
             loading={currentLoading}
             pagination={currentPagination}
             onPageChange={handlePageChange}
@@ -364,7 +371,7 @@ export const Products: FC = () => {
         ) : (
           <ProductsTable
             key={`noElaborados-${refreshKey}`} // Key para forzar re-render
-            products={noElaborados}
+            products={validNoElaborados}
             loading={currentLoading}
             pagination={currentPagination}
             onPageChange={handlePageChange}
@@ -382,8 +389,8 @@ export const Products: FC = () => {
         {showForm && (
           <UniversalProductForm
             product={currentEditingProduct}
-            categories={categories}
-            ingredients={ingredients}
+            categories={validCategories}
+            ingredients={validIngredients}
             onSubmit={handleUniversalFormSubmit}
             onCancel={handleFormCancel}
             loading={currentLoading}

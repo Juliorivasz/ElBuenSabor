@@ -54,6 +54,7 @@ export const ProductsGrid: FC<ProductsGridProps> = ({ searchTerm = "", onProduct
       setIsLoading(true);
       try {
         const data = await getAllArticulos(currentPage - 1);
+
         setProductos(data.content);
         setPagesTotal(data.page.totalPages);
 
@@ -149,7 +150,7 @@ export const ProductsGrid: FC<ProductsGridProps> = ({ searchTerm = "", onProduct
   const handleAddToCart = useCallback(
     (p: ArticuloDTO, quantity: number) => {
       for (let i = 0; i < quantity; i++) {
-        addItemToCart(p, p.getImagenDto()?.getUrl());
+        addItemToCart(p, p.getImagenModel() ?? undefined);
       }
       setSelectedProduct(null);
     },

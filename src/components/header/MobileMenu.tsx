@@ -1,6 +1,7 @@
-//
+// src/components/header/MobileMenu.tsx
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
+import { IUser } from "../../store/auth/types/user"; // Importa la interfaz de tu store
 import {
   PersonOutlined,
   LogoutOutlined,
@@ -14,12 +15,19 @@ import {
   HistoryOutlined,
 } from "@mui/icons-material";
 
+// Define una interfaz para los ítems de navegación y de menú de usuario
+interface NavItem {
+  name: string;
+  path: string;
+  icon: React.ComponentType<{ className?: string; sx?: object }>;
+}
+
 interface MobileMenuProps {
   isMenuOpen: boolean;
   isAuthenticated: boolean;
-  user: any;
+  user: IUser | undefined; // Ahora el prop 'user' es de tipo IUser o undefined
   cartItemsCount: number;
-  location: any;
+  location: import("react-router-dom").Location; // Tipado correcto para location de React Router
   onClose: () => void;
   onLogin: () => void;
   onRegister: () => void;
@@ -51,7 +59,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
   };
 
   // Navigation items
-  const navItems = isAuthenticated
+  const navItems: NavItem[] = isAuthenticated
     ? [{ name: "Inicio", path: "/catalog", icon: HomeOutlined }]
     : [
         { name: "Inicio", path: "/", icon: HomeOutlined },
@@ -60,7 +68,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
         { name: "Contacto", path: "/contact", icon: PhoneOutlined },
       ];
 
-  const userMenuItems = [
+  const userMenuItems: NavItem[] = [
     { name: "Mi Perfil", path: "/profile", icon: AccountCircleOutlined },
     { name: "Mis Direcciones", path: "/address", icon: LocationOnOutlined },
     { name: "Historial de Pedidos", path: "/orders", icon: HistoryOutlined },
@@ -123,10 +131,14 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
                   className="mb-6 p-4 bg-gradient-to-r from-orange-50 to-red-50 rounded-xl border border-orange-100">
                   <div className="flex items-center space-x-3 mb-3">
                     <div className="w-10 h-10 bg-gradient-to-br from-orange-400 to-red-500 rounded-full flex items-center justify-center">
-                      {user?.picture ? (
+                      {user?.imagen || user?.picture ? (
                         <img
-                          src={user.picture || "/placeholder.svg"}
-                          alt={user.name || "Usuario"}
+                          src={user?.imagen || user.picture || "/placeholder.svg"}
+                          alt={
+                            user?.name || user?.apellido
+                              ? `${user?.name ?? ""} ${user?.apellido ?? ""}`.trim()
+                              : "Usuario"
+                          }
                           className="w-full h-full rounded-full object-cover"
                         />
                       ) : (
@@ -137,7 +149,11 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 truncate">{user?.name || "Usuario"}</p>
+                      <p className="text-sm font-medium text-gray-900 truncate">
+                        {user?.name || user?.apellido
+                          ? `${user?.name ?? ""} ${user?.apellido ?? ""}`.trim()
+                          : "Usuario"}
+                      </p>
                       <p className="text-xs text-gray-600 truncate">{user?.email || "usuario@email.com"}</p>
                     </div>
                   </div>
