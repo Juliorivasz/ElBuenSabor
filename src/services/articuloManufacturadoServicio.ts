@@ -38,7 +38,6 @@ export const fetchArticulosManufacturadosAbm = async (
 ): Promise<PaginatedResponseAbm> => {
   const response = await interceptorsApiClient.get(`/articuloManufacturado/abm?page=${page}&size=${itemsPerPage}`);
   const data: PaginatedResponseAbmApi = response.data;
-  console.log({ ...data, content: data.content });
   const content = data.content.map(parseInformacionArticuloManufacturadoDTO);
 
   return { ...data, content: content };

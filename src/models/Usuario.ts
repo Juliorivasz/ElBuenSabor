@@ -1,5 +1,5 @@
 import { Imagen } from "./Imagen";
-import { Roles } from "./Roles";
+import { Rol } from "./Rol";
 
 export class Usuario {
   private idUsuario: number;
@@ -9,10 +9,7 @@ export class Usuario {
   private apellido: string;
   private telefono: string;
   private imagen: Imagen;
-  private activo: boolean;
-  private fechaCreacion: Date;
-  private fechaActualizacion: Date;
-  private roles: Roles[];
+  private rol: Rol;
 
   constructor(
     idUsuario: number,
@@ -22,10 +19,7 @@ export class Usuario {
     apellido: string,
     telefono: string,
     imagen: Imagen,
-    activo: boolean,
-    fechaCreacion: Date,
-    fechaActualizacion: Date,
-    roles: Roles[],
+    rol: Rol,
   ) {
     this.idUsuario = idUsuario;
     this.idAuth0 = idAuth0;
@@ -34,10 +28,7 @@ export class Usuario {
     this.apellido = apellido;
     this.telefono = telefono;
     this.imagen = imagen;
-    this.activo = activo;
-    this.fechaCreacion = fechaCreacion;
-    this.fechaActualizacion = fechaActualizacion;
-    this.roles = roles;
+    this.rol = rol;
   }
 
   // Getters
@@ -45,7 +36,7 @@ export class Usuario {
     return this.idUsuario;
   }
 
-  public getIdAuth0(): string {
+  public getauth0Id(): string {
     return this.idAuth0;
   }
 
@@ -69,20 +60,8 @@ export class Usuario {
     return this.imagen;
   }
 
-  public getActivo(): boolean {
-    return this.activo;
-  }
-
-  public getFechaCreacion(): Date {
-    return this.fechaCreacion;
-  }
-
-  public getFechaActualizacion(): Date {
-    return this.fechaActualizacion;
-  }
-
-  public getRoles(): Roles[] {
-    return this.roles;
+  public getRol(): Rol {
+    return this.rol;
   }
 
   // Setters
@@ -90,8 +69,8 @@ export class Usuario {
     this.idUsuario = idUsuario;
   }
 
-  public setIdAuth0(idAuth0: string): void {
-    this.idAuth0 = idAuth0;
+  public setauth0Id(auth0Id: string): void {
+    this.idAuth0 = auth0Id;
   }
 
   public setEmail(email: string): void {
@@ -114,19 +93,7 @@ export class Usuario {
     this.imagen = imagen;
   }
 
-  public setActivo(activo: boolean): void {
-    this.activo = activo;
-  }
-
-  public setFechaCreacion(fechaCreacion: Date): void {
-    this.fechaCreacion = fechaCreacion;
-  }
-
-  public setFechaActualizacion(fechaActualizacion: Date): void {
-    this.fechaActualizacion = fechaActualizacion;
-  }
-
-  public setRoles(roles: Roles[]): void {
-    this.roles = roles;
+  public setRol(rol: Rol): void {
+    this.rol = rol;
   }
 }

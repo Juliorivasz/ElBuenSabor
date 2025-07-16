@@ -10,10 +10,6 @@ export const publicRoutes = [
     element: lazy(() => import("../pages/client/AboutUs").then((module) => ({ default: module.AboutUs }))),
   },
   {
-    path: "/catalog",
-    element: lazy(() => import("../pages/client/catalog/Catalog").then((module) => ({ default: module.Catalog }))),
-  },
-  {
     path: "/contact",
     element: lazy(() => import("../pages/client/Contact").then((module) => ({ default: module.Contact }))),
   },
@@ -44,5 +40,10 @@ export const publicRoutes = [
   {
     path: "/notFound",
     element: lazy(() => import("../pages/NotFound").then((module) => ({ default: module.NotFound }))),
+  },
+  // Catálogo es público pero con funcionalidades limitadas para no autenticados
+  {
+    path: "/catalog",
+    element: lazy(() => import("../pages/client/catalog/Catalog").then((module) => ({ default: module.Catalog }))),
   },
 ];

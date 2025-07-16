@@ -1,72 +1,98 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useNavigate } from "react-router-dom"
-import Swal from "sweetalert2"
-import { EmpleadoForm } from "../../../components/empleados/EmpleadoForm"
-import { PageHeader } from "../../../components/shared/PageHeader"
-import {
-  empleadoServicio,
-  transformarEmpleadoFormData,
-  type EmpleadoFormData,
-} from "../../../services/empleadoServicio"
+import type React from "react";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { ArrowLeft, Save } from "lucide-react";
+import Swal from "sweetalert2";
+import { PageHeader } from "../../../components/shared/PageHeader";
+import { EmpleadoForm } from "../../../components/empleados/EmpleadoForm";
+import type { IEmpleadoFormData } from "../../../services/empleadoServicio";
+import { empleadoServicio, transformarEmpleadoFormData } from "../../../services/empleadoServicio";
 
-const NuevoEmpleado = () => {
-  const navigate = useNavigate()
-  const [, setLoading] = useState(false)
+interface IHttpError {
+  response?: {
+    data?: {
+      message?: string;
+    };
+  };
+  message?: string;
+}
 
-  const handleSuccess = async (data: EmpleadoFormData) => {
+export const NuevoEmpleado: React.FC = () => {
+  const navigate = useNavigate();
+  const [guardando, setGuardando] = useState(false);
+
+  const manejarGuardar = async (datosFormulario: IEmpleadoFormData): Promise<void> => {
     try {
-      setLoading(true)
+      setGuardando(true);
 
-      // Transformar datos del formulario a DTO del backend
-      const empleadoDto = transformarEmpleadoFormData(data)
-
-      console.log("Creando empleado con DTO:", empleadoDto)
+      // Transformar datos del formulario a DTO
+      const nuevoEmpleadoDto = transformarEmpleadoFormData(datosFormulario);
 
       // Crear empleado
-      await empleadoServicio.crearEmpleado(empleadoDto)
+      await empleadoServicio.crearEmpleado(nuevoEmpleadoDto);
 
       // Mostrar mensaje de éxito
       await Swal.fire({
         icon: "success",
-        title: "¡Empleado creado!",
-        text: "El empleado ha sido creado exitosamente.",
-        confirmButtonColor: "#f97316",
-      })
+        title: "¡Empleado creado exitosamente!",
+        text: `El empleado ${datosFormulario.nombre} ${datosFormulario.apellido} ha sido registrado correctamente.`,
+        confirmButtonText: "Continuar",
+        confirmButtonColor: "#3B82F6",
+        timer: 3000,
+        timerProgressBar: true,
+      });
 
-      // Recargar lista si existe la función global
-      if (typeof window !== "undefined" && (window as any).recargarEmpleados) {
-        ;(window as any).recargarEmpleados()
+      // Redirigir a la lista de empleados
+      navigate("/admin/empleados", { replace: true });
+    } catch (error) {
+      console.error("Error al crear empleado:", error);
+      const httpError = error as IHttpError;
+
+      let mensajeError = "Error al crear el empleado";
+      let detalleError = "Ha ocurrido un error inesperado. Por favor, intenta nuevamente.";
+
+      if (httpError.response?.data?.message) {
+        mensajeError = "Error en el registro";
+        detalleError = httpError.response.data.message;
+      } else if (httpError.message) {
+        detalleError = httpError.message;
       }
 
-      // Navegar de vuelta a la lista
-      navigate("/admin/empleados")
-    } catch (error: any) {
-      console.error("Error al crear empleado:", error)
-
-      let errorMessage = "Error al crear el empleado"
-
-      if (error.response?.status === 400) {
-        errorMessage = "Datos inválidos. Verifique los campos ingresados."
-      } else if (error.response?.status === 500) {
-        errorMessage = "Error del servidor. Verifique que el departamento seleccionado sea válido."
-      } else if (error.response?.data?.message) {
-        errorMessage = error.response.data.message
-      }
-
+      // Mostrar mensaje de error
       await Swal.fire({
         icon: "error",
-        title: "Error",
-        text: errorMessage,
-        confirmButtonColor: "#f97316",
-      })
-
-      throw error
+        title: mensajeError,
+        text: detalleError,
+        confirmButtonText: "Entendido",
+        confirmButtonColor: "#EF4444",
+      });
     } finally {
-      setLoading(false)
+      setGuardando(false);
     }
-  }
+  };
+
+  const manejarCancelar = async (): Promise<void> => {
+    const result = await Swal.fire({
+      icon: "warning",
+      title: "¿Cancelar creación?",
+      text: "Se perderán todos los cambios realizados.",
+      showCancelButton: true,
+      confirmButtonText: "Sí, cancelar",
+      cancelButtonText: "Continuar editando",
+      confirmButtonColor: "#EF4444",
+      cancelButtonColor: "#6B7280",
+    });
+
+    if (result.isConfirmed) {
+      navigate("/admin/empleados", { replace: true });
+    }
+  };
+
+  const volverAEmpleados = (): void => {
+    navigate("/admin/empleados");
+  };
 
   return (
     <div className="space-y-6">
@@ -74,17 +100,42 @@ const NuevoEmpleado = () => {
         title="Nuevo Empleado"
         subtitle="Crear un nuevo empleado en el sistema"
         breadcrumbs={[
-          { label: "Dashboard", href: "/admin" },
+          { label: "Dashboard", href: "/admin/dashboard" },
           { label: "Empleados", href: "/admin/empleados" },
-          { label: "Nuevo Empleado" },
+          { label: "Nuevo", href: "/admin/empleados/nuevo" },
         ]}
       />
 
-      <div className="bg-white shadow-sm rounded-lg p-6">
-        <EmpleadoForm isEdit={false} onSuccess={handleSuccess} />
+      <div className="max-w-4xl mx-auto">
+        <div className="bg-white shadow-sm rounded-lg">
+          <div className="px-6 py-4 border-b border-gray-200">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-medium text-gray-900">Información del Empleado</h3>
+              <div className="flex space-x-3"></div>
+            </div>
+          </div>
+
+          <div className="p-6">
+            <EmpleadoForm
+              onSubmit={manejarGuardar}
+              onCancel={manejarCancelar}
+              loading={guardando}
+              submitButtonText="Crear Empleado"
+              submitButtonIcon={<Save className="h-4 w-4 mr-2" />}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Botón de regreso */}
+      <div className="fixed bottom-6 left-6">
+        <button
+          onClick={volverAEmpleados}
+          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-full shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Volver a Empleados
+        </button>
       </div>
     </div>
-  )
-}
-
-export default NuevoEmpleado
+  );
+};

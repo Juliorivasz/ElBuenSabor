@@ -1,24 +1,42 @@
-import { useAuth0 } from "@auth0/auth0-react";
+"use client";
+
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuthValidation } from "../hooks/useAuthValidation";
+import { getRedirectPathByRole } from "../constants/roles";
 
 export const RedirectByRole = () => {
-  const { user, isLoading } = useAuth0();
   const navigate = useNavigate();
+  const { isLoading, isAuthenticated, userRoles, hasNoRoles, needsProfileCompletion } = useAuthValidation();
 
   useEffect(() => {
-    if (isLoading || !user) return;
+    // Esperar a que termine de cargar
+    if (isLoading) return;
 
-    const roles = user["https://apiback/roles"];
-
-    if (roles?.includes("ADMINISTRADOR")) {
-      navigate("/admin/dashboard");
-    } else if (roles?.includes("CLIENTE")) {
-      navigate("/catalog");
-    } else {
-      navigate("/");
+    // Si no está autenticado, redirigir al home
+    if (!isAuthenticated) {
+      navigate("/", { replace: true });
+      return;
     }
-  }, [user, isLoading, navigate]);
 
-  return null;
+    // Si no tiene roles o necesita completar perfil, redirigir a complete-profile
+    if (hasNoRoles || needsProfileCompletion) {
+      navigate("/complete-profile", { replace: true });
+      return;
+    }
+
+    // Redirigir según el rol
+    const redirectPath = getRedirectPathByRole(userRoles);
+    navigate(redirectPath, { replace: true });
+  }, [navigate, isLoading, isAuthenticated, userRoles, hasNoRoles, needsProfileCompletion]);
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+        <p className="text-gray-600 text-lg font-medium">Redirigiendo...</p>
+        <p className="text-gray-500 text-sm mt-2">Verificando permisos...</p>
+      </div>
+    </div>
+  );
 };
