@@ -10,24 +10,25 @@ import { NotFound } from "../pages";
 import { RedirectByRole } from "./RedirectByRole";
 import { ProfileCompletionForm } from "../pages/client/profile/ProfileCompletionForm";
 import { pagoRoutes } from "./pagoRoutes";
+import { PublicRoute } from "../auth/PublicRoute";
 
 export const AppRouter = () => {
   return (
     <Suspense
       fallback={<div className="text-4xl flex items-center justify-center min-h-screen text-black">Cargando...</div>}>
       <Routes>
-        {/* ruta de redireccion */}
+        {/* Ruta de redirección por rol */}
         <Route
           path="/redirectRol"
           element={<RedirectByRole />}
         />
 
-        {/* registro cliente */}
+        {/* Registro/Completar perfil de cliente */}
         <Route element={<LayoutClient />}>
           <Route
-            path={"/complete-profile"}
+            path="/complete-profile"
             element={
-              <PrivateRoute>
+              <PrivateRoute type="client">
                 <ProfileCompletionForm />
               </PrivateRoute>
             }
@@ -40,16 +41,24 @@ export const AppRouter = () => {
             <Route
               key={route.path}
               path={route.path}
-              element={<route.element />}
+              element={
+                <PublicRoute>
+                  <route.element />
+                </PublicRoute>
+              }
             />
           ))}
 
-          {/* Rutas de Pago */}
+          {/* Rutas de Pago - Públicas pero podrían necesitar autenticación */}
           {pagoRoutes.map((route) => (
             <Route
               key={route.path}
               path={route.path}
-              element={<route.element />}
+              element={
+                <PublicRoute>
+                  <route.element />
+                </PublicRoute>
+              }
             />
           ))}
         </Route>
@@ -61,7 +70,7 @@ export const AppRouter = () => {
               key={route.path}
               path={route.path}
               element={
-                <PrivateRoute requiredRole={["cliente"]}>
+                <PrivateRoute type="client">
                   <route.element />
                 </PrivateRoute>
               }
@@ -69,14 +78,16 @@ export const AppRouter = () => {
           ))}
         </Route>
 
-        {/* Rutas del Admin */}
+        {/* Rutas del Admin/Empleados */}
         <Route element={<LayoutAdmin />}>
           {adminRoutes.map((route) => (
             <Route
               key={route.path}
               path={route.path}
               element={
-                <PrivateRoute requiredRole={route.allowedRoles}>
+                <PrivateRoute
+                  type="employee"
+                  requiredRole={route.allowedRoles}>
                   <route.element />
                 </PrivateRoute>
               }

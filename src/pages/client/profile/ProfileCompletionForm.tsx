@@ -53,7 +53,7 @@ export const ProfileCompletionForm: React.FC = () => {
     setIsLoading(true);
     try {
       const payload: ClienteRegister = {
-        idAuth0: user.id,
+        auth0Id: user.id,
         email: user.email,
         nombre: values.nombre,
         apellido: values.apellido,
@@ -71,7 +71,7 @@ export const ProfileCompletionForm: React.FC = () => {
         imagen: null,
         email: registeredClient.email,
         name: registeredClient.nombre,
-        id: registeredClient.idAuth0,
+        id: registeredClient.auth0Id,
         picture: user.picture,
       });
 

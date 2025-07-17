@@ -1,4 +1,4 @@
-import { lazy } from "react"
+import { lazy } from "react";
 
 export const adminRoutes = [
   {
@@ -19,21 +19,21 @@ export const adminRoutes = [
   {
     path: "/admin/empleados/nuevo",
     element: lazy(() =>
-      import("../pages/admin/employees/NuevoEmpleado").then((module) => ({ default: module.default })),
+      import("../pages/admin/employees/NuevoEmpleado").then((module) => ({ default: module.NuevoEmpleado })),
     ),
     allowedRoles: ["administrador"],
   },
   {
     path: "/admin/empleados/editar/:id",
     element: lazy(() =>
-      import("../pages/admin/employees/EditarEmpleado").then((module) => ({ default: module.default })),
+      import("../pages/admin/employees/EditarEmpleado").then((module) => ({ default: module.EditarEmpleado })),
     ),
     allowedRoles: ["administrador"],
   },
   {
     path: "/admin/cocina",
     element: lazy(() => import("../pages/admin/kitchen/Kitchen").then((module) => ({ default: module.Kitchen }))),
-    allowedRoles: ["administrador","cocinero"],
+    allowedRoles: ["administrador", "cocinero"],
   },
   {
     path: "/admin/repartidor",
@@ -42,7 +42,7 @@ export const adminRoutes = [
   },
   {
     path: "empleado/caja",
-    element: lazy(() => import("../pages/admin/abm/AbmGeneric").then((module) => ({ default: module.AbmGeneric }))),
+    element: lazy(() => import("../pages/admin/pedidos/Pedidos").then((module) => ({ default: module.Pedidos }))),
     allowedRoles: ["cajero", "administrador"],
   },
   {
@@ -63,5 +63,11 @@ export const adminRoutes = [
     ),
     title: "Estadísticas de Ventas",
     allowedRoles: ["administrador"],
-  }
+  },
+  {
+    path: "/admin/rubros",
+    element: lazy(() => import("../pages/admin/rubros/Rubros").then((module) => ({ default: module.Rubros }))),
+    allowedRoles: ["administrador", "cocinero"],
+    title: "Gestión de Rubros",
+  },
 ]

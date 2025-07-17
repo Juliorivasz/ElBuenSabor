@@ -78,7 +78,7 @@ export const Profile: React.FC = () => {
             roles: profileData.roles,
             email: profileData.email,
             name: profileData.nombre,
-            id: profileData.idAuth0,
+            id: profileData.auth0Id,
             picture: profileData.imagen ?? undefined,
           });
         } catch (err) {

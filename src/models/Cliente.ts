@@ -1,7 +1,7 @@
 import { Pedido } from "./Pedido";
 import { Usuario } from "./Usuario";
 import { Imagen } from "./Imagen";
-import { Roles } from "./Roles";
+import { Roles } from "./Rol";
 
 export class Cliente extends Usuario {
   private direccion: string;
@@ -9,7 +9,7 @@ export class Cliente extends Usuario {
 
   constructor(
     idUsuario: number,
-    idAuth0: string,
+    auth0Id: string,
     email: string,
     nombre: string,
     apellido: string,
@@ -24,7 +24,7 @@ export class Cliente extends Usuario {
   ) {
     super(
       idUsuario,
-      idAuth0,
+      auth0Id,
       email,
       nombre,
       apellido,
