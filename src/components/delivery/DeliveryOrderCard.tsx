@@ -57,7 +57,7 @@ export const DeliveryOrderCard: React.FC<DeliveryOrderCardProps> = ({ pedido, on
   const getEstadoColor = (estado: string) => {
     switch (estado) {
       case "LISTO":
-        return "bg-blue-100 border-blue-300"
+        return "bg-green-100 border-green-300"
       case "EN_CAMINO":
         return "bg-orange-100 border-orange-300"
       case "ENTREGADO":
@@ -70,11 +70,9 @@ export const DeliveryOrderCard: React.FC<DeliveryOrderCardProps> = ({ pedido, on
   const getEstadoBadgeColor = (estado: string) => {
     switch (estado) {
       case "LISTO":
-        return "bg-blue-100 text-blue-800"
-      case "EN_CAMINO":
-        return "bg-orange-100 text-orange-800"
-      case "ENTREGADO":
         return "bg-green-100 text-green-800"
+      case "EN_CAMINO":
+        return "bg-orange-100 text-orange-800"      
       default:
         return "bg-gray-100 text-gray-800"
     }
@@ -204,10 +202,10 @@ export const DeliveryOrderCard: React.FC<DeliveryOrderCardProps> = ({ pedido, on
           <button
             onClick={handleMarcarEnCamino}
             disabled={loading}
-            className="flex items-center gap-2 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+            className="flex items-center gap-2 px-3 py-2 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
           >
             <LocalShippingOutlined fontSize="small" />
-            {loading ? "Marcando..." : "Retirar del Local"}
+            {loading ? "Marcando..." : "Pedido Retirado"}
           </button>
         )}
 
@@ -215,10 +213,10 @@ export const DeliveryOrderCard: React.FC<DeliveryOrderCardProps> = ({ pedido, on
           <button
             onClick={handleMarcarEntregado}
             disabled={loading}
-            className="flex items-center gap-2 px-3 py-2 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+            className="flex items-center gap-2 px-3 py-2 bg-orange-400 hover:bg-orange-600 text-white font-semibold rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
           >
             <CheckCircleOutlined fontSize="small" />
-            {loading ? "Marcando..." : "Marcar como Entregado"}
+            {loading ? "Marcando..." : "Pedido Entregado"}
           </button>
         )}
       </div>
