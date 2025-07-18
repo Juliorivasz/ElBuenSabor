@@ -11,7 +11,7 @@ import {
   Dashboard as DashboardIcon,
   PeopleAlt as PeopleIcon,
   Fastfood as ProductsIcon,
-  ShoppingCart as OrdersIcon,
+  Tapas as RubroIcon,
   Category as CategoryIcon,
   RestaurantMenu as KitchenIcon,
   TwoWheeler as DeliveryIcon,
@@ -23,6 +23,7 @@ import {
   Logout as LogoutIcon,
   AccountCircle as UserIcon,
   AdminPanelSettings as AdminIcon,
+  BarChart as ChartIcon,
 } from "@mui/icons-material";
 
 interface SidebarItem {
@@ -52,15 +53,21 @@ const sidebarItems: SidebarItem[] = [
     allowedRoles: ["administrador"],
   },
   {
-    name: "Pedidos",
-    path: "/admin/pedidos",
-    icon: OrdersIcon,
-    allowedRoles: ["administrador"],
-  },
-  {
     name: "Categorías",
     path: "/admin/categorias",
     icon: CategoryIcon,
+    allowedRoles: ["administrador"],
+  },
+  {
+    name: "Rubros",
+    path: "/admin/rubros",
+    icon: RubroIcon,
+    allowedRoles: ["administrador", "cocinero"],
+  },
+  {
+    name: "Estadisticas",
+    path: "/admin/estadisticas",
+    icon: ChartIcon,
     allowedRoles: ["administrador"],
   },
   {
