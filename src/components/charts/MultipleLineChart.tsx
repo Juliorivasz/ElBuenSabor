@@ -1,5 +1,3 @@
-"use client";
-
 import { useState, useEffect } from "react";
 import { Chart } from "react-google-charts";
 import { interceptorsApiClient } from "../../services/interceptors/axios.interceptors";

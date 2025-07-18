@@ -1,5 +1,3 @@
-"use client";
-
 import { useState, useEffect } from "react";
 import { Chart } from "react-google-charts";
 import { interceptorsApiClient } from "../../services/interceptors/axios.interceptors";
@@ -18,7 +16,7 @@ export const ColumnChart = () => {
     },
     bar: {
       groupWidth: "50%",
-    },
+    },    
     vAxis: {
       title: "Promedio cantidad de pedidos",
       format: "##'%'",
