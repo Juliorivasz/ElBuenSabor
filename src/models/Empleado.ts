@@ -1,26 +1,30 @@
-import { Rol } from "./enum/Rol";
+import { Imagen } from "./Imagen";
+import { Rol } from "./Rol";
 import { Usuario } from "./Usuario";
 
 export class Empleado extends Usuario {
-  private rol: Rol;
+  private fechaBaja: Date;
 
   constructor(
     idUsuario: number,
+    auth0Id: string,
+    email: string,
     nombre: string,
     apellido: string,
-    email: string,
-    contrasena: string,
-    rol: Rol,
     telefono: string,
-    urlImagen: string,
+    imagen: Imagen,
+    rol: Rol,
+    fechaBaja: Date,
   ) {
-    super(idUsuario, nombre, apellido, email, contrasena, apellido, telefono, urlImagen);
-    this.rol = rol;
+    super(idUsuario, auth0Id, email, nombre, apellido, telefono, imagen, rol);
+    this.fechaBaja = fechaBaja;
   }
-  public getRol(): Rol {
-    return this.rol;
+
+  public getFechaBaja(): Date {
+    return this.fechaBaja;
   }
-  public setRol(rol: Rol): void {
-    this.rol = rol;
+
+  public setFechaBaja(fecha: Date): void {
+    this.fechaBaja = fecha;
   }
 }

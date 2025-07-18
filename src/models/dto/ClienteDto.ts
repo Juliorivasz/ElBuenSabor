@@ -1,13 +1,13 @@
 export class ClienteDto {
-  private idAuth0: number;
+  private auth0Id: number;
   private email: string;
   private nombre: string;
   private apellido: string;
   private telefono: string;
   private imagen: string;
 
-  constructor(idAuth0: number, email: string, nombre: string, apellido: string, telefono: string, imagen: string) {
-    this.idAuth0 = idAuth0;
+  constructor(auth0Id: number, email: string, nombre: string, apellido: string, telefono: string, imagen: string) {
+    this.auth0Id = auth0Id;
     this.email = email;
     this.nombre = nombre;
     this.apellido = apellido;
@@ -15,8 +15,8 @@ export class ClienteDto {
     this.imagen = imagen;
   }
   // Getters
-  public getidAuth0(): number {
-    return this.idAuth0;
+  public getauth0Id(): number {
+    return this.auth0Id;
   }
 
   public getEmail(): string {
@@ -40,8 +40,8 @@ export class ClienteDto {
   }
 
   // Setters
-  public setidAuth0(idAuth0: number): void {
-    this.idAuth0 = idAuth0;
+  public setauth0Id(auth0Id: number): void {
+    this.auth0Id = auth0Id;
   }
 
   public setEmail(email: string): void {

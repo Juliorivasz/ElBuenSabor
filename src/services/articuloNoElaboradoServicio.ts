@@ -35,14 +35,6 @@ export const fetchArticulosNoElaboradosAbm = async (
   return { ...data, content: content };
 };
 
-// Función para realizar alta/baja lógica de un producto
-export const altaBajaArticuloNoElaborado = async (id: number, dadoDeAlta: boolean): Promise<void> => {
-  interceptorsApiClient.post("/articuloNoElaborado/altaBajaLogica", {
-    id,
-    dadoDeAlta,
-  });
-};
-
 // Función para crear un nuevo artículo no elaborado
 export const crearArticuloNoElaborado = async (producto: NuevoArticuloNoElaboradoDto, file?: File) => {
   const formData = new FormData();

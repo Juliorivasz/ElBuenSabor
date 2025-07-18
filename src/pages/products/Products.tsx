@@ -7,6 +7,9 @@ import { UniversalProductForm } from "../../components/Admin/products/UniversalP
 import { UniversalProductDetailsModal } from "../../components/Admin/products/UniversalProductDetailsModal";
 import type { InformacionArticuloManufacturadoDto } from "../../models/dto/InformacionArticuloManufacturadoDto";
 import type { InformacionArticuloNoElaboradoDto } from "../../models/dto/InformacionArticuloNoElaboradoDto";
+import { Fastfood as ProductIcon } from "@mui/icons-material";
+import { PageHeader } from "../../components/shared/PageHeader";
+import { Plus } from "lucide-react";
 
 // Tipo union para los productos
 type ProductUnion = InformacionArticuloManufacturadoDto | InformacionArticuloNoElaboradoDto;
@@ -264,29 +267,27 @@ export const Products: FC = () => {
   const currentEditingProduct = activeTab === "manufacturados" ? editingManufacturado : editingNoElaborado;
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50 p-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
         {/* Header */}
-        <div className="mb-8 flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Productos</h1>
-            <p className="mt-2 text-gray-600">Gestiona los productos del restaurante</p>
-          </div>
+        <PageHeader
+          title="Productos"
+          subtitle="Gestiona los productos del restaurante"
+          showBackButton={true}
+          backTo="admin/dashboard"
+          icon={
+            <ProductIcon
+              className="text-black mr-3"
+              fontSize="large"
+            />
+          }
+          breadcrumbs={[{ label: "Dashboard", href: "/admin/dashboard" }, { label: "Productos" }]}
+        />
+        <div className="flex justify-end items-center">
           <button
             onClick={handleCreateNew}
-            className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200 flex items-center space-x-2">
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M12 4v16m8-8H4"
-              />
-            </svg>
+            className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200 flex items-center space-x-2">
+            <Plus className="h-4 w-4 mr-2" />
             <span>Nuevo Producto</span>
           </button>
         </div>

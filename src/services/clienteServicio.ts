@@ -2,7 +2,7 @@ import { interceptorsApiClient } from "./interceptors/axios.interceptors";
 
 export interface ClienteDto {
   idUsuario: number;
-  idAuth0: string;
+  auth0Id: string;
   email: string;
   nombre: string;
   apellido: string;
@@ -11,7 +11,7 @@ export interface ClienteDto {
 }
 
 export interface ClienteRegister {
-  idAuth0: string;
+  auth0Id: string;
   email: string;
   nombre: string;
   apellido: string;
@@ -27,19 +27,19 @@ export interface PasswordChangeDto {
 }
 
 export interface UsuarioDTO {
-  idAuth0?: string;
+  auth0Id?: string;
   email: string;
   nombre: string;
   apellido: string;
   telefono: string | null;
   imagen: string | null;
   password?: string;
-  rolesidAuth0s?: string[];
+  rolesauth0Ids?: string[];
 }
 
 export interface ClienteProfileResponse {
   idUsuario: number;
-  idAuth0: string;
+  auth0Id: string;
   email: string;
   nombre: string;
   apellido: string;
@@ -56,7 +56,7 @@ export interface ImageUploadResponse {
 
 export interface IClienteResponse {
   idUsuario: number;
-  idAuth0: string;
+  auth0Id: string;
   email: string;
   nombre: string;
   apellido: string;
