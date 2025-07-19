@@ -112,7 +112,7 @@ export const AddressModal: React.FC<AddressModalProps> = ({
                   type="text"
                   value={formData.nombre}
                   onChange={(e) => handleInputChange("nombre", e.target.value)}
-                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent ${
+                  className={`text-gray-700 w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent ${
                     errors.nombre ? "border-red-500" : "border-gray-300"
                   }`}
                   placeholder="Ej: Casa, Trabajo, etc."
@@ -127,7 +127,7 @@ export const AddressModal: React.FC<AddressModalProps> = ({
                   type="text"
                   value={formData.calle}
                   onChange={(e) => handleInputChange("calle", e.target.value)}
-                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent ${
+                  className={`text-gray-700 w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent ${
                     errors.calle ? "border-red-500" : "border-gray-300"
                   }`}
                   placeholder="Nombre de la calle"
@@ -142,7 +142,7 @@ export const AddressModal: React.FC<AddressModalProps> = ({
                   type="text"
                   value={formData.numero}
                   onChange={(e) => handleInputChange("numero", e.target.value)}
-                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent ${
+                  className={`text-gray-700 w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent ${
                     errors.numero ? "border-red-500" : "border-gray-300"
                   }`}
                   placeholder="Número de la dirección"
@@ -158,7 +158,7 @@ export const AddressModal: React.FC<AddressModalProps> = ({
                     type="text"
                     value={formData.piso}
                     onChange={(e) => handleInputChange("piso", e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    className="text-gray-700 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                     placeholder="Opcional"
                     disabled={isLoading}
                   />
@@ -170,7 +170,7 @@ export const AddressModal: React.FC<AddressModalProps> = ({
                     type="text"
                     value={formData.dpto}
                     onChange={(e) => handleInputChange("dpto", e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    className="text-gray-700 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                     placeholder="Opcional"
                     disabled={isLoading}
                   />
@@ -182,7 +182,7 @@ export const AddressModal: React.FC<AddressModalProps> = ({
                 <select
                   value={formData.idDepartamento}
                   onChange={(e) => handleInputChange("idDepartamento", Number.parseInt(e.target.value))}
-                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent ${
+                  className={`text-gray-700 w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent ${
                     errors.idDepartamento ? "border-red-500" : "border-gray-300"
                   }`}
                   disabled={isLoading}
