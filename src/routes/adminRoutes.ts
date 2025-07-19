@@ -55,5 +55,11 @@ export const adminRoutes = [
     path: "/admin/pedidos",
     element: lazy(() => import("../pages/admin/pedidos/Pedidos").then((module) => ({ default: module.Pedidos }))),
     allowedRoles: ["administrador"],
-  }
+  },
+  {
+    path: "/admin/insumos",
+    element: lazy(() => import("../pages/admin/insumos/Insumos").then((module) => ({ default: module.Insumos }))),
+    title: "Gestión de Insumos",
+    allowedRoles: ["administrador"],
+  },
 ]
