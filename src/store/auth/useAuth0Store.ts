@@ -5,14 +5,20 @@ import type { AuthStore, IUser } from "./types/user";
 interface MyAuthStore extends AuthStore {
   isTokenReady: boolean;
   setTokenReady: (ready: boolean) => void;
+  // Método para limpiar completamente el estado
+  resetAuthState: () => void;
 }
+
+const initialState = {
+  user: null,
+  isTokenReady: false,
+  isProfileComplete: false,
+};
 
 export const useAuth0Store = create<MyAuthStore>()(
   persist(
     (set) => ({
-      user: null,
-      isTokenReady: false,
-      isProfileComplete: false,
+      ...initialState,
 
       setUser: (userOrUpdater: IUser | ((prevUser: IUser | null) => IUser | null)) =>
         set((state) => {
@@ -22,13 +28,13 @@ export const useAuth0Store = create<MyAuthStore>()(
             isTokenReady: newUser ? true : false,
           };
         }),
+
       setTokenReady: (ready: boolean) => set({ isTokenReady: ready }),
-      clearUser: () =>
-        set({
-          user: null,
-          isTokenReady: false,
-          isProfileComplete: false,
-        }),
+
+      clearUser: () => set(initialState),
+
+      resetAuthState: () => set(initialState),
+
       setIsProfileComplete: (status: boolean) => set({ isProfileComplete: status }),
 
       setProfileData: (data: {
@@ -71,6 +77,12 @@ export const useAuth0Store = create<MyAuthStore>()(
         isTokenReady: state.isTokenReady,
         isProfileComplete: state.isProfileComplete,
       }),
+      // Limpiar storage en caso de errores
+      onRehydrateStorage: () => (state) => {
+        if (state && !state.user) {
+          state.resetAuthState?.();
+        }
+      },
     },
   ),
 );

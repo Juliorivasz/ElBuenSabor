@@ -1,9 +1,11 @@
-// src/hooks/useNavigation.ts
+"use client";
+
+import type React from "react";
 import { useState, useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
-import { useAuth0 } from "@auth0/auth0-react"; // Necesitas este para las funciones de autenticación y el estado inicial
+import { useAuth0 } from "@auth0/auth0-react";
 import { useCartStore } from "../store/cart/useCartStore";
-import { useAuth0Store } from "../store/auth/useAuth0Store"; // Importa tu store de Zustand para el usuario
+import { useAuth0Store } from "../store/auth/useAuth0Store";
 import {
   HomeOutlined,
   RestaurantMenuOutlined,
@@ -13,10 +15,9 @@ import {
   LocationOnOutlined,
   HistoryOutlined,
 } from "@mui/icons-material";
-import { IUser } from "../store/auth/types/user";
-import { ClienteProfileResponse, fetchUserProfile } from "../services/clienteServicio";
+import type { IUser } from "../store/auth/types/user";
+import { type ClienteProfileResponse, fetchUserProfile } from "../services/clienteServicio";
 
-// Define una interfaz para los ítems de navegación y de menú de usuario
 interface NavItem {
   name: string;
   path: string;
@@ -32,14 +33,8 @@ export const useNavigation = () => {
 
   const location = useLocation();
 
-  const {
-    isLoading: auth0Loading, // Renombrado para evitar conflicto
-    isAuthenticated: auth0Authenticated, // Renombrado
-    loginWithRedirect,
-    logout,
-  } = useAuth0();
+  const { isLoading: auth0Loading, isAuthenticated: auth0Authenticated, loginWithRedirect, logout } = useAuth0();
 
-  // 2. Obtener estado del store de Zustand
   const {
     user: zustandUser,
     isTokenReady,
@@ -49,7 +44,6 @@ export const useNavigation = () => {
     setProfileData,
   } = useAuth0Store();
 
-  // 3. Determinar el estado final de autenticación y el objeto de usuario para la UI
   const isAuthenticated = auth0Authenticated && isTokenReady;
   const isLoading = auth0Loading || !isTokenReady || isProfileDataLoading;
   const user: IUser | undefined = isAuthenticated ? zustandUser ?? undefined : undefined;
@@ -57,52 +51,57 @@ export const useNavigation = () => {
   const userMenuRef = useRef<HTMLDivElement>(null);
   const hasFetchedProfileRef = useRef(false);
 
-  // Get cart items count from store
   const cartItems = useCartStore((state) => state.items);
   const cartItemsCount = cartItems.reduce((total, item) => total + item.quantity, 0);
   const prevCartCount = useRef(cartItemsCount);
 
   useEffect(() => {
     const loadAndMergeProfileData = async () => {
-      // Solo procedemos si el usuario está autenticado, el token está listo
-      // y aún no hemos intentado cargar el perfil del backend para esta sesión.
       if (isAuthenticated && !hasFetchedProfileRef.current) {
-        // Optimización: Solo buscar si los campos adicionales aún no están en Zustand
+        const userRoles = zustandUser?.roles || [];
+
+        // Si es administrador o empleado, NO buscar perfil en backend
+        const isAdminOrEmployee = userRoles.some((role) =>
+          ["administrador", "cocinero", "repartidor", "cajero"].includes(role.toLowerCase()),
+        );
+
+        if (isAdminOrEmployee) {
+          console.log("[useNavigation] Usuario es admin/empleado, marcando perfil como completo");
+          setIsProfileComplete(true);
+          hasFetchedProfileRef.current = true;
+          return;
+        }
+
+        // Solo para clientes: buscar perfil en backend
         const needsBackendData =
           !zustandUser?.apellido ||
           !zustandUser?.telefono ||
           !zustandUser?.name ||
           !zustandUser?.picture ||
-          (zustandUser?.roles && zustandUser.roles.length === 0); // Considerar también los roles si están vacíos
+          (zustandUser?.roles && zustandUser.roles.length === 0);
 
-        // Si ya tenemos un usuario en Zustand y isProfileComplete es true,
-        // no necesitamos volver a buscar el perfil del backend a menos que faltaran datos.
         if (isProfileComplete && !needsBackendData) {
           console.log("[useNavigation] Perfil ya completo y con datos en Zustand. No se busca en backend.");
           hasFetchedProfileRef.current = true;
-          return; // Salir de la función si el perfil ya está completo y no necesita datos
+          return;
         }
 
-        // Si se necesita buscar o el perfil no está completo
         setIsProfileDataLoading(true);
         try {
           const backendProfile: ClienteProfileResponse = await fetchUserProfile();
 
           console.log("[useNavigation] Perfil de cliente encontrado en backend:", backendProfile);
 
-          // ¡Usar setProfileData del store para actualizar el usuario y el estado de completitud!
           setProfileData({
             apellido: backendProfile.apellido,
             telefono: backendProfile.telefono,
             imagen: backendProfile.imagen,
             roles: backendProfile.roles,
-            email: backendProfile.email, // Incluirlos por si setProfileData los usa para fusionar
+            email: backendProfile.email,
             name: backendProfile.nombre,
-            id: backendProfile.idAuth0,
-            picture: backendProfile.imagen ?? undefined, // Mapeo de imagen a picture, convierte null a undefined
+            id: backendProfile.auth0Id,
+            picture: backendProfile.imagen ?? undefined,
           });
-
-          // `setIsProfileComplete(true)` se llama automáticamente dentro de setProfileData ahora
         } catch (error: unknown) {
           console.error("[useNavigation] Error al cargar datos del perfil del backend:", error);
           if (
@@ -115,12 +114,8 @@ export const useNavigation = () => {
           ) {
             const status = (error as { response?: { status?: number } }).response?.status;
             if (status === 404) {
-              // Si el backend responde 404, significa que el perfil no está creado en la DB
-              // y el usuario necesita completar su perfil.
-              // Aseguramos que isProfileComplete sea false en el store.
               setIsProfileComplete(false);
             } else {
-              // Otros errores, podríamos manejar de otra forma o simplemente asegurar que no se marque como completo
               setIsProfileComplete(false);
             }
           } else {
@@ -128,12 +123,11 @@ export const useNavigation = () => {
           }
         } finally {
           setIsProfileDataLoading(false);
-          hasFetchedProfileRef.current = true; // Marcar que ya se intentó la búsqueda para esta sesión
+          hasFetchedProfileRef.current = true;
         }
       } else if (!isAuthenticated) {
-        // Si el usuario no está autenticado, resetear los flags para la próxima sesión
         hasFetchedProfileRef.current = false;
-        setIsProfileComplete(false); // Resetear en el store
+        setIsProfileComplete(false);
       }
     };
 
@@ -145,30 +139,35 @@ export const useNavigation = () => {
     zustandUser?.name,
     zustandUser?.picture,
     zustandUser?.roles,
-    isProfileComplete, // Dependencia para re-ejecutar si el estado de completitud cambia en el store
-    setUser, // Solo si setUser se usa directamente para algo más aquí, si no, se puede quitar
-    setIsProfileComplete, // Asegurarse de que el efecto se re-ejecute si la acción se usa
-    setProfileData, // ¡Crucial! Para que el efecto se re-ejecute si la acción cambia (aunque rara vez lo hará)
+    isProfileComplete,
+    setUser,
+    setIsProfileComplete,
+    setProfileData,
   ]);
 
-  // Navigation items configuration - DINÁMICO según autenticación
-  const navItems: NavItem[] = isAuthenticated
-    ? [{ name: "Inicio", path: "/catalog", icon: RestaurantMenuOutlined }]
-    : [
-        { name: "Inicio", path: "/", icon: HomeOutlined },
-        { name: "Catálogo", path: "/catalog", icon: RestaurantMenuOutlined },
-        { name: "Sobre Nosotros", path: "/about", icon: InfoOutlined },
-        { name: "Contacto", path: "/contact", icon: PhoneOutlined },
-      ];
+  const userRoles = user?.roles || [];
+  const isAdminOrEmployee = userRoles.some((role) =>
+    ["administrador", "cocinero", "repartidor", "cajero"].includes(role.toLowerCase()),
+  );
 
-  // User menu items - CON ICONOS
-  const userMenuItems: NavItem[] = [
-    { name: "Mi Perfil", path: "/profile", icon: AccountCircleOutlined },
-    { name: "Mis Direcciones", path: "/address", icon: LocationOnOutlined },
-    { name: "Historial de Pedidos", path: "/orders", icon: HistoryOutlined },
-  ];
+  const navItems: NavItem[] =
+    isAuthenticated && !isAdminOrEmployee
+      ? [{ name: "Inicio", path: "/catalog", icon: RestaurantMenuOutlined }]
+      : [
+          { name: "Inicio", path: "/", icon: HomeOutlined },
+          { name: "Catálogo", path: "/catalog", icon: RestaurantMenuOutlined },
+          { name: "Sobre Nosotros", path: "/about", icon: InfoOutlined },
+          { name: "Contacto", path: "/contact", icon: PhoneOutlined },
+        ];
 
-  // Scroll detection
+  const userMenuItems: NavItem[] = !isAdminOrEmployee
+    ? [
+        { name: "Mi Perfil", path: "/profile", icon: AccountCircleOutlined },
+        { name: "Mis Direcciones", path: "/address", icon: LocationOnOutlined },
+        { name: "Historial de Pedidos", path: "/orders", icon: HistoryOutlined },
+      ]
+    : [];
+
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20);
@@ -177,7 +176,6 @@ export const useNavigation = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Cart animation when items are added
   useEffect(() => {
     if (cartItemsCount > prevCartCount.current) {
       setCartAnimation(true);
@@ -186,7 +184,6 @@ export const useNavigation = () => {
     prevCartCount.current = cartItemsCount;
   }, [cartItemsCount]);
 
-  // Close user menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
@@ -198,7 +195,6 @@ export const useNavigation = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Navigation handlers
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
   const toggleUserMenu = () => setIsUserMenuOpen(!isUserMenuOpen);
   const closeMenus = () => {
@@ -231,23 +227,19 @@ export const useNavigation = () => {
   };
 
   return {
-    // State
     isMenuOpen,
     isUserMenuOpen,
     isScrolled,
     cartAnimation,
     location,
-    isLoading, // Este es el isLoading derivado
-    isAuthenticated, // Este es el isAuthenticated derivado
-    user, // Este es el user derivado (preferencia Zustand)
+    isLoading,
+    isAuthenticated,
+    user,
     cartItemsCount,
     userMenuRef,
-
-    // Configuration
+    isAdminOrEmployee,
     navItems,
     userMenuItems,
-
-    // Handlers
     toggleMenu,
     toggleUserMenu,
     closeMenus,

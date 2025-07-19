@@ -1,36 +1,36 @@
 // export class UsuarioDTO {
-//   private idAuth0: string;
+//   private auth0Id: string;
 //   private email: string;
 //   private nombre: string;
 //   private apellido: string;
 //   private telefono: string;
 //   private imagen: string;
 //   private password: string;
-//   private rolesidAuth0s: string[];
+//   private rolesauth0Ids: string[];
 
 //   constructor(
-//     idAuth0: string,
+//     auth0Id: string,
 //     email: string,
 //     nombre: string,
 //     apellido: string,
 //     telefono: string,
 //     imagen: string,
 //     password: string,
-//     rolesidAuth0s: string[],
+//     rolesauth0Ids: string[],
 //   ) {
-//     this.idAuth0 = idAuth0;
+//     this.auth0Id = auth0Id;
 //     this.email = email;
 //     this.nombre = nombre;
 //     this.apellido = apellido;
 //     this.telefono = telefono;
 //     this.imagen = imagen;
 //     this.password = password;
-//     this.rolesidAuth0s = rolesidAuth0s;
+//     this.rolesauth0Ids = rolesauth0Ids;
 //   }
 
 //   // Getters
-//   public getidAuth0(): string {
-//     return this.idAuth0;
+//   public getauth0Id(): string {
+//     return this.auth0Id;
 //   }
 
 //   public getEmail(): string {
@@ -57,13 +57,13 @@
 //     return this.password;
 //   }
 
-//   public getRolesidAuth0s(): string[] {
-//     return this.rolesidAuth0s;
+//   public getRolesauth0Ids(): string[] {
+//     return this.rolesauth0Ids;
 //   }
 
 //   // Setters
-//   public setidAuth0(idAuth0: string): void {
-//     this.idAuth0 = idAuth0;
+//   public setauth0Id(auth0Id: string): void {
+//     this.auth0Id = auth0Id;
 //   }
 
 //   public setEmail(email: string): void {
@@ -90,7 +90,7 @@
 //     this.password = password;
 //   }
 
-//   public setRolesidAuth0s(rolesidAuth0s: string[]): void {
-//     this.rolesidAuth0s = rolesidAuth0s;
+//   public setRolesauth0Ids(rolesauth0Ids: string[]): void {
+//     this.rolesauth0Ids = rolesauth0Ids;
 //   }
 // }

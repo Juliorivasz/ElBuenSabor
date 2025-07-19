@@ -1,13 +1,11 @@
-"use client"
-
-import type React from "react"
-import { EstadoPedido } from "../../../models/enum/EstadoPedido"
+import type React from "react";
+import { EstadoPedido } from "../../../models/enum/EstadoPedido";
 
 interface PedidosFiltersProps {
-  estadoSeleccionado: string
-  onEstadoChange: (estado: string) => void
-  onRefresh: () => void
-  refreshing?: boolean
+  estadoSeleccionado: string;
+  onEstadoChange: (estado: string) => void;
+  onRefresh: () => void;
+  refreshing?: boolean;
 }
 
 export const PedidosFilters: React.FC<PedidosFiltersProps> = ({
@@ -19,52 +17,52 @@ export const PedidosFilters: React.FC<PedidosFiltersProps> = ({
   const getEstadoColor = (estado: string) => {
     switch (estado) {
       case EstadoPedido.LISTO:
-        return "bg-green-200 text-green-800 border-green-300"
+        return "bg-green-200 text-green-800 border-green-300";
       case EstadoPedido.A_CONFIRMAR:
-        return "bg-blue-200 text-blue-800 border-blue-300"
+        return "bg-blue-200 text-blue-800 border-blue-300";
       case EstadoPedido.CANCELADO:
-        return "bg-red-200 text-red-800 border-red-300"
+        return "bg-red-200 text-red-800 border-red-300";
       case EstadoPedido.RECHAZADO:
-        return "bg-red-200 text-red-800 border-red-300"
+        return "bg-red-200 text-red-800 border-red-300";
       case EstadoPedido.EN_PREPARACION:
-        return "bg-yellow-200 text-yellow-800 border-yellow-300"
+        return "bg-yellow-200 text-yellow-800 border-yellow-300";
       case EstadoPedido.EN_CAMINO:
-        return "bg-orange-200 text-orange-800 border-orange-300"
+        return "bg-orange-200 text-orange-800 border-orange-300";
       case EstadoPedido.ENTREGADO:
-        return "bg-green-300 text-green-900 border-green-400"
+        return "bg-green-300 text-green-900 border-green-400";
       default:
-        return "bg-gray-200 text-gray-800 border-gray-300"
+        return "bg-gray-200 text-gray-800 border-gray-300";
     }
-  }
+  };
 
   const getEstadoText = (estado: string) => {
     switch (estado) {
       case EstadoPedido.LISTO:
-        return "Listo"
+        return "Listo";
       case EstadoPedido.A_CONFIRMAR:
-        return "A Confirmar"
+        return "A Confirmar";
       case EstadoPedido.CANCELADO:
-        return "Cancelado"
+        return "Cancelado";
       case EstadoPedido.RECHAZADO:
-        return "Rechazado"
+        return "Rechazado";
       case EstadoPedido.EN_PREPARACION:
-        return "En Preparación"
+        return "En Preparación";
       case EstadoPedido.EN_CAMINO:
-        return "En Camino"
+        return "En Camino";
       case EstadoPedido.ENTREGADO:
-        return "Entregado"
+        return "Entregado";
       case "TODOS":
-        return "Todos"
+        return "Todos";
       default:
-        return estado
+        return estado;
     }
-  }
+  };
 
-  const estados = ["TODOS", ...Object.values(EstadoPedido)]
+  const estados = ["TODOS", ...Object.values(EstadoPedido)];
 
   const handleEstadoClick = (estado: string) => {
-    onEstadoChange(estado)
-  }
+    onEstadoChange(estado);
+  };
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
@@ -73,12 +71,12 @@ export const PedidosFilters: React.FC<PedidosFiltersProps> = ({
       </div>
       <div className="flex flex-wrap gap-2">
         {estados.map((estado) => {
-          const isSelected = estadoSeleccionado === estado
+          const isSelected = estadoSeleccionado === estado;
           const baseClasses =
-            "px-4 py-2 rounded-lg border-2 font-medium transition-all duration-200 cursor-pointer select-none"
+            "px-4 py-2 rounded-lg border-2 font-medium transition-all duration-200 cursor-pointer select-none";
           const selectedClasses = isSelected
             ? `${getEstadoColor(estado)} transform -translate-y-1 shadow-md`
-            : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50"
+            : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50";
 
           return (
             <div
@@ -89,15 +87,14 @@ export const PedidosFilters: React.FC<PedidosFiltersProps> = ({
               tabIndex={0}
               onKeyDown={(e) => {
                 if (e.key === "Enter" || e.key === " ") {
-                  handleEstadoClick(estado)
+                  handleEstadoClick(estado);
                 }
-              }}
-            >
+              }}>
               {getEstadoText(estado)}
             </div>
-          )
+          );
         })}
       </div>
     </div>
-  )
-}
+  );
+};
