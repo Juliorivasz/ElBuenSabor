@@ -1,30 +1,30 @@
-import { RubroInsumoDto } from "../models/dto/RubroInsumoDto"
-import type { NuevoRubroInsumoDto } from "../models/dto/NuevoRubroInsumoDto"
-import { interceptorsApiClient } from "./interceptors/axios.interceptors"
+import { RubroInsumoDto } from "../models/dto/RubroInsumoDto";
+import type { NuevoRubroInsumoDto } from "../models/dto/NuevoRubroInsumoDto";
+import { interceptorsApiClient } from "./interceptors/axios.interceptors";
 
-const BASE_URL = "http://localhost:8080"
+const BASE_URL = "https://localhost:8080";
 
 interface RubroInsumoApiResponse {
-  idRubroInsumo: number
-  nombre: string
-  dadoDeBaja?: boolean
-  idRubroInsumoPadre?: number | null
+  idRubroInsumo: number;
+  nombre: string;
+  dadoDeBaja?: boolean;
+  idRubroInsumoPadre?: number | null;
 }
 
 interface ListaRubrosResponse {
-  arregloRubros: RubroInsumoApiResponse[]
+  arregloRubros: RubroInsumoApiResponse[];
 }
 
 export class RubroInsumoServicio {
   // GET /rubroInsumo/lista
   static async listarRubros(): Promise<RubroInsumoDto[]> {
     try {
-      const response = await fetch(`${BASE_URL}/rubroInsumo/lista`)
+      const response = await fetch(`${BASE_URL}/rubroInsumo/lista`);
       if (!response.ok) {
-        throw new Error(`Error al obtener rubros: ${response.status}`)
+        throw new Error(`Error al obtener rubros: ${response.status}`);
       }
 
-      const data: ListaRubrosResponse = await response.json()
+      const data: ListaRubrosResponse = await response.json();
 
       // Convertir a RubroInsumoDto
       const rubros = data.arregloRubros.map((item) => {
@@ -33,23 +33,21 @@ export class RubroInsumoServicio {
           item.nombre,
           item.dadoDeBaja || false,
           item.idRubroInsumoPadre || null,
-        )
-      })
+        );
+      });
 
       // Organizar jerarquía
-      return this.organizarJerarquia(rubros)
+      return this.organizarJerarquia(rubros);
     } catch (error) {
-      console.error("Error al listar rubros:", error)
-      throw error
+      console.error("Error al listar rubros:", error);
+      throw error;
     }
   }
 
   // POST /rubroInsumo/nuevo
   static async crearRubro(nuevoRubro: NuevoRubroInsumoDto): Promise<void> {
     try {
-      await interceptorsApiClient.post(`/rubroInsumo/nuevo`,
-        nuevoRubro.toJSON()
-      )
+      await interceptorsApiClient.post(`/rubroInsumo/nuevo`, nuevoRubro.toJSON());
 
       /*const data: RubroInsumoApiResponse = await response.json()
 
@@ -60,8 +58,8 @@ export class RubroInsumoServicio {
         data.idRubroInsumoPadre || null,
       )*/
     } catch (error) {
-      console.error("Error al crear rubro:", error)
-      throw error
+      console.error("Error al crear rubro:", error);
+      throw error;
     }
   }
 
@@ -74,24 +72,24 @@ export class RubroInsumoServicio {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(rubro.toJSON()),
-      })
+      });
 
       if (!response.ok) {
-        const errorText = await response.text()
-        throw new Error(`Error al actualizar rubro: ${response.status} - ${errorText}`)
+        const errorText = await response.text();
+        throw new Error(`Error al actualizar rubro: ${response.status} - ${errorText}`);
       }
 
-      const data: RubroInsumoApiResponse = await response.json()
+      const data: RubroInsumoApiResponse = await response.json();
 
       return new RubroInsumoDto(
         data.idRubroInsumo,
         data.nombre,
         data.dadoDeBaja || false,
         data.idRubroInsumoPadre || null,
-      )
+      );
     } catch (error) {
-      console.error("Error al actualizar rubro:", error)
-      throw error
+      console.error("Error al actualizar rubro:", error);
+      throw error;
     }
   }
 
@@ -103,38 +101,38 @@ export class RubroInsumoServicio {
         headers: {
           "Content-Type": "application/json",
         },
-      })
+      });
 
       if (!response.ok) {
-        const errorText = await response.text()
-        throw new Error(`Error al cambiar estado de rubro: ${response.status} - ${errorText}`)
+        const errorText = await response.text();
+        throw new Error(`Error al cambiar estado de rubro: ${response.status} - ${errorText}`);
       }
     } catch (error) {
-      console.error("Error al cambiar estado de rubro:", error)
-      throw error
+      console.error("Error al cambiar estado de rubro:", error);
+      throw error;
     }
   }
 
   // Método auxiliar para organizar jerarquía
   private static organizarJerarquia(rubros: RubroInsumoDto[]): RubroInsumoDto[] {
-    const rubrosPadre = rubros.filter((rubro) => rubro.esRubroPadre())
+    const rubrosPadre = rubros.filter((rubro) => rubro.esRubroPadre());
 
     rubrosPadre.forEach((padre) => {
-      const subrubros = this.obtenerSubrubrosRecursivo(padre.getIdRubroInsumo(), rubros)
-      padre.setSubrubros(subrubros)
-    })
+      const subrubros = this.obtenerSubrubrosRecursivo(padre.getIdRubroInsumo(), rubros);
+      padre.setSubrubros(subrubros);
+    });
 
-    return rubrosPadre
+    return rubrosPadre;
   }
 
   private static obtenerSubrubrosRecursivo(idPadre: number, todosLosRubros: RubroInsumoDto[]): RubroInsumoDto[] {
-    const subrubros = todosLosRubros.filter((rubro) => rubro.getIdRubroInsumoPadre() === idPadre)
+    const subrubros = todosLosRubros.filter((rubro) => rubro.getIdRubroInsumoPadre() === idPadre);
 
     subrubros.forEach((subrubro) => {
-      const subsubrubros = this.obtenerSubrubrosRecursivo(subrubro.getIdRubroInsumo(), todosLosRubros)
-      subrubro.setSubrubros(subsubrubros)
-    })
+      const subsubrubros = this.obtenerSubrubrosRecursivo(subrubro.getIdRubroInsumo(), todosLosRubros);
+      subrubro.setSubrubros(subsubrubros);
+    });
 
-    return subrubros
+    return subrubros;
   }
 }

@@ -10,4 +10,7 @@ export default defineConfig({
     https: true,
   },
   plugins: [react(), tailwindcss(), mkcert()],
+  define: {
+    global: "window",
+  },
 });

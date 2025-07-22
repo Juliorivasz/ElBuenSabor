@@ -1,20 +1,20 @@
-import axios from "axios"
+import axios from "axios";
 
 export interface ItemDTO {
-  title: string
-  quantity: number
-  unitPrice: number
+  title: string;
+  quantity: number;
+  unitPrice: number;
 }
 
 export interface PreferenciaResponse {
-  init_point: string
+  init_point: string;
 }
 
 class PagoServicio {
-  private baseUrl: string
+  private baseUrl: string;
 
   constructor() {
-    this.baseUrl = "http://localhost:8080/api/pagos"
+    this.baseUrl = "https://localhost:8080/api/pagos";
   }
 
   /**
@@ -24,13 +24,13 @@ class PagoServicio {
    */
   async crearPreferencia(items: ItemDTO[]): Promise<PreferenciaResponse> {
     try {
-      const response = await axios.post<PreferenciaResponse>(`${this.baseUrl}/preferencia`, items)
-      return response.data
+      const response = await axios.post<PreferenciaResponse>(`${this.baseUrl}/preferencia`, items);
+      return response.data;
     } catch (error) {
-      console.error("Error al crear preferencia de pago:", error)
-      throw new Error("No se pudo crear la preferencia de pago")
+      console.error("Error al crear preferencia de pago:", error);
+      throw new Error("No se pudo crear la preferencia de pago");
     }
   }
 }
 
-export const pagoServicio = new PagoServicio()
+export const pagoServicio = new PagoServicio();
