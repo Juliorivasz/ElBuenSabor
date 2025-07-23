@@ -65,4 +65,6 @@ export interface PedidoStatusUpdateDto {
   clienteId: number; // Para que el frontend del cliente pueda filtrar
   horaEntrega?: string; // LocalDateTime, opcional ya que no siempre se actualiza
   mensajeActualizacion?: string; // Mensaje descriptivo del cambio
+  nombreRepartidor?: string; // Nuevo: Nombre del repartidor asignado
+  cantidadProductos?: number; // Nuevo: Cantidad total de productos en el pedido
 }
