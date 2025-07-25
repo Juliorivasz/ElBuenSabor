@@ -39,13 +39,13 @@ export type MetodoDePago = "MERCADO_PAGO" | "EFECTIVO";
 
 export interface OrderInProgress {
   idPedido: number;
-  fechaYHora: string; // LocalDateTime en Java se serializa como string
-  horaEntrega: string; // LocalDateTime en Java se serializa como string
+  fechaYHora: string;
+  horaEntrega: string;
   estadoPedido: EstadoPedido;
   tipoEnvio: TipoEnvio;
   metodoDePago: MetodoDePago;
   detalles: DetallePedidoCliente[];
-  direccion: Direccion | null; // Puede ser null para retiro en local
+  direccion: Direccion | null;
   repartidor: Repartidor | null;
   tiempoTranscurrido: number;
 }

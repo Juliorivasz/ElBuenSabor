@@ -7,16 +7,23 @@ import {
   StorefrontOutlined,
   LocalShippingOutlined,
 } from "@mui/icons-material";
-import type { Repartidor, TipoEnvio } from "../../types/OrderInProgress";
+import type { EstadoPedido, Repartidor, TipoEnvio } from "../../types/OrderInProgress";
 
 interface DeliveryInfoProps {
   repartidor: Repartidor | null;
+  estadoPedido: EstadoPedido;
   tipoEntrega: TipoEnvio;
   direccionEntrega?: string;
 }
 
-export const DeliveryInfo: React.FC<DeliveryInfoProps> = ({ repartidor, tipoEntrega, direccionEntrega }) => {
+export const DeliveryInfo: React.FC<DeliveryInfoProps> = ({
+  repartidor,
+  estadoPedido,
+  tipoEntrega,
+  direccionEntrega,
+}) => {
   const isDelivery = tipoEntrega === "DELIVERY";
+  const repartidorInfo = repartidor || { nombre: "Carlos", apellido: "Paez", telefono: "2619865741" };
 
   return (
     <motion.div
@@ -29,13 +36,13 @@ export const DeliveryInfo: React.FC<DeliveryInfoProps> = ({ repartidor, tipoEntr
         ) : (
           <StorefrontOutlined className="text-orange-500" />
         )}
-        <h4 className="font-semibold text-gray-800">{isDelivery ? "Información de Delivery" : "Retiro en Local"}</h4>
+        <h4 className="font-semibold text-gray-800">{isDelivery ? "Información de Delivery" : "Información"}</h4>
       </div>
 
       {isDelivery ? (
         <div className="space-y-3">
           {/* Información del repartidor */}
-          {repartidor ? (
+          {repartidorInfo && estadoPedido === "EN_CAMINO" ? (
             <div className="bg-white rounded-lg p-3 border border-gray-200">
               <div className="flex items-center space-x-3 mb-2">
                 <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center">
@@ -43,7 +50,7 @@ export const DeliveryInfo: React.FC<DeliveryInfoProps> = ({ repartidor, tipoEntr
                 </div>
                 <div>
                   <p className="font-medium text-gray-800">
-                    {repartidor.nombre} {repartidor.apellido}
+                    {repartidorInfo.nombre} {repartidorInfo.apellido}
                   </p>
                   <p className="text-sm text-gray-600">Repartidor asignado</p>
                 </div>
@@ -51,7 +58,7 @@ export const DeliveryInfo: React.FC<DeliveryInfoProps> = ({ repartidor, tipoEntr
 
               <div className="flex items-center space-x-2 text-sm text-gray-600">
                 <PhoneOutlined className="text-xs" />
-                <span>{repartidor.telefono}</span>
+                <span>{repartidorInfo.telefono}</span>
               </div>
             </div>
           ) : (
@@ -79,7 +86,11 @@ export const DeliveryInfo: React.FC<DeliveryInfoProps> = ({ repartidor, tipoEntr
             </div>
             <div>
               <p className="font-medium text-gray-800">Retiro en local</p>
-              <p className="text-sm text-gray-600">Podrás retirar tu pedido cuando esté listo</p>
+              <p className="text-sm text-gray-600">
+                {estadoPedido === "LISTO"
+                  ? "Tu pedido está listo para retirar"
+                  : "Podrás retirar tu pedido cuando esté listo"}
+              </p>
             </div>
           </div>
         </div>

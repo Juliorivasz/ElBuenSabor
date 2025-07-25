@@ -73,6 +73,7 @@ export const OrderInProgressCard: React.FC<OrderInProgressCardProps> = ({ order,
               <div className="lg:flex-shrink-0">
                 <OrderStatusCard
                   estado={order.estadoPedido}
+                  tipoEntrega={order.tipoEnvio}
                   tiempoTranscurrido={order.tiempoTranscurrido}
                 />
               </div>
@@ -89,6 +90,7 @@ export const OrderInProgressCard: React.FC<OrderInProgressCardProps> = ({ order,
               <div className="lg:flex-shrink-0">
                 <DeliveryInfo
                   repartidor={order.repartidor}
+                  estadoPedido={order.estadoPedido}
                   tipoEntrega={order.tipoEnvio}
                   direccionEntrega={order.tipoEnvio === "DELIVERY" ? formatAddress(order.direccion) : "Retiro en local"}
                 />

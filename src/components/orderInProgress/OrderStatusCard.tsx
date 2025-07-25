@@ -9,14 +9,15 @@ import {
   CancelOutlined,
   ErrorOutlined,
 } from "@mui/icons-material";
-import type { EstadoPedido } from "../../types/OrderInProgress";
+import type { EstadoPedido, TipoEnvio } from "../../types/OrderInProgress";
 
 interface OrderStatusCardProps {
   estado: EstadoPedido;
+  tipoEntrega: TipoEnvio;
   tiempoTranscurrido: number;
 }
 
-export const OrderStatusCard: React.FC<OrderStatusCardProps> = ({ estado, tiempoTranscurrido }) => {
+export const OrderStatusCard: React.FC<OrderStatusCardProps> = ({ estado, tipoEntrega, tiempoTranscurrido }) => {
   // Configuración de estados
   const statusConfig = {
     A_CONFIRMAR: {
@@ -44,7 +45,9 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = ({ estado, tiempo
       bgColor: "bg-green-50",
       borderColor: "border-green-200",
       progress: 70,
-      description: "Tu pedido está listo y será enviado pronto",
+      description: `Tu pedido está listo, ${
+        tipoEntrega === "DELIVERY" ? "esperando repartidor" : "puedes retirarlo en local"
+      }`,
     },
     EN_CAMINO: {
       icon: LocalShippingOutlined,
