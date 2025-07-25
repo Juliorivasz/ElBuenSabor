@@ -24,6 +24,7 @@ import {
   AccountCircle as UserIcon,
   AdminPanelSettings as AdminIcon,
   BarChart as ChartIcon,
+  LocalOffer as PromoIcon,
 } from "@mui/icons-material";
 
 interface SidebarItem {
@@ -68,6 +69,12 @@ const sidebarItems: SidebarItem[] = [
     name: "Estadisticas",
     path: "/admin/estadisticas",
     icon: ChartIcon,
+    allowedRoles: ["administrador"],
+  },
+  {
+    name: "Promociones",
+    path: "/admin/promociones",
+    icon: PromoIcon,
     allowedRoles: ["administrador"],
   },
   {

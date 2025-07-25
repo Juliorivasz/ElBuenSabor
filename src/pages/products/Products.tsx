@@ -365,6 +365,7 @@ export const Products: FC = () => {
             onEdit={handleEditManufacturado}
             onViewDetails={handleViewDetailsManufacturado}
             onToggleStatus={handleToggleStatusManufacturado}
+            onRefresh={forceUpdate}
             title="Productos Manufacturados"
             emptyMessage="No hay productos manufacturados registrados"
             emptyDescription="Agrega tu primer producto manufacturado para comenzar"
@@ -380,6 +381,7 @@ export const Products: FC = () => {
             onEdit={handleEditNoElaborado}
             onViewDetails={handleViewDetailsNoElaborado}
             onToggleStatus={handleToggleStatusNoElaborado}
+            onRefresh={forceUpdate}
             title="Productos No Elaborados"
             emptyMessage="No hay productos no elaborados registrados"
             emptyDescription="Agrega tu primer producto no elaborado para comenzar"

@@ -13,23 +13,23 @@ import { useCategoriasStore } from "../../store/categorias/useCategoriasStore"
 import { Pagination } from "../Admin/products/Pagination"
 
 interface PaginationState {
-  currentPage: number;
-  itemsPerPage: number;
-  totalItems: number;
-  totalPages: number;
+  currentPage: number
+  itemsPerPage: number
+  totalItems: number
+  totalPages: number
 }
 
 interface CategoriasTableProps {
-  categorias: CategoriaExtendidaDto[];
-  loading: boolean;
-  pagination: PaginationState;
-  onPageChange: (page: number) => void;
-  onItemsPerPageChange: (itemsPerPage: number) => void;
-  onEdit: (categoria: CategoriaExtendidaDto) => void;
-  onViewDetails: (categoria: CategoriaExtendidaDto) => void;
-  onToggleStatus: (categoria: CategoriaExtendidaDto) => void;
-  onNuevaCategoria: () => void;
-  filtroActual: "todas" | "activas" | "inactivas" | "padre" | "subcategorias";
+  categorias: CategoriaExtendidaDto[]
+  loading: boolean
+  pagination: PaginationState
+  onPageChange: (page: number) => void
+  onItemsPerPageChange: (itemsPerPage: number) => void
+  onEdit: (categoria: CategoriaExtendidaDto) => void
+  onViewDetails: (categoria: CategoriaExtendidaDto) => void
+  onToggleStatus: (categoria: CategoriaExtendidaDto) => void
+  onNuevaCategoria: () => void
+  filtroActual: "todas" | "activas" | "inactivas" | "padre" | "subcategorias"
 }
 
 interface CategoryWithLevel {
@@ -49,27 +49,27 @@ export const CategoriasTable = ({
   onNuevaCategoria,
   filtroActual,
 }: CategoriasTableProps) => {
-  const [expandedCategories, setExpandedCategories] = useState<Set<number>>(new Set());
-  const { categorias: todasLasCategorias } = useCategoriasStore.getState();
+  const [expandedCategories, setExpandedCategories] = useState<Set<number>>(new Set())
+  const { categorias: todasLasCategorias } = useCategoriasStore.getState()
 
   const toggleExpanded = (idCategoria: number) => {
-    const newExpanded = new Set(expandedCategories);
+    const newExpanded = new Set(expandedCategories)
     if (newExpanded.has(idCategoria)) {
-      newExpanded.delete(idCategoria);
+      newExpanded.delete(idCategoria)
     } else {
-      newExpanded.add(idCategoria);
+      newExpanded.add(idCategoria)
     }
-    setExpandedCategories(newExpanded);
-  };
+    setExpandedCategories(newExpanded)
+  }
 
   const getImageUrl = (categoria: CategoriaExtendidaDto): string => {
     // Primero intentar con la estructura nueva (imagenModel.url)
     if ((categoria as any).imagenModel?.url) {
-      return (categoria as any).imagenModel.url;
+      return (categoria as any).imagenModel.url
     }
     // Fallback a la estructura anterior
-    return categoria.getImagenDto()?.getUrl() || "";
-  };
+    return categoria.getImagenDto()?.getUrl() || ""
+  }
 
   // Función para obtener todas las subcategorías recursivamente
   const getAllSubcategories = (
@@ -107,11 +107,11 @@ export const CategoriasTable = ({
 
   // Función para obtener subcategorías de una categoría padre
   const getSubcategorias = (idCategoriaPadre: number): CategoriaExtendidaDto[] => {
-    return todasLasCategorias.filter((sub) => sub.getIdCategoriaPadre() === idCategoriaPadre);
-  };
+    return todasLasCategorias.filter((sub) => sub.getIdCategoriaPadre() === idCategoriaPadre)
+  }
 
   // Determinar si mostrar el comportamiento desplegable
-  const shouldShowDropdown = filtroActual === "todas";
+  const shouldShowDropdown = filtroActual === "todas"
 
   // Función para determinar qué categorías mostrar según el filtro
   const getCategoriasToShow = (): CategoriaExtendidaDto[] => {
@@ -146,9 +146,7 @@ export const CategoriasTable = ({
           </div>
           <div className="space-y-3">
             {[...Array(5)].map((_, i) => (
-              <div
-                key={i}
-                className="flex space-x-4">
+              <div key={i} className="flex space-x-4">
                 <div className="h-12 w-12 bg-gray-200 rounded-full"></div>
                 <div className="flex-1 space-y-2">
                   <div className="h-4 bg-gray-200 rounded w-3/4"></div>
@@ -159,7 +157,7 @@ export const CategoriasTable = ({
           </div>
         </div>
       </div>
-    );
+    )
   }
 
   if (categoriasAMostrar.length === 0) {
@@ -171,13 +169,14 @@ export const CategoriasTable = ({
           <p className="text-gray-500 mb-6">Comienza creando tu primera categoría para organizar tus productos</p>
           <button
             onClick={onNuevaCategoria}
-            className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-orange-500 hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-colors">
+            className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-orange-500 hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-colors"
+          >
             <Plus className="h-4 w-4 mr-2" />
             Nueva Categoría
           </button>
         </div>
       </div>
-    );
+    )
   }
 
   return (
@@ -194,7 +193,8 @@ export const CategoriasTable = ({
           </div>
           <button
             onClick={onNuevaCategoria}
-            className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-orange-500 hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-colors">
+            className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-orange-500 hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-colors"
+          >
             <Plus className="h-4 w-4 mr-2" />
             Nueva Categoría
           </button>
@@ -247,9 +247,7 @@ export const CategoriasTable = ({
               return (
                 <>
                   {/* Fila principal de la categoría */}
-                  <tr
-                    key={categoria.getIdCategoria()}
-                    className="hover:bg-gray-50 transition-colors">
+                  <tr key={categoria.getIdCategoria()} className="hover:bg-gray-50 transition-colors">
                     {/* Columna de expansión (solo en modo dropdown) */}
                     {shouldShowDropdown && (
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -283,7 +281,7 @@ export const CategoriasTable = ({
                               src={getImageUrl(categoria) || "/placeholder.svg?height=48&width=48"}
                               alt={categoria.getNombre()}
                               onError={(e) => {
-                                (e.target as HTMLImageElement).src = "/placeholder.svg?height=48&width=48";
+                                ;(e.target as HTMLImageElement).src = "/placeholder.svg?height=48&width=48"
                               }}
                             />
                           </div>
@@ -309,11 +307,13 @@ export const CategoriasTable = ({
                           categoria.isActiva()
                             ? "bg-green-100 text-green-800 border border-green-200"
                             : "bg-red-100 text-red-800 border border-red-200"
-                        }`}>
+                        }`}
+                      >
                         <span
                           className={`w-2 h-2 rounded-full mr-2 ${
                             categoria.isActiva() ? "bg-green-400" : "bg-red-400"
-                          }`}></span>
+                          }`}
+                        ></span>
                         {categoria.isActiva() ? "Activa" : "Inactiva"}
                       </span>
                     </td>
@@ -388,18 +388,16 @@ export const CategoriasTable = ({
                         </button>
                         <button
                           onClick={() => onToggleStatus(categoria)}
-                          className={`p-2 rounded-full transition-colors ${
-                            categoria.isActiva()
-                              ? "text-red-600 hover:text-red-900 hover:bg-red-50"
-                              : "text-green-600 hover:text-green-900 hover:bg-green-50"
+                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+                            categoria.isActiva() ? "bg-green-500 focus:ring-green-500" : "bg-red-400 focus:ring-red-4 00"
                           }`}
-                          title={categoria.isActiva() ? "Desactivar categoría" : "Activar categoría"}
+                          title={categoria.isActiva() ? "Desactivar" : "Activar"}
                         >
-                          {categoria.isActiva() ? (
-                            <BlockIcon className="h-4 w-4" />
-                          ) : (
-                            <CheckCircleIcon className="h-4 w-4" />
-                          )}
+                          <span
+                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                              categoria.isActiva() ? "translate-x-6" : "translate-x-1"
+                            }`}
+                          />
                         </button>
                       </div>
                     </td>
@@ -521,7 +519,7 @@ export const CategoriasTable = ({
                       )
                     })}
                 </>
-              );
+              )
             })}
           </tbody>
         </table>
@@ -539,5 +537,5 @@ export const CategoriasTable = ({
         />
       </div>
     </div>
-  );
-};
+  )
+}

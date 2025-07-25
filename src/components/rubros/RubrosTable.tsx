@@ -1,7 +1,6 @@
 "use client"
 
-import BlockIcon from "@mui/icons-material/Block"
-import CheckCircleIcon from "@mui/icons-material/CheckCircle"
+import type React from "react"
 import EditIcon from "@mui/icons-material/Edit"
 import ExpandLessIcon from "@mui/icons-material/ExpandLess"
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
@@ -163,32 +162,34 @@ export const RubrosTable = ({
             <div className="flex items-center justify-end space-x-1">
               <button
                 onClick={() => onViewDetails(rubro)}
-                className="p-2 text-blue-600 hover:text-blue-900 hover:bg-blue-50 rounded-full transition-colors"
+                className="p-2 text-gray-700 hover:cursor-pointer rounded-full transition-colors"
                 title="Ver detalles"
               >
                 <VisibilityIcon fontSize="small" />
               </button>
               <button
                 onClick={() => onEdit(rubro)}
-                className="p-2 text-indigo-600 hover:text-indigo-900 hover:bg-indigo-50 rounded-full transition-colors"
+                className="p-2 text-gray-700 hover:cursor-pointer rounded-full transition-colors"
                 title="Editar"
               >
                 <EditIcon fontSize="small" />
               </button>
               <button
                 onClick={() => onToggleStatus(rubro)}
-                className={`p-2 rounded-full transition-colors ${
-                  rubro.isActivo()
-                    ? "text-red-600 hover:text-red-900 hover:bg-red-50"
-                    : "text-green-600 hover:text-green-900 hover:bg-green-50"
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+                  rubro.isActivo() ? "bg-green-500 focus:ring-green-500" : "bg-red-400 focus:ring-red-400"
                 }`}
                 title={rubro.isActivo() ? "Desactivar" : "Activar"}
               >
-                {rubro.isActivo() ? <BlockIcon fontSize="small" /> : <CheckCircleIcon fontSize="small" />}
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    rubro.isActivo() ? "translate-x-6" : "translate-x-1"
+                  }`}
+                />
               </button>
               <button
                 onClick={() => onNuevoSubrubro(rubro)}
-                className="p-2 text-orange-600 hover:text-orange-900 hover:bg-orange-50 rounded-full transition-colors"
+                className="p-2 text-gray-700 hover:cursor-pointer rounded-full transition-colors"
                 title="Agregar subrubro"
               >
                 <AddIcon fontSize="small" />

@@ -7,7 +7,7 @@ import { PedidosTable } from "../../../components/Admin/pedidos/PedidosTable"
 import { PedidoDetailModal } from "../../../components/Admin/pedidos/PedidoDetailModal"
 import { Pagination } from "../../../components/Admin/products/Pagination"
 import type { PedidoDTO, PedidosPaginadosDTO } from "../../../models/dto/PedidoDTO"
-import { pedidoServicio } from "../../../services/PedidoServicio"
+import { pedidoServicio } from "../../../services/pedidoServicio"
 import { EstadoPedido } from "../../../models/enum/EstadoPedido"
 import { Assignment, Refresh } from "@mui/icons-material"
 

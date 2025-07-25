@@ -128,7 +128,7 @@ export const RubroForm = ({
   const title = isEditing ? "Editar Rubro" : rubroPadrePreseleccionado ? "Nuevo Subrubro" : "Nuevo Rubro"
 
   return (
-    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+    <div className="fixed inset-0 bg-black/30 backdrop-blur-sm overflow-y-auto h-full w-full z-50">
       <div className="relative top-4 mx-auto p-6 border w-11/12 max-w-2xl shadow-xl rounded-lg bg-white">
         <div className="flex justify-between items-center mb-6">
           <div>

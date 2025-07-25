@@ -1,90 +1,118 @@
-import { ArticuloManufacturado } from "./ArticuloManufacturado";
-
 export class Promocion {
-  private idPromocion: number;
-  private nombre: string;
-  private titulo: string;
-  private descripcion: string;
-  private descuento: number;
-  private fechaInicio: Date;
-  private fechaFin: Date;
-  private url: string;
-  private articuloManufacturado: ArticuloManufacturado;
+  private idPromocion: number
+  private titulo: string
+  private descripcion: string
+  private descuento: number
+  private horarioInicio: string
+  private horarioFin: string
+  private activo: boolean
+  private url: string
+  private idArticulo: number
+  private nombreArticulo: string
 
   constructor(
     idPromocion: number,
-    nombre: string,
     titulo: string,
     descripcion: string,
     descuento: number,
-    fechaInicio: Date,
-    fechaFin: Date,
+    horarioInicio: string,
+    horarioFin: string,
+    activo: boolean,
     url: string,
-    articuloManufacturado: ArticuloManufacturado,
+    idArticulo: number,
+    nombreArticulo: string,
   ) {
-    this.idPromocion = idPromocion;
-    this.nombre = nombre;
-    this.titulo = titulo;
-    this.descripcion = descripcion;
-    this.descuento = descuento;
-    this.fechaInicio = fechaInicio;
-    this.fechaFin = fechaFin;
-    this.url = url;
-    this.articuloManufacturado = articuloManufacturado;
+    this.idPromocion = idPromocion
+    this.titulo = titulo
+    this.descripcion = descripcion
+    this.descuento = descuento
+    this.horarioInicio = horarioInicio
+    this.horarioFin = horarioFin
+    this.activo = activo
+    this.url = url
+    this.idArticulo = idArticulo
+    this.nombreArticulo = nombreArticulo
   }
 
+  // Getters
   getIdPromocion(): number {
-    return this.idPromocion;
+    return this.idPromocion
   }
-  getNombre(): string {
-    return this.nombre;
-  }
+
   getTitulo(): string {
-    return this.titulo;
+    return this.titulo
   }
+
   getDescripcion(): string {
-    return this.descripcion;
+    return this.descripcion
   }
+
   getDescuento(): number {
-    return this.descuento;
+    return this.descuento
   }
-  getFechaInicio(): Date {
-    return this.fechaInicio;
+
+  getHorarioInicio(): string {
+    return this.horarioInicio
   }
-  getFechaFin(): Date {
-    return this.fechaFin;
+
+  getHorarioFin(): string {
+    return this.horarioFin
   }
+
+  getActivo(): boolean {
+    return this.activo
+  }
+
   getUrl(): string {
-    return this.url;
+    return this.url
   }
-  getArticuloManufacturado(): ArticuloManufacturado {
-    return this.articuloManufacturado;
+
+  getIdArticulo(): number {
+    return this.idArticulo
   }
+
+  getNombreArticulo(): string {
+    return this.nombreArticulo
+  }
+
+  // Setters
   setIdPromocion(idPromocion: number): void {
-    this.idPromocion = idPromocion;
+    this.idPromocion = idPromocion
   }
-  setNombre(nombre: string): void {
-    this.nombre = nombre;
-  }
+
   setTitulo(titulo: string): void {
-    this.titulo = titulo;
+    this.titulo = titulo
   }
+
   setDescripcion(descripcion: string): void {
-    this.descripcion = descripcion;
+    this.descripcion = descripcion
   }
+
   setDescuento(descuento: number): void {
-    this.descuento = descuento;
+    this.descuento = descuento
   }
-  setFechaInicio(fechaInicio: Date): void {
-    this.fechaInicio = fechaInicio;
+
+  setHorarioInicio(horarioInicio: string): void {
+    this.horarioInicio = horarioInicio
   }
-  setFechaFin(fechaFin: Date): void {
-    this.fechaFin = fechaFin;
+
+  setHorarioFin(horarioFin: string): void {
+    this.horarioFin = horarioFin
   }
+
+  setActivo(activo: boolean): void {
+    this.activo = activo
+  }
+
   setUrl(url: string): void {
-    this.url = url;
+    this.url = url
   }
-  setArticuloManufacturado(articuloManufacturado: ArticuloManufacturado): void {
-    this.articuloManufacturado = articuloManufacturado;
+
+  setIdArticulo(idArticulo: number): void {
+    this.idArticulo = idArticulo
+  }
+
+  setNombreArticulo(nombreArticulo: string): void {
+    this.nombreArticulo = nombreArticulo
   }
 }

@@ -1,3 +1,5 @@
+"use client"
+
 import CloseIcon from "@mui/icons-material/Close"
 import FolderIcon from "@mui/icons-material/Folder"
 import ImageIcon from "@mui/icons-material/Image"
@@ -34,7 +36,7 @@ export const CategoriaDetailsModal = ({ categoria, categorias, onClose }: Catego
   }
 
   return (
-    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+    <div className="fixed inset-0 bg-black/30 backdrop-blur-sm overflow-y-auto h-full w-full z-50">
       <div className="relative top-8 mx-auto p-6 border w-11/12 max-w-3xl shadow-xl rounded-lg bg-white">
         {/* Header */}
         <div className="flex justify-between items-start mb-6">

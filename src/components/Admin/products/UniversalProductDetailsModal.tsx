@@ -1,15 +1,15 @@
-"use client";
+"use client"
 
-import type React from "react";
-import type { InformacionArticuloManufacturadoDto } from "../../../models/dto/InformacionArticuloManufacturadoDto";
-import type { InformacionArticuloNoElaboradoDto } from "../../../models/dto/InformacionArticuloNoElaboradoDto";
+import type React from "react"
+import type { InformacionArticuloManufacturadoDto } from "../../../models/dto/InformacionArticuloManufacturadoDto"
+import type { InformacionArticuloNoElaboradoDto } from "../../../models/dto/InformacionArticuloNoElaboradoDto"
 
-type ProductType = InformacionArticuloManufacturadoDto | InformacionArticuloNoElaboradoDto;
+type ProductType = InformacionArticuloManufacturadoDto | InformacionArticuloNoElaboradoDto
 
 interface UniversalProductDetailsModalProps {
-  product: ProductType;
-  onClose: () => void;
-  type: "manufacturado" | "noElaborado";
+  product: ProductType
+  onClose: () => void
+  type: "manufacturado" | "noElaborado"
 }
 
 export const UniversalProductDetailsModal: React.FC<UniversalProductDetailsModalProps> = ({
@@ -18,138 +18,138 @@ export const UniversalProductDetailsModal: React.FC<UniversalProductDetailsModal
   type,
 }) => {
   if (!product) {
-    return null;
+    return null
   }
 
-  const isManufacturado = type === "manufacturado";
+  const isManufacturado = type === "manufacturado"
 
   // Helper functions to safely get data
   const getId = () => {
     try {
       if (isManufacturado) {
-        const manufacturado = product as InformacionArticuloManufacturadoDto;
-        return manufacturado.getidArticulo?.() || manufacturado.getidArticulo() || 0;
+        const manufacturado = product as InformacionArticuloManufacturadoDto
+        return manufacturado.getidArticulo?.() || manufacturado.getidArticulo() || 0
       } else {
-        const noElaborado = product as InformacionArticuloNoElaboradoDto;
-        return noElaborado.getIdArticulo?.() || noElaborado.getIdArticulo() || 0;
+        const noElaborado = product as InformacionArticuloNoElaboradoDto
+        return noElaborado.getIdArticulo?.() || noElaborado.getIdArticulo() || 0
       }
     } catch (error) {
-      console.error("Error getting ID:", error);
-      return 0;
+      console.error("Error getting ID:", error)
+      return 0
     }
-  };
+  }
 
   const getNombre = () => {
     try {
-      return product.getNombre?.() || "Sin nombre";
+      return product.getNombre?.() || "Sin nombre"
     } catch (error) {
-      console.error("Error getting nombre:", error);
-      return "Sin nombre";
+      console.error("Error getting nombre:", error)
+      return "Sin nombre"
     }
-  };
+  }
 
   const getDescripcion = () => {
     try {
-      return product.getDescripcion?.() || "Sin descripción";
+      return product.getDescripcion?.() || "Sin descripción"
     } catch (error) {
-      console.error("Error getting descripcion:", error);
-      return "Sin descripción";
+      console.error("Error getting descripcion:", error)
+      return "Sin descripción"
     }
-  };
+  }
 
   const getPrecioVenta = () => {
     try {
-      return product.getPrecioVenta?.() || 0;
+      return product.getPrecioVenta?.() || 0
     } catch (error) {
-      console.error("Error getting precio:", error);
-      return 0;
+      console.error("Error getting precio:", error)
+      return 0
     }
-  };
+  }
 
   const getNombreCategoria = () => {
     try {
-      return product.getNombreCategoria?.() || "Sin categoría";
+      return product.getNombreCategoria?.() || "Sin categoría"
     } catch (error) {
-      console.error("Error getting categoria:", error);
-      return "Sin categoría";
+      console.error("Error getting categoria:", error)
+      return "Sin categoría"
     }
-  };
+  }
 
   const getImagenUrl = () => {
     try {
       if (isManufacturado) {
-        const manufacturado = product as InformacionArticuloManufacturadoDto;
-        return manufacturado.getImagenUrl() || manufacturado.getImagenUrl?.() || null;
+        const manufacturado = product as InformacionArticuloManufacturadoDto
+        return manufacturado.getImagenUrl() || manufacturado.getImagenUrl?.() || null
       } else {
-        const noElaborado = product as InformacionArticuloNoElaboradoDto;
-        return noElaborado.getImagenUrl() || noElaborado.getImagenUrl?.() || null;
+        const noElaborado = product as InformacionArticuloNoElaboradoDto
+        return noElaborado.getImagenUrl() || noElaborado.getImagenUrl?.() || null
       }
     } catch (error) {
-      console.error("Error getting imagen:", error);
-      return null;
+      console.error("Error getting imagen:", error)
+      return null
     }
-  };
+  }
 
   const isDadoDeAlta = () => {
     try {
-      return product.isDadoDeAlta?.() || false;
+      return product.isDadoDeAlta?.() || false
     } catch (error) {
-      console.error("Error getting estado:", error);
-      return false;
+      console.error("Error getting estado:", error)
+      return false
     }
-  };
+  }
 
   const getPrecioModificado = () => {
     try {
-      return product.getPrecioModificado?.() || false;
+      return product.getPrecioModificado?.() || false
     } catch (error) {
-      console.error("Error getting precio modificado:", error);
-      return false;
+      console.error("Error getting precio modificado:", error)
+      return false
     }
-  };
+  }
 
   // Specific functions for manufacturado products
   const getTiempoDeCocina = () => {
     try {
       if (isManufacturado) {
-        const manufacturado = product as InformacionArticuloManufacturadoDto;
-        return manufacturado.getTiempoDeCocina?.() || 0;
+        const manufacturado = product as InformacionArticuloManufacturadoDto
+        return manufacturado.getTiempoDeCocina?.() || 0
       }
-      return 0;
+      return 0
     } catch (error) {
-      console.error("Error getting tiempo cocina:", error);
-      return 0;
+      console.error("Error getting tiempo cocina:", error)
+      return 0
     }
-  };
+  }
 
   const getReceta = () => {
     try {
       if (isManufacturado) {
-        const manufacturado = product as InformacionArticuloManufacturadoDto;
-        return manufacturado.getReceta?.() || "Sin receta";
+        const manufacturado = product as InformacionArticuloManufacturadoDto
+        return manufacturado.getReceta?.() || "Sin receta"
       }
-      return "Sin receta";
+      return "Sin receta"
     } catch (error) {
-      console.error("Error getting receta:", error);
-      return "Sin receta";
+      console.error("Error getting receta:", error)
+      return "Sin receta"
     }
-  };
+  }
 
   const getDetalles = () => {
     try {
       if (isManufacturado) {
-        const manufacturado = product as InformacionArticuloManufacturadoDto;
-        return manufacturado.getDetalles?.() || [];
+        const manufacturado = product as InformacionArticuloManufacturadoDto
+        return manufacturado.getDetalles?.() || []
       }
-      return [];
+      return []
     } catch (error) {
-      console.error("Error getting detalles:", error);
-      return [];
+      console.error("Error getting detalles:", error)
+      return []
     }
-  };
+  }
 
   return (
-    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+    <div className="fixed inset-0 bg-black/30 backdrop-blur-sm overflow-y-auto h-full w-full z-50">
       <div className="relative top-10 mx-auto p-6 border w-11/12 max-w-4xl shadow-lg rounded-lg bg-white">
         <div className="flex justify-between items-center mb-6">
           <div>
@@ -158,20 +158,9 @@ export const UniversalProductDetailsModal: React.FC<UniversalProductDetailsModal
               Producto {isManufacturado ? "Manufacturado" : "No Elaborado"} • ID: {getId()}
             </p>
           </div>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors">
-            <svg
-              className="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M6 18L18 6M6 6l12 12"
-              />
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         </div>
@@ -185,7 +174,7 @@ export const UniversalProductDetailsModal: React.FC<UniversalProductDetailsModal
                 alt={getNombre()}
                 className="w-full h-full object-cover"
                 onError={(e) => {
-                  (e.target as HTMLImageElement).src = "/placeholder.svg?height=400&width=400";
+                  ;(e.target as HTMLImageElement).src = "/placeholder.svg?height=400&width=400"
                 }}
               />
             </div>
@@ -197,7 +186,8 @@ export const UniversalProductDetailsModal: React.FC<UniversalProductDetailsModal
                 <span
                   className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
                     isDadoDeAlta() ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
-                  }`}>
+                  }`}
+                >
                   <span className={`w-2 h-2 rounded-full mr-2 ${isDadoDeAlta() ? "bg-green-400" : "bg-red-400"}`} />
                   {isDadoDeAlta() ? "Activo" : "Inactivo"}
                 </span>
@@ -209,10 +199,7 @@ export const UniversalProductDetailsModal: React.FC<UniversalProductDetailsModal
                   <span className="text-2xl font-bold text-green-600">${getPrecioVenta().toFixed(2)}</span>
                   {getPrecioModificado() && (
                     <div className="flex items-center text-xs text-yellow-600 mt-1">
-                      <svg
-                        className="w-3 h-3 mr-1"
-                        fill="currentColor"
-                        viewBox="0 0 20 20">
+                      <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
                         <path
                           fillRule="evenodd"
                           d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
@@ -257,7 +244,8 @@ export const UniversalProductDetailsModal: React.FC<UniversalProductDetailsModal
                           className="w-4 h-4 text-gray-400 mr-2"
                           fill="none"
                           stroke="currentColor"
-                          viewBox="0 0 24 24">
+                          viewBox="0 0 24 24"
+                        >
                           <path
                             strokeLinecap="round"
                             strokeLinejoin="round"
@@ -283,9 +271,7 @@ export const UniversalProductDetailsModal: React.FC<UniversalProductDetailsModal
                     <h4 className="text-lg font-semibold text-gray-900 mb-4">Ingredientes ({getDetalles().length})</h4>
                     <div className="space-y-2">
                       {getDetalles().map((detalle, index) => (
-                        <div
-                          key={index}
-                          className="flex justify-between items-center p-3 bg-gray-50 rounded-md">
+                        <div key={index} className="flex justify-between items-center p-3 bg-gray-50 rounded-md">
                           <div>
                             <span className="font-medium text-gray-900">
                               {detalle.getNombreInsumo?.() || "Sin nombre"}
@@ -307,10 +293,7 @@ export const UniversalProductDetailsModal: React.FC<UniversalProductDetailsModal
             {getPrecioModificado() && (
               <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
                 <div className="flex">
-                  <svg
-                    className="h-5 w-5 text-yellow-400 mt-0.5"
-                    fill="currentColor"
-                    viewBox="0 0 20 20">
+                  <svg className="h-5 w-5 text-yellow-400 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                     <path
                       fillRule="evenodd"
                       d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
@@ -333,11 +316,12 @@ export const UniversalProductDetailsModal: React.FC<UniversalProductDetailsModal
         <div className="mt-8 flex justify-end">
           <button
             onClick={onClose}
-            className="px-6 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium">
+            className="px-6 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+          >
             Cerrar
           </button>
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
