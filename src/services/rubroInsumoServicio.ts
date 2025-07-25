@@ -5,33 +5,30 @@ import { interceptorsApiClient } from "./interceptors/axios.interceptors";
 const BASE_URL = "https://localhost:8080";
 
 interface RubroInsumoApiResponse {
-  idRubroInsumo: number;
-  nombre: string;
-  dadoDeBaja?: boolean;
-  idRubroInsumoPadre?: number | null;
+  idRubroInsumo: number
+  nombre: string
+  dadoDeAlta: boolean
+  idRubroInsumoPadre?: number | null
 }
 
 interface ListaRubrosResponse {
-  arregloRubros: RubroInsumoApiResponse[];
+  rubrosDto: RubroInsumoApiResponse[]
 }
 
 export class RubroInsumoServicio {
   // GET /rubroInsumo/lista
   static async listarRubros(): Promise<RubroInsumoDto[]> {
     try {
-      const response = await fetch(`${BASE_URL}/rubroInsumo/lista`);
-      if (!response.ok) {
-        throw new Error(`Error al obtener rubros: ${response.status}`);
-      }
+      const response = await interceptorsApiClient(`/rubroInsumo/abm`)      
 
-      const data: ListaRubrosResponse = await response.json();
+      const data: ListaRubrosResponse = await response.data
 
       // Convertir a RubroInsumoDto
-      const rubros = data.arregloRubros.map((item) => {
+      const rubros = data.rubrosDto.map((item) => {
         return new RubroInsumoDto(
           item.idRubroInsumo,
           item.nombre,
-          item.dadoDeBaja || false,
+          item.dadoDeAlta,
           item.idRubroInsumoPadre || null,
         );
       });
@@ -54,7 +51,7 @@ export class RubroInsumoServicio {
       return new RubroInsumoDto(
         data.idRubroInsumo,
         data.nombre,
-        data.dadoDeBaja || false,
+        data.dadoDeAlta || false,
         data.idRubroInsumoPadre || null,
       )*/
     } catch (error) {
@@ -84,7 +81,7 @@ export class RubroInsumoServicio {
       return new RubroInsumoDto(
         data.idRubroInsumo,
         data.nombre,
-        data.dadoDeBaja || false,
+        data.dadoDeAlta,
         data.idRubroInsumoPadre || null,
       );
     } catch (error) {

@@ -1,14 +1,14 @@
 export class RubroInsumoDto {
   private idRubroInsumo: number
   private nombre: string
-  private dadoDeBaja: boolean
+  private dadoDeAlta: boolean
   private idRubroInsumoPadre: number | null
   private subrubros: RubroInsumoDto[]
 
-  constructor(idRubroInsumo: number, nombre: string, dadoDeBaja = false, idRubroInsumoPadre: number | null = null) {
+  constructor(idRubroInsumo: number, nombre: string, dadoDeAlta : boolean, idRubroInsumoPadre: number | null = null) {
     this.idRubroInsumo = idRubroInsumo
     this.nombre = nombre
-    this.dadoDeBaja = dadoDeBaja
+    this.dadoDeAlta = dadoDeAlta
     this.idRubroInsumoPadre = idRubroInsumoPadre
     this.subrubros = []
   }
@@ -22,8 +22,8 @@ export class RubroInsumoDto {
     return this.nombre
   }
 
-  public isDadoDeBaja(): boolean {
-    return this.dadoDeBaja
+  public isDadoDeAlta(): boolean {
+    return this.dadoDeAlta
   }
 
   public getIdRubroInsumoPadre(): number | null {
@@ -41,7 +41,7 @@ export class RubroInsumoDto {
 
   // Métodos de utilidad
   public isActivo(): boolean {
-    return !this.dadoDeBaja
+    return this.dadoDeAlta
   }
 
   public esRubroPadre(): boolean {

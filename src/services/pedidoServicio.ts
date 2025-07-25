@@ -44,4 +44,8 @@ export const pedidoServicio = {
     const response = await interceptorsApiClient.get(`/pedido/cliente/historial?page=${page}&size=${size}`);
     return response.data;
   },
+  // Marcar pedido como entregado
+  async marcarComoEntregado(idPedido: number): Promise<void> {
+    await interceptorsApiClient.put(`/pedido/entregado/${idPedido}`)
+  },
 };

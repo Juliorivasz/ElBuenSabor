@@ -65,4 +65,12 @@ export const adminRoutes = [
     allowedRoles: ["administrador", "cocinero"],
     title: "Gestión de Rubros",
   },
+  {
+    path: "/admin/promociones",
+    element: lazy(() =>
+      import("../pages/admin/promociones/Promociones").then((module) => ({ default: module.Promociones })),
+    ),
+    allowedRoles: ["administrador"],
+    title: "Gestión de Promociones",
+  }
 ];
