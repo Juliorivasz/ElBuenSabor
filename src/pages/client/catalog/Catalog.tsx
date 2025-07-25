@@ -6,13 +6,28 @@ import { AdvertisementCarousel } from "../../../components/catalog/Advertisement
 import { PopularProductsCarousel } from "../../../components/catalog/PopularProductsCarousel";
 import { useCartStore } from "../../../store/cart/useCartStore";
 import { useAuth0 } from "@auth0/auth0-react";
-import { ArticuloDTO } from "../../../models/dto/ArticuloDTO";
+import type { ArticuloDTO } from "../../../models/dto/ArticuloDTO";
+import { OrdersInProgressCarousel } from "../../../components/orderInProgress/OrdersInProgressCarousel";
+import { useOrderInProgress } from "../../../hooks/useOrderInProgress";
 
 export const Catalog = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [products, setProducts] = useState<ArticuloDTO[]>([]);
   const { addItem } = useCartStore();
-  const { isAuthenticated, loginWithRedirect } = useAuth0();
+  const { isAuthenticated, loginWithRedirect, user } = useAuth0();
+
+  // Asegurarse de que clienteId se derive de forma estable
+  const clienteId = user?.sub ? parseInt(user.sub.split("|")[1] || "0") : null;
+
+  const { ordersInProgress, loading, error, hasActiveOrders, fetchOrdersInProgress } = useOrderInProgress({
+    clienteId: clienteId,
+    autoCheck: true,
+  });
+
+  const handleOpenChat = (repartidorTelefono?: string) => {
+    console.log("Abriendo chat con delivery:", repartidorTelefono);
+    // Lógica para abrir chat, por ejemplo, navegar a una ruta de chat o abrir un modal
+  };
 
   const handleAddToCart = (product: ArticuloDTO) => {
     if (!isAuthenticated) {
@@ -20,7 +35,7 @@ export const Catalog = () => {
       return;
     }
     addItem(product, product.getImagenModel() ?? undefined);
-    // Aquí puedes implementar la lógica para agregar al carrito
+    // Lógica para agregar al carrito
   };
 
   const handleProductsLoad = useCallback((loadedProducts: ArticuloDTO[]) => {
@@ -69,6 +84,23 @@ export const Catalog = () => {
           onSearchChange={handleSearchChange}
         />
       </motion.section>
+
+      {/* Nuevo componente: Carrusel de Pedidos en Curso */}
+      {hasActiveOrders && (
+        <motion.section
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.45 }}
+          className="px-4 py-6">
+          <OrdersInProgressCarousel
+            orders={ordersInProgress}
+            onOpenChat={handleOpenChat}
+            onRefreshAllOrders={fetchOrdersInProgress}
+            loading={loading}
+            error={error}
+          />
+        </motion.section>
+      )}
 
       {/* Advertisement Carousel */}
       <motion.section

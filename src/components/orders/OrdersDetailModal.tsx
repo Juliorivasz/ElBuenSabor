@@ -9,38 +9,7 @@ import {
   PaymentOutlined,
   ReceiptOutlined,
 } from "@mui/icons-material";
-
-interface OrderItem {
-  id: number;
-  nombre: string;
-  cantidad: number;
-  precio: number;
-  imagen?: string;
-}
-
-interface Order {
-  id: number;
-  numeroOrden: string;
-  fecha: string;
-  hora: string;
-  tipoEntrega: "delivery" | "takeaway";
-  items: OrderItem[];
-  estado: "en_preparacion" | "listo" | "en_camino" | "demorado" | "entregado" | "cancelado";
-  subtotal: number;
-  costoEnvio: number;
-  total: number;
-  metodoPago: string;
-  direccionEntrega?: {
-    calle: string;
-    numero: string;
-    piso?: string;
-    departamento?: string;
-    ciudad: string;
-    localidad: string;
-    aclaraciones?: string;
-  };
-  tiempoEstimado: string;
-}
+import { Order } from "../../pages/client/orders/Orders";
 
 interface OrderDetailModalProps {
   order: Order;

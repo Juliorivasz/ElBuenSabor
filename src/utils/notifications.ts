@@ -1,4 +1,3 @@
-// Sistema de notificaciones usando SweetAlert2 que ya está instalado
 import Swal from "sweetalert2";
 
 export class NotificationService {
@@ -46,7 +45,7 @@ export class NotificationService {
       icon: "info",
       title,
       text: message,
-      timer: 2000,
+      timer: 5000,
       timerProgressBar: true,
       showConfirmButton: false,
       toast: true,

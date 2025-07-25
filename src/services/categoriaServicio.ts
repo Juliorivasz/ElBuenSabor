@@ -15,13 +15,13 @@ export const parseCategoriaAbm = (data: CategoriaAbmApi) => {
 };
 
 export const fetchCategoriasAbm = async (): Promise<CategoriaDTO[]> => {
-  const response = await fetch("http://localhost:8080/categoria/lista");
+  const response = await fetch("https://localhost:8080/categoria/lista");
   const data: CategoriaAbmApi[] = await response.json();
   return data.map(parseCategoriaAbm);
 };
 
 export const fetchCategoriaAbm = async (id: number): Promise<string> => {
-  const response = await fetch(`http://localhost:8080/categoria/obtenerNombre/${id}`);
+  const response = await fetch(`https://localhost:8080/categoria/obtenerNombre/${id}`);
   const data = await response.json();
   return data;
 };

@@ -1,18 +1,23 @@
 import type React from "react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import type { PedidoRepartidorDTO } from "../../../models/dto/PedidoRepartidorDTO";
 import { RepartidorServicio } from "../../../services/repartidorServicio";
 import { DeliveryOrderCard } from "../../../components/delivery/DeliveryOrderCard";
 import { RefreshOutlined, TwoWheeler as DeliveryIcon, CheckCircleOutlined } from "@mui/icons-material";
 import Swal from "sweetalert2";
+import { useWebSocket } from "../../../hooks/useWebSocket";
+import { IMessage } from "@stomp/stompjs";
+import type { PedidoStatusUpdateDto } from "../../../models/dto/PedidoDTO";
+import { EstadoPedido } from "../../../models/enum/EstadoPedido";
 
 export const Delivery: React.FC = () => {
+  const { isConnected, subscribe } = useWebSocket();
   const [pedidos, setPedidos] = useState<PedidoRepartidorDTO[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const repartidorServicio = RepartidorServicio.getInstance();
 
-  const cargarPedidos = async () => {
+  const cargarPedidos = useCallback(async () => {
     try {
       const response = await repartidorServicio.obtenerPedidosRepartidor();
       setPedidos(response.pedidos);
@@ -23,11 +28,12 @@ export const Delivery: React.FC = () => {
         text: "No se pudieron cargar los pedidos",
         icon: "error",
       });
+      setPedidos([]);
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
-  };
+  }, []);
 
   const handleRefresh = async () => {
     setRefreshing(true);
@@ -36,7 +42,63 @@ export const Delivery: React.FC = () => {
 
   useEffect(() => {
     cargarPedidos();
-  }, []);
+  }, [cargarPedidos]);
+
+  // --- Integración WebSocket para el panel de Repartidor ---
+  useEffect(() => {
+    if (isConnected) {
+      console.log("Repartidor: Suscribiéndose a /topic/delivery/orders");
+      const unsubscribe = subscribe("/topic/delivery/orders", (message: IMessage) => {
+        try {
+          const update: PedidoStatusUpdateDto = JSON.parse(message.body);
+          console.log("Repartidor: Recibido update por WebSocket:", update);
+
+          setPedidos((prevPedidos) => {
+            const existingPedidoIndex = prevPedidos.findIndex((p) => p.idPedido === update.idPedido);
+
+            // Si el pedido ya existe, lo actualizamos
+            if (existingPedidoIndex !== -1) {
+              const updatedPedidos = [...prevPedidos];
+              const pedidoToUpdate = { ...updatedPedidos[existingPedidoIndex] };
+
+              pedidoToUpdate.estadoPedido = update.estadoPedido;
+              if (update.horaEntrega) {
+                pedidoToUpdate.horaEntrega = update.horaEntrega;
+              }
+
+              // Si el pedido ya no es relevante para el repartidor (ej. CANCELADO, RECHAZADO, ENTREGADO)
+              // Nota: El repartidor solo ve LISTO y EN_CAMINO. Si pasa a ENTREGADO, se elimina de su vista.
+              if (
+                update.estadoPedido === EstadoPedido.ENTREGADO ||
+                update.estadoPedido === EstadoPedido.RECHAZADO ||
+                update.estadoPedido === EstadoPedido.CANCELADO
+              ) {
+                return updatedPedidos.filter((p) => p.idPedido !== update.idPedido); // Lo removemos
+              }
+
+              updatedPedidos[existingPedidoIndex] = pedidoToUpdate;
+              return updatedPedidos;
+            } else {
+              // Si es un nuevo pedido y es relevante para el repartidor (LISTO)
+              if (update.estadoPedido === EstadoPedido.LISTO) {
+                console.log("Repartidor: Nuevo pedido LISTO recibido, recargando todos los pedidos.");
+                cargarPedidos(); // Forzar recarga completa
+                return prevPedidos; // No modificar el estado aquí
+              }
+              return prevPedidos;
+            }
+          });
+        } catch (error) {
+          console.error("Repartidor: Error al parsear mensaje WebSocket:", error, message.body);
+        }
+      });
+
+      return () => {
+        console.log("Repartidor: Desuscribiéndose de /topic/delivery/orders");
+        unsubscribe();
+      };
+    }
+  }, [isConnected, subscribe, cargarPedidos]);
 
   const pedidosListos = pedidos.filter((p) => p.estadoPedido === "LISTO");
   const pedidosEnCamino = pedidos.filter((p) => p.estadoPedido === "EN_CAMINO");

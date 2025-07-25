@@ -1,5 +1,6 @@
-//
-import { useState, useMemo } from "react";
+import type React from "react";
+
+import { useState, useMemo, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
   ShoppingCartOutlined,
@@ -15,6 +16,8 @@ import {
 
 import { OrderDetailModal } from "../../../components/orders/OrdersDetailModal";
 import { useNavigate } from "react-router-dom";
+import { pedidoServicio } from "../../../services/pedidoServicio";
+import { BackendDetallePedido, BackendPedido, OrderStatus } from "../../../types/orders";
 
 interface OrderItem {
   id: number;
@@ -24,14 +27,22 @@ interface OrderItem {
   imagen?: string;
 }
 
-interface Order {
+export interface Order {
   id: number;
   numeroOrden: string;
   fecha: string;
   hora: string;
   tipoEntrega: "delivery" | "takeaway";
   items: OrderItem[];
-  estado: "en_preparacion" | "listo" | "en_camino" | "demorado" | "entregado" | "cancelado";
+  estado:
+    | "a_confirmar"
+    | "en_preparacion"
+    | "listo"
+    | "en_camino"
+    | "demorado"
+    | "entregado"
+    | "cancelado"
+    | "rechazado";
   subtotal: number;
   costoEnvio: number;
   total: number;
@@ -46,108 +57,131 @@ interface Order {
     aclaraciones?: string;
   };
   tiempoEstimado: string;
+  fechaCompleta: Date;
 }
 
 type TabType = "en_curso" | "pasadas";
 type SortType = "mas_recientes" | "mas_antiguas" | "mas_pedidas";
-type StatusFilterType = "todos" | "en_preparacion" | "listo" | "en_camino" | "demorado" | "entregado" | "cancelado";
+type StatusFilterType =
+  | "todos"
+  | "a_confirmar"
+  | "en_preparacion"
+  | "listo"
+  | "en_camino"
+  | "demorado"
+  | "entregado"
+  | "cancelado"
+  | "rechazado";
 
 const ITEMS_PER_PAGE = 6;
 
 export const Orders: React.FC = () => {
   const navigateTo = useNavigate();
 
-  // Estado de ejemplo - en producción vendría de una API
-  const [orders] = useState<Order[]>([
-    {
-      id: 1,
-      numeroOrden: "7341",
-      fecha: "2024-01-15",
-      hora: "14:30",
-      tipoEntrega: "delivery",
-      items: [
-        { id: 1, nombre: "Hamburguesa Clásica", cantidad: 2, precio: 1200 },
-        { id: 2, nombre: "Papas Fritas", cantidad: 1, precio: 800 },
-        { id: 3, nombre: "Coca Cola 500ml", cantidad: 2, precio: 400 },
-      ],
-      estado: "en_preparacion",
-      subtotal: 3200,
-      costoEnvio: 300,
-      total: 3500,
-      metodoPago: "Tarjeta de Crédito",
-      direccionEntrega: {
-        calle: "Av. San Martín",
-        numero: "1234",
-        piso: "2",
-        departamento: "A",
-        ciudad: "Mendoza",
-        localidad: "Ciudad",
-        aclaraciones: "Portero eléctrico, tocar timbre 2A",
-      },
-      tiempoEstimado: "30-45 minutos",
-    },
-    {
-      id: 2,
-      numeroOrden: "7340",
-      fecha: "2024-01-14",
-      hora: "19:45",
-      tipoEntrega: "takeaway",
-      items: [
-        { id: 3, nombre: "Pizza Margherita", cantidad: 1, precio: 1800 },
-        { id: 4, nombre: "Coca Cola 500ml", cantidad: 2, precio: 400 },
-      ],
-      estado: "entregado",
-      subtotal: 2600,
-      costoEnvio: 0,
-      total: 2600,
-      metodoPago: "Efectivo",
-      tiempoEstimado: "15-20 minutos",
-    },
-    {
-      id: 3,
-      numeroOrden: "7339",
-      fecha: "2024-01-13",
-      hora: "12:15",
-      tipoEntrega: "delivery",
-      items: [
-        { id: 5, nombre: "Ensalada César", cantidad: 1, precio: 1400 },
-        { id: 6, nombre: "Agua Mineral", cantidad: 1, precio: 200 },
-      ],
-      estado: "en_camino",
-      subtotal: 1600,
-      costoEnvio: 250,
-      total: 1850,
-      metodoPago: "Tarjeta de Débito",
-      direccionEntrega: {
-        calle: "Belgrano",
-        numero: "567",
-        ciudad: "Mendoza",
-        localidad: "Godoy Cruz",
-        aclaraciones: "Casa con portón verde",
-      },
-      tiempoEstimado: "25-35 minutos",
-    },
-  ]);
-
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<TabType>("en_curso");
   const [sortBy, setSortBy] = useState<SortType>("mas_recientes");
   const [statusFilter, setStatusFilter] = useState<StatusFilterType>("todos");
   const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalElements, setTotalElements] = useState(0);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [cancellingOrderId, setCancellingOrderId] = useState<number | null>(null);
 
-  // Filtrar órdenes por tab
-  const filteredOrders = useMemo(() => {
-    const enCursoStates = ["en_preparacion", "listo", "en_camino", "demorado"];
-    const pasadasStates = ["entregado", "cancelado"];
+  // Mapear datos del backend al formato del frontend
+  const mapBackendOrderToFrontend = (backendOrder: BackendPedido): Order => {
+    const fechaYHora = new Date(backendOrder.fechaYHora);
+    const horaEntrega = new Date(backendOrder.horaEntrega);
 
-    let filtered = orders.filter((order) => {
-      if (activeTab === "en_curso") {
-        return enCursoStates.includes(order.estado);
+    // Calcular subtotal y total
+    const subtotal = backendOrder.detalles.reduce(
+      (sum: number, detalle: BackendDetallePedido) => sum + detalle.subtotal,
+      0,
+    );
+    const costoEnvio = backendOrder.tipoEnvio === "DELIVERY" ? 300 : 0; // Valor estimado
+    const total = subtotal + costoEnvio;
+
+    // Mapear items
+    const items: OrderItem[] = backendOrder.detalles.map((detalle: BackendDetallePedido, index: number) => ({
+      id: index + 1,
+      nombre: detalle.nombreArticulo,
+      cantidad: detalle.cantidad,
+      precio: detalle.subtotal / detalle.cantidad,
+    }));
+
+    // Mapear dirección si existe
+    let direccionEntrega;
+    if (backendOrder.direccion) {
+      direccionEntrega = {
+        calle: backendOrder.direccion.calle,
+        numero: backendOrder.direccion.numero,
+        piso: backendOrder.direccion.piso || undefined,
+        departamento: backendOrder.direccion.dpto || undefined,
+        ciudad: backendOrder.direccion.nombreDepartamento,
+        localidad: backendOrder.direccion.nombreDepartamento,
+        aclaraciones: backendOrder.direccion.nombre || undefined,
+      };
+    }
+
+    // Calcular tiempo estimado
+    const tiempoRestante = Math.max(0, Math.floor((horaEntrega.getTime() - new Date().getTime()) / (1000 * 60)));
+    const tiempoEstimado = tiempoRestante > 0 ? `${tiempoRestante} minutos` : "Tiempo cumplido";
+
+    return {
+      id: backendOrder.idPedido,
+      numeroOrden: backendOrder.idPedido.toString(),
+      fecha: fechaYHora.toISOString().split("T")[0],
+      hora: fechaYHora.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" }),
+      tipoEntrega: backendOrder.tipoEnvio === "DELIVERY" ? "delivery" : "takeaway",
+      items,
+      estado: backendOrder.estadoPedido.toLowerCase().replace("_", "_") as OrderStatus,
+      subtotal,
+      costoEnvio,
+      total,
+      metodoPago: backendOrder.metodoDePago === "MERCADO_PAGO" ? "Mercado Pago" : "Efectivo",
+      direccionEntrega,
+      tiempoEstimado,
+      fechaCompleta: fechaYHora,
+    };
+  };
+
+  // Cargar órdenes desde el backend
+  const loadOrders = async (tab: TabType, page = 0) => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      let response;
+      if (tab === "en_curso") {
+        response = await pedidoServicio.obtenerPedidosEnCursoCliente(page, ITEMS_PER_PAGE);
       } else {
-        return pasadasStates.includes(order.estado);
+        response = await pedidoServicio.obtenerHistorialPedidosCliente(page, ITEMS_PER_PAGE);
       }
-    });
+
+      const mappedOrders = response.content.map(mapBackendOrderToFrontend);
+      setOrders(mappedOrders);
+      setTotalPages(response.page.totalPages);
+      setTotalElements(response.page.totalElements);
+    } catch (err) {
+      console.error("Error loading orders:", err);
+      setError("Error al cargar las órdenes. Por favor, intenta nuevamente.");
+      setOrders([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Cargar órdenes cuando cambia el tab o la página
+  useEffect(() => {
+    loadOrders(activeTab, currentPage - 1);
+  }, [activeTab, currentPage]);
+
+  // Filtrar y ordenar órdenes localmente
+  const filteredOrders = useMemo(() => {
+    let filtered = [...orders];
 
     // Aplicar filtro de estado
     if (statusFilter !== "todos") {
@@ -157,27 +191,32 @@ export const Orders: React.FC = () => {
     // Aplicar ordenamiento
     switch (sortBy) {
       case "mas_recientes":
-        filtered.sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime());
+        // Más recientes: fechas más cercanas a la fecha actual (descendente)
+        filtered.sort((a, b) => b.fechaCompleta.getTime() - a.fechaCompleta.getTime());
         break;
       case "mas_antiguas":
-        filtered.sort((a, b) => new Date(a.fecha).getTime() - new Date(b.fecha).getTime());
+        // Más antiguas: fechas más lejanas a la fecha actual (ascendente)
+        filtered.sort((a, b) => a.fechaCompleta.getTime() - b.fechaCompleta.getTime());
         break;
       case "mas_pedidas":
-        filtered.sort((a, b) => b.items.length - a.items.length);
+        // Más pedidas: por cantidad de items (descendente)
+        filtered.sort((a, b) => {
+          const totalItemsA = a.items.reduce((sum, item) => sum + item.cantidad, 0);
+          const totalItemsB = b.items.reduce((sum, item) => sum + item.cantidad, 0);
+          return totalItemsB - totalItemsA;
+        });
         break;
     }
 
     return filtered;
-  }, [orders, activeTab, sortBy, statusFilter]);
-
-  // Paginación
-  const totalPages = Math.ceil(filteredOrders.length / ITEMS_PER_PAGE);
-  const paginatedOrders = filteredOrders.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+  }, [orders, sortBy, statusFilter]);
 
   const getStatusColor = (estado: string) => {
     switch (estado) {
-      case "en_preparacion":
+      case "a_confirmar":
         return "bg-yellow-100 text-yellow-800";
+      case "en_preparacion":
+        return "bg-orange-100 text-orange-800";
       case "listo":
         return "bg-blue-100 text-blue-800";
       case "en_camino":
@@ -187,6 +226,7 @@ export const Orders: React.FC = () => {
       case "entregado":
         return "bg-green-100 text-green-800";
       case "cancelado":
+      case "rechazado":
         return "bg-gray-100 text-gray-800";
       default:
         return "bg-gray-100 text-gray-800";
@@ -195,6 +235,8 @@ export const Orders: React.FC = () => {
 
   const getStatusText = (estado: string) => {
     switch (estado) {
+      case "a_confirmar":
+        return "A Confirmar";
       case "en_preparacion":
         return "En Preparación";
       case "listo":
@@ -207,6 +249,8 @@ export const Orders: React.FC = () => {
         return "Entregado";
       case "cancelado":
         return "Cancelado";
+      case "rechazado":
+        return "Rechazado";
       default:
         return estado;
     }
@@ -223,17 +267,36 @@ export const Orders: React.FC = () => {
   };
 
   const handleRepeatOrder = (order: Order) => {
+    console.log(order);
     navigateTo("/cart");
   };
 
-  const handleCancelOrder = (orderId: number) => {};
+  const handleCancelOrder = async (orderId: number) => {
+    try {
+      setCancellingOrderId(orderId);
+      await pedidoServicio.cancelarPedido(orderId);
+
+      // Recargar las órdenes después de cancelar
+      await loadOrders(activeTab, currentPage - 1);
+
+      // Mostrar mensaje de éxito (opcional)
+      console.log("Pedido cancelado exitosamente");
+    } catch (error) {
+      console.error("Error al cancelar el pedido:", error);
+      setError("Error al cancelar el pedido. Por favor, intenta nuevamente.");
+    } finally {
+      setCancellingOrderId(null);
+    }
+  };
 
   const handleViewInvoice = (orderId: number) => {
     // Lógica para ver factura
+    console.log("Ver factura:", orderId);
   };
 
   const canCancelOrder = (estado: string) => {
-    return ["en_preparacion", "listo"].includes(estado);
+    // Solo se puede cancelar antes de que el pedido esté listo
+    return ["a_confirmar", "en_preparacion"].includes(estado);
   };
 
   const formatItems = (items: OrderItem[]) => {
@@ -241,8 +304,53 @@ export const Orders: React.FC = () => {
     return itemsText.length > 50 ? itemsText.substring(0, 50) + "..." : itemsText;
   };
 
+  const handleTabChange = (newTab: TabType) => {
+    setActiveTab(newTab);
+    setCurrentPage(1);
+    setStatusFilter("todos");
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  // Loading state
+  if (loading && orders.length === 0) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 pt-20 pb-16">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Cargando órdenes...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 pt-20 pb-16">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
+          <div className="text-center">
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">{error}</div>
+            <button
+              onClick={() => {
+                setError(null);
+                loadOrders(activeTab, currentPage - 1);
+              }}
+              className="mt-4 bg-orange-500 hover:bg-orange-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200">
+              Reintentar
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // Si no hay órdenes
-  if (orders.length === 0) {
+  if (!loading && orders.length === 0 && totalElements === 0) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 pt-20 pb-16">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
@@ -257,13 +365,21 @@ export const Orders: React.FC = () => {
                   sx={{ fontSize: 40 }}
                 />
               </div>
-              <h2 className="text-2xl font-bold text-gray-800 mb-4">No tienes órdenes aún</h2>
-              <p className="text-gray-600 mb-8">¡Explora nuestro delicioso catálogo y haz tu primer pedido!</p>
-              <button
-                onClick={() => navigateTo("/catalog")}
-                className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200">
-                Ir al Catálogo
-              </button>
+              <h2 className="text-2xl font-bold text-gray-800 mb-4">
+                {activeTab === "en_curso" ? "No tienes órdenes en curso" : "No tienes órdenes pasadas"}
+              </h2>
+              <p className="text-gray-600 mb-8">
+                {activeTab === "en_curso"
+                  ? "¡Explora nuestro delicioso catálogo y haz tu primer pedido!"
+                  : "Cuando realices pedidos, aparecerán aquí tu historial."}
+              </p>
+              {activeTab === "en_curso" && (
+                <button
+                  onClick={() => navigateTo("/catalog")}
+                  className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200">
+                  Ir al Catálogo
+                </button>
+              )}
             </div>
           </motion.div>
         </div>
@@ -272,7 +388,7 @@ export const Orders: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 pt-20 pb-16">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 pt-20 pb-16 text-black">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
         {/* Header */}
         <motion.div
@@ -301,11 +417,7 @@ export const Orders: React.FC = () => {
           className="bg-white rounded-2xl shadow-lg mb-6">
           <div className="flex border-b">
             <button
-              onClick={() => {
-                setActiveTab("en_curso");
-                setCurrentPage(1);
-                setStatusFilter("todos");
-              }}
+              onClick={() => handleTabChange("en_curso")}
               className={`flex-1 py-3 sm:py-4 px-4 text-sm sm:text-base font-medium transition-colors duration-200 ${
                 activeTab === "en_curso"
                   ? "text-orange-600 border-b-2 border-orange-600 bg-gray-100"
@@ -314,11 +426,7 @@ export const Orders: React.FC = () => {
               Órdenes en Curso
             </button>
             <button
-              onClick={() => {
-                setActiveTab("pasadas");
-                setCurrentPage(1);
-                setStatusFilter("todos");
-              }}
+              onClick={() => handleTabChange("pasadas")}
               className={`flex-1 py-3 sm:py-4 px-4 text-sm sm:text-base font-medium transition-colors duration-200 ${
                 activeTab === "pasadas"
                   ? "text-orange-600 border-b-2 border-orange-600 bg-gray-100"
@@ -354,6 +462,7 @@ export const Orders: React.FC = () => {
                   <option value="todos">Todos</option>
                   {activeTab === "en_curso" ? (
                     <>
+                      <option value="a_confirmar">A Confirmar</option>
                       <option value="en_preparacion">En Preparación</option>
                       <option value="listo">Listo</option>
                       <option value="en_camino">En Camino</option>
@@ -363,6 +472,7 @@ export const Orders: React.FC = () => {
                     <>
                       <option value="entregado">Entregado</option>
                       <option value="cancelado">Cancelado</option>
+                      <option value="rechazado">Rechazado</option>
                     </>
                   )}
                 </select>
@@ -383,7 +493,7 @@ export const Orders: React.FC = () => {
           <>
             {/* Desktop Cards */}
             <div className="hidden sm:grid sm:grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-              {paginatedOrders.map((order, index) => (
+              {filteredOrders.map((order, index) => (
                 <motion.div
                   key={order.id}
                   initial={{ opacity: 0, y: 20 }}
@@ -444,9 +554,10 @@ export const Orders: React.FC = () => {
                                 e.stopPropagation();
                                 handleCancelOrder(order.id);
                               }}
-                              className="flex items-center space-x-1 bg-red-100 hover:bg-red-200 text-red-700 px-3 py-1.5 rounded-lg transition-colors duration-200 text-sm">
+                              disabled={cancellingOrderId === order.id}
+                              className="flex items-center space-x-1 bg-red-100 hover:bg-red-200 text-red-700 px-3 py-1.5 rounded-lg transition-colors duration-200 text-sm disabled:opacity-50 disabled:cursor-not-allowed">
                               <CancelOutlined sx={{ fontSize: 16 }} />
-                              <span>Cancelar</span>
+                              <span>{cancellingOrderId === order.id ? "Cancelando..." : "Cancelar"}</span>
                             </button>
                           )}
                         </>
@@ -482,7 +593,7 @@ export const Orders: React.FC = () => {
 
             {/* Mobile List */}
             <div className="sm:hidden space-y-4 mb-8">
-              {paginatedOrders.map((order, index) => (
+              {filteredOrders.map((order, index) => (
                 <motion.div
                   key={order.id}
                   initial={{ opacity: 0, y: 20 }}
@@ -536,8 +647,9 @@ export const Orders: React.FC = () => {
                                 e.stopPropagation();
                                 handleCancelOrder(order.id);
                               }}
-                              className="bg-red-100 text-red-700 px-2 py-1 rounded text-xs">
-                              Cancelar
+                              disabled={cancellingOrderId === order.id}
+                              className="bg-red-100 text-red-700 px-2 py-1 rounded text-xs disabled:opacity-50 disabled:cursor-not-allowed">
+                              {cancellingOrderId === order.id ? "Cancelando..." : "Cancelar"}
                             </button>
                           )}
                         </>
@@ -574,33 +686,117 @@ export const Orders: React.FC = () => {
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="flex justify-center space-x-2">
-                <button
-                  onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                  disabled={currentPage === 1}
-                  className="px-3 py-2 bg-white border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors duration-200">
-                  Anterior
-                </button>
-
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                className="flex justify-center">
+                {/* Desktop Pagination */}
+                <div className="hidden sm:flex space-x-2">
                   <button
-                    key={page}
-                    onClick={() => setCurrentPage(page)}
-                    className={`px-3 py-2 rounded-lg transition-colors duration-200 ${
-                      currentPage === page
-                        ? "bg-orange-500 text-white"
-                        : "bg-white border border-gray-300 hover:bg-gray-50"
-                    }`}>
-                    {page}
+                    onClick={() => handlePageChange(Math.max(currentPage - 1, 1))}
+                    disabled={currentPage === 1}
+                    className="px-3 py-2 bg-white border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors duration-200">
+                    Anterior
                   </button>
-                ))}
 
-                <button
-                  onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-                  disabled={currentPage === totalPages}
-                  className="px-3 py-2 bg-white border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors duration-200">
-                  Siguiente
-                </button>
+                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                    let page: number;
+                    if (totalPages <= 5) {
+                      page = i + 1;
+                    } else if (currentPage <= 3) {
+                      page = i + 1;
+                    } else if (currentPage >= totalPages - 2) {
+                      page = totalPages - 4 + i;
+                    } else {
+                      page = currentPage - 2 + i;
+                    }
+
+                    return (
+                      <button
+                        key={page}
+                        onClick={() => handlePageChange(page)}
+                        className={`px-3 py-2 rounded-lg transition-colors duration-200 ${
+                          currentPage === page
+                            ? "bg-orange-500 text-white"
+                            : "bg-white border border-gray-300 hover:bg-gray-50"
+                        }`}>
+                        {page}
+                      </button>
+                    );
+                  })}
+
+                  <button
+                    onClick={() => handlePageChange(Math.min(currentPage + 1, totalPages))}
+                    disabled={currentPage === totalPages}
+                    className="px-3 py-2 bg-white border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors duration-200">
+                    Siguiente
+                  </button>
+                </div>
+
+                {/* Mobile Pagination - Solo navegación simple */}
+                <div className="sm:hidden w-full max-w-sm mx-auto">
+                  <div className="bg-white rounded-lg shadow-md p-4">
+                    {/* Indicador de página actual */}
+                    <div className="text-center mb-4">
+                      <span className="text-sm text-gray-600">
+                        Página {currentPage} de {totalPages}
+                      </span>
+                      <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+                        <div
+                          className="bg-orange-500 h-2 rounded-full transition-all duration-300"
+                          style={{ width: `${(currentPage / totalPages) * 100}%` }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Botones de navegación */}
+                    <div className="flex justify-between items-center">
+                      <button
+                        onClick={() => handlePageChange(Math.max(currentPage - 1, 1))}
+                        disabled={currentPage === 1}
+                        className="flex items-center space-x-1 px-4 py-2 bg-orange-500 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-300 transition-colors duration-200">
+                        <span className="text-sm">← Anterior</span>
+                      </button>
+
+                      <div className="flex items-center space-x-2">
+                        {/* Input para ir a página específica */}
+                        <input
+                          type="number"
+                          min="1"
+                          max={totalPages}
+                          value={currentPage}
+                          onChange={(e) => {
+                            const page = Number.parseInt(e.target.value);
+                            if (page >= 1 && page <= totalPages) {
+                              handlePageChange(page);
+                            }
+                          }}
+                          className="w-16 px-2 py-1 text-center border border-gray-300 rounded text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                        />
+                      </div>
+
+                      <button
+                        onClick={() => handlePageChange(Math.min(currentPage + 1, totalPages))}
+                        disabled={currentPage === totalPages}
+                        className="flex items-center space-x-1 px-4 py-2 bg-orange-500 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-300 transition-colors duration-200">
+                        <span className="text-sm">Siguiente →</span>
+                      </button>
+                    </div>
+
+                    {/* Navegación rápida */}
+                    <div className="flex justify-center space-x-2 mt-3">
+                      <button
+                        onClick={() => handlePageChange(1)}
+                        disabled={currentPage === 1}
+                        className="px-2 py-1 text-xs bg-gray-100 text-gray-600 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-200 transition-colors duration-200">
+                        Primera
+                      </button>
+                      <button
+                        onClick={() => handlePageChange(totalPages)}
+                        disabled={currentPage === totalPages}
+                        className="px-2 py-1 text-xs bg-gray-100 text-gray-600 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-200 transition-colors duration-200">
+                        Última
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </motion.div>
             )}
           </>
