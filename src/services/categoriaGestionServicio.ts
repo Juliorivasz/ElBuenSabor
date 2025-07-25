@@ -1,8 +1,7 @@
 import { CategoriaExtendidaDto } from "../models/dto/CategoriaExtendidaDto"
 import { ImagenDTO } from "../models/dto/ImagenDTO"
 import type { NuevaCategoriaDto } from "../models/dto/NuevaCategoriaDto"
-
-const BASE_URL = "http://localhost:8080"
+import { interceptorsApiClient } from "./interceptors/axios.interceptors"
 
 interface CategoriaApiResponse {
   idCategoria: number
@@ -19,12 +18,9 @@ export class CategoriaGestionServicio {
   // GET /categoria/lista
   static async listarCategorias(): Promise<CategoriaExtendidaDto[]> {
     try {
-      const response = await fetch(`${BASE_URL}/categoria/lista`)
-      if (!response.ok) {
-        throw new Error(`Error al obtener categorías: ${response.status}`)
-      }
+      const response = await interceptorsApiClient.get("/categoria/lista")
 
-      const data: CategoriaApiResponse[] = await response.json()
+      const data: CategoriaApiResponse[] = response.data
 
       // Convertir a CategoriaExtendidaDto
       const categorias = data.map((item) => {
@@ -35,7 +31,7 @@ export class CategoriaGestionServicio {
           item.idCategoriaPadre || 0,
           imagenDto,
           typeof item.margenGanancia === "number" ? item.margenGanancia : 0,
-          item.fechaBaja ? new Date(item.fechaBaja) : null
+          item.fechaBaja ? new Date(item.fechaBaja) : null,
         )
       })
 
@@ -49,20 +45,9 @@ export class CategoriaGestionServicio {
   // POST /categoria/nueva
   static async crearCategoria(nuevaCategoria: NuevaCategoriaDto): Promise<CategoriaExtendidaDto> {
     try {
-      const response = await fetch(`${BASE_URL}/categoria/nueva`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(nuevaCategoria.toJSON()),
-      })
+      const response = await interceptorsApiClient.post("/categoria/nueva", nuevaCategoria.toJSON())
 
-      if (!response.ok) {
-        const errorText = await response.text()
-        throw new Error(`Error al crear categoría: ${response.status} - ${errorText}`)
-      }
-
-      const data: CategoriaApiResponse = await response.json()
+      const data: CategoriaApiResponse = response.data
       const imagenDto = data.imagenModel ? new ImagenDTO(data.imagenModel.url) : new ImagenDTO("")
 
       return new CategoriaExtendidaDto(
@@ -79,26 +64,14 @@ export class CategoriaGestionServicio {
     }
   }
 
-  // PUT /categoria/actualizar (asumiendo que existe este endpoint para edición)
+  // PUT /categoria/actualizar
   static async actualizarCategoria(idCategoria: number, categoria: NuevaCategoriaDto): Promise<CategoriaExtendidaDto> {
     try {
       console.log("Actualizando categoría:", idCategoria, categoria.toJSON())
 
-      const response = await fetch(`${BASE_URL}/categoria/actualizar/${idCategoria}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(categoria.toJSON()),
-      })
+      const response = await interceptorsApiClient.put(`/categoria/actualizar/${idCategoria}`, categoria.toJSON())
 
-      if (!response.ok) {
-        const errorText = await response.text()
-        console.error("Error en actualización:", response.status, errorText)
-        throw new Error(`Error al actualizar categoría: ${response.status} - ${errorText}`)
-      }
-
-      const data: CategoriaApiResponse = await response.json()
+      const data: CategoriaApiResponse = response.data
       console.log("Respuesta de actualización:", data)
 
       const imagenDto = data.imagenModel ? new ImagenDTO(data.imagenModel.url) : new ImagenDTO("")
@@ -122,22 +95,7 @@ export class CategoriaGestionServicio {
     try {
       console.log("Cambiando estado de categoría:", idCategoria)
 
-      const response = await fetch(`${BASE_URL}/categoria/altaBaja/${idCategoria}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      })
-
-      console.log("Respuesta toggle estado:", response.status)
-
-      if (!response.ok) {
-        const errorText = await response.text()
-        console.error("Error en toggle estado:", response.status, errorText)
-        throw new Error(`Error al cambiar estado de categoría: ${response.status} - ${errorText}`)
-      }
-
-      console.log("Estado cambiado exitosamente")
+      await interceptorsApiClient.post(`/categoria/altaBaja/${idCategoria}`)
     } catch (error) {
       console.error("Error al cambiar estado de categoría:", error)
       throw error
@@ -147,12 +105,8 @@ export class CategoriaGestionServicio {
   // GET /categoria/obtenerNombre/{idCategoria}
   static async obtenerNombreCategoria(idCategoria: number): Promise<string> {
     try {
-      const response = await fetch(`${BASE_URL}/categoria/obtenerNombre/${idCategoria}`)
-      if (!response.ok) {
-        throw new Error(`Error al obtener nombre de categoría: ${response.status}`)
-      }
-
-      return await response.text()
+      const response = await interceptorsApiClient.get(`/categoria/obtenerNombre/${idCategoria}`)
+      return response.data
     } catch (error) {
       console.error("Error al obtener nombre de categoría:", error)
       throw error
