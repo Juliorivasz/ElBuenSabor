@@ -1,37 +1,34 @@
-"use client";
-
-import BlockIcon from "@mui/icons-material/Block";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import EditIcon from "@mui/icons-material/Edit";
-import ExpandLessIcon from "@mui/icons-material/ExpandLess";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import FolderIcon from "@mui/icons-material/Folder";
-import SubdirectoryArrowRightIcon from "@mui/icons-material/SubdirectoryArrowRight";
-import VisibilityIcon from "@mui/icons-material/Visibility";
-import { useState } from "react";
-import type { CategoriaExtendidaDto } from "../../models/dto/CategoriaExtendidaDto";
-import { useCategoriasStore } from "../../store/categorias/useCategoriasStore";
-import { Pagination } from "../Admin/products/Pagination";
-import { Plus } from "lucide-react";
+"use client"
+import EditIcon from "@mui/icons-material/Edit"
+import ExpandLessIcon from "@mui/icons-material/ExpandLess"
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
+import FolderIcon from "@mui/icons-material/Folder"
+import SubdirectoryArrowRightIcon from "@mui/icons-material/SubdirectoryArrowRight"
+import VisibilityIcon from "@mui/icons-material/Visibility"
+import { useState } from "react"
+import type { CategoriaExtendidaDto } from "../../models/dto/CategoriaExtendidaDto"
+import { useCategoriasStore } from "../../store/categorias/useCategoriasStore"
+import { Pagination } from "../Admin/products/Pagination"
+import { Plus } from "lucide-react"
 
 interface PaginationState {
-  currentPage: number;
-  itemsPerPage: number;
-  totalItems: number;
-  totalPages: number;
+  currentPage: number
+  itemsPerPage: number
+  totalItems: number
+  totalPages: number
 }
 
 interface CategoriasTableProps {
-  categorias: CategoriaExtendidaDto[];
-  loading: boolean;
-  pagination: PaginationState;
-  onPageChange: (page: number) => void;
-  onItemsPerPageChange: (itemsPerPage: number) => void;
-  onEdit: (categoria: CategoriaExtendidaDto) => void;
-  onViewDetails: (categoria: CategoriaExtendidaDto) => void;
-  onToggleStatus: (categoria: CategoriaExtendidaDto) => void;
-  onNuevaCategoria: () => void;
-  filtroActual: "todas" | "activas" | "inactivas" | "padre" | "subcategorias";
+  categorias: CategoriaExtendidaDto[]
+  loading: boolean
+  pagination: PaginationState
+  onPageChange: (page: number) => void
+  onItemsPerPageChange: (itemsPerPage: number) => void
+  onEdit: (categoria: CategoriaExtendidaDto) => void
+  onViewDetails: (categoria: CategoriaExtendidaDto) => void
+  onToggleStatus: (categoria: CategoriaExtendidaDto) => void
+  onNuevaCategoria: () => void
+  filtroActual: "todas" | "activas" | "inactivas" | "padre" | "subcategorias"
 }
 
 export const CategoriasTable = ({
@@ -46,39 +43,39 @@ export const CategoriasTable = ({
   onNuevaCategoria,
   filtroActual,
 }: CategoriasTableProps) => {
-  const [expandedCategories, setExpandedCategories] = useState<Set<number>>(new Set());
-  const { categorias: todasLasCategorias } = useCategoriasStore.getState();
+  const [expandedCategories, setExpandedCategories] = useState<Set<number>>(new Set())
+  const { categorias: todasLasCategorias } = useCategoriasStore.getState()
 
   const toggleExpanded = (idCategoria: number) => {
-    const newExpanded = new Set(expandedCategories);
+    const newExpanded = new Set(expandedCategories)
     if (newExpanded.has(idCategoria)) {
-      newExpanded.delete(idCategoria);
+      newExpanded.delete(idCategoria)
     } else {
-      newExpanded.add(idCategoria);
+      newExpanded.add(idCategoria)
     }
-    setExpandedCategories(newExpanded);
-  };
+    setExpandedCategories(newExpanded)
+  }
 
   const getImageUrl = (categoria: CategoriaExtendidaDto): string => {
     // Primero intentar con la estructura nueva (imagenModel.url)
     if ((categoria as any).imagenModel?.url) {
-      return (categoria as any).imagenModel.url;
+      return (categoria as any).imagenModel.url
     }
     // Fallback a la estructura anterior
-    return categoria.getImagenDto()?.getUrl() || "";
-  };
+    return categoria.getImagenDto()?.getUrl() || ""
+  }
 
   // Función para obtener subcategorías de una categoría padre
   const getSubcategorias = (idCategoriaPadre: number): CategoriaExtendidaDto[] => {
-    return todasLasCategorias.filter((sub) => sub.getIdCategoriaPadre() === idCategoriaPadre);
-  };
+    return todasLasCategorias.filter((sub) => sub.getIdCategoriaPadre() === idCategoriaPadre)
+  }
 
   // Determinar si mostrar el comportamiento desplegable
-  const shouldShowDropdown = filtroActual === "todas";
+  const shouldShowDropdown = filtroActual === "todas"
 
   // En modo dropdown, las categorías ya vienen filtradas (solo padres) desde el componente padre
   // En otros modos, mostramos las categorías tal como vienen
-  const categoriasAMostrar = categorias;
+  const categoriasAMostrar = categorias
 
   if (loading) {
     return (
@@ -90,9 +87,7 @@ export const CategoriasTable = ({
           </div>
           <div className="space-y-3">
             {[...Array(5)].map((_, i) => (
-              <div
-                key={i}
-                className="flex space-x-4">
+              <div key={i} className="flex space-x-4">
                 <div className="h-12 w-12 bg-gray-200 rounded-full"></div>
                 <div className="flex-1 space-y-2">
                   <div className="h-4 bg-gray-200 rounded w-3/4"></div>
@@ -103,7 +98,7 @@ export const CategoriasTable = ({
           </div>
         </div>
       </div>
-    );
+    )
   }
 
   if (categorias.length === 0) {
@@ -115,13 +110,14 @@ export const CategoriasTable = ({
           <p className="text-gray-500 mb-6">Comienza creando tu primera categoría para organizar tus productos</p>
           <button
             onClick={onNuevaCategoria}
-            className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-orange-500 hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-colors">
+            className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-orange-500 hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-colors"
+          >
             <Plus className="h-4 w-4 mr-2" />
             Nueva Categoría
           </button>
         </div>
       </div>
-    );
+    )
   }
 
   return (
@@ -138,7 +134,8 @@ export const CategoriasTable = ({
           </div>
           <button
             onClick={onNuevaCategoria}
-            className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-orange-500 hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-colors">
+            className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-orange-500 hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-colors"
+          >
             <Plus className="h-4 w-4 mr-2" />
             Nueva Categoría
           </button>
@@ -168,23 +165,22 @@ export const CategoriasTable = ({
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {categoriasAMostrar.map((categoria) => {
-              const subcategorias = shouldShowDropdown ? getSubcategorias(categoria.getIdCategoria()) : [];
-              const isExpanded = expandedCategories.has(categoria.getIdCategoria());
-              const nivel = shouldShowDropdown ? 0 : categoria.esCategoriaPadre() ? 0 : 1;
+              const subcategorias = shouldShowDropdown ? getSubcategorias(categoria.getIdCategoria()) : []
+              const isExpanded = expandedCategories.has(categoria.getIdCategoria())
+              const nivel = shouldShowDropdown ? 0 : categoria.esCategoriaPadre() ? 0 : 1
 
               return (
                 <>
                   {/* Fila principal de la categoría */}
-                  <tr
-                    key={categoria.getIdCategoria()}
-                    className="hover:bg-gray-50 transition-colors">
+                  <tr key={categoria.getIdCategoria()} className="hover:bg-gray-50 transition-colors">
                     {/* Columna de expansión (solo en modo dropdown) */}
                     {shouldShowDropdown && (
                       <td className="px-6 py-4 whitespace-nowrap">
                         <button
                           onClick={() => toggleExpanded(categoria.getIdCategoria())}
                           className="p-1 rounded-full hover:bg-gray-100 transition-colors"
-                          title={isExpanded ? "Contraer subcategorías" : "Expandir subcategorías"}>
+                          title={isExpanded ? "Contraer subcategorías" : "Expandir subcategorías"}
+                        >
                           {isExpanded ? (
                             <ExpandLessIcon className="h-5 w-5 text-gray-600" />
                           ) : (
@@ -195,9 +191,7 @@ export const CategoriasTable = ({
                     )}
 
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div
-                        className="flex items-center"
-                        style={{ paddingLeft: `${nivel * 24}px` }}>
+                      <div className="flex items-center" style={{ paddingLeft: `${nivel * 24}px` }}>
                         {nivel > 0 && <SubdirectoryArrowRightIcon className="h-4 w-4 text-gray-400 mr-2" />}
                         <div className="flex items-center">
                           <div className="flex-shrink-0 h-12 w-12">
@@ -206,7 +200,7 @@ export const CategoriasTable = ({
                               src={getImageUrl(categoria) || "/placeholder.svg?height=48&width=48"}
                               alt={categoria.getNombre()}
                               onError={(e) => {
-                                (e.target as HTMLImageElement).src = "/placeholder.svg?height=48&width=48";
+                                ;(e.target as HTMLImageElement).src = "/placeholder.svg?height=48&width=48"
                               }}
                             />
                           </div>
@@ -230,11 +224,13 @@ export const CategoriasTable = ({
                           categoria.isActiva()
                             ? "bg-green-100 text-green-800 border border-green-200"
                             : "bg-red-100 text-red-800 border border-red-200"
-                        }`}>
+                        }`}
+                      >
                         <span
                           className={`w-2 h-2 rounded-full mr-2 ${
                             categoria.isActiva() ? "bg-green-400" : "bg-red-400"
-                          }`}></span>
+                          }`}
+                        ></span>
                         {categoria.isActiva() ? "Activa" : "Inactiva"}
                       </span>
                     </td>
@@ -262,15 +258,13 @@ export const CategoriasTable = ({
                       subcategorias.length > 0 ? (
                         <div className="space-y-1">
                           {subcategorias.slice(0, 2).map((sub) => (
-                            <div
-                              key={sub.getIdCategoria()}
-                              className="flex items-center space-x-2">
+                            <div key={sub.getIdCategoria()} className="flex items-center space-x-2">
                               <img
                                 src={getImageUrl(sub) || "/placeholder.svg?height=32&width=32"}
                                 alt={sub.getNombre()}
                                 className="h-6 w-6 rounded-full object-cover border border-gray-200"
                                 onError={(e) => {
-                                  (e.target as HTMLImageElement).src = "/placeholder.svg?height=32&width=32";
+                                  ;(e.target as HTMLImageElement).src = "/placeholder.svg?height=32&width=32"
                                 }}
                               />
                               <span className="text-gray-700 text-xs">{sub.getNombre()}</span>
@@ -289,25 +283,30 @@ export const CategoriasTable = ({
                       <div className="flex items-center justify-end space-x-1">
                         <button
                           onClick={() => onViewDetails(categoria)}
-                          className="p-2 text-blue-600 hover:text-blue-900 hover:bg-blue-50 rounded-full transition-colors"
-                          title="Ver detalles">
+                          className="p-2 text-gray-700 hover:cursor-pointer rounded-full transition-colors"
+                          title="Ver detalles"
+                        >
                           <VisibilityIcon fontSize="small" />
                         </button>
                         <button
                           onClick={() => onEdit(categoria)}
-                          className="p-2 text-indigo-600 hover:text-indigo-900 hover:bg-indigo-50 rounded-full transition-colors"
-                          title="Editar">
+                          className="p-2 text-gray-700 hover:cursor-pointer rounded-full transition-colors"
+                          title="Editar"
+                        >
                           <EditIcon fontSize="small" />
                         </button>
                         <button
                           onClick={() => onToggleStatus(categoria)}
-                          className={`p-2 rounded-full transition-colors ${
-                            categoria.isActiva()
-                              ? "text-red-600 hover:text-red-900 hover:bg-red-50"
-                              : "text-green-600 hover:text-green-900 hover:bg-green-50"
+                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+                            categoria.isActiva() ? "bg-green-500 focus:ring-green-500" : "bg-red-400 focus:ring-red-4 00"
                           }`}
-                          title={categoria.isActiva() ? "Desactivar" : "Activar"}>
-                          {categoria.isActiva() ? <BlockIcon fontSize="small" /> : <CheckCircleIcon fontSize="small" />}
+                          title={categoria.isActiva() ? "Desactivar" : "Activar"}
+                        >
+                          <span
+                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                              categoria.isActiva() ? "translate-x-6" : "translate-x-1"
+                            }`}
+                          />
                         </button>
                       </div>
                     </td>
@@ -320,7 +319,8 @@ export const CategoriasTable = ({
                         subcategorias.map((subcategoria) => (
                           <tr
                             key={`sub-${subcategoria.getIdCategoria()}`}
-                            className="bg-gray-50 hover:bg-gray-100 transition-colors">
+                            className="bg-gray-50 hover:bg-gray-100 transition-colors"
+                          >
                             <td className="px-6 py-3"></td>
                             <td className="px-6 py-3 whitespace-nowrap">
                               <div className="flex items-center pl-8">
@@ -332,7 +332,7 @@ export const CategoriasTable = ({
                                       src={getImageUrl(subcategoria) || "/placeholder.svg?height=32&width=32"}
                                       alt={subcategoria.getNombre()}
                                       onError={(e) => {
-                                        (e.target as HTMLImageElement).src = "/placeholder.svg?height=32&width=32";
+                                        ;(e.target as HTMLImageElement).src = "/placeholder.svg?height=32&width=32"
                                       }}
                                     />
                                   </div>
@@ -354,11 +354,13 @@ export const CategoriasTable = ({
                                   subcategoria.isActiva()
                                     ? "bg-green-50 text-green-700 border border-green-200"
                                     : "bg-red-50 text-red-700 border border-red-200"
-                                }`}>
+                                }`}
+                              >
                                 <span
                                   className={`w-1.5 h-1.5 rounded-full mr-1.5 ${
                                     subcategoria.isActiva() ? "bg-green-400" : "bg-red-400"
-                                  }`}></span>
+                                  }`}
+                                ></span>
                                 {subcategoria.isActiva() ? "Activa" : "Inactiva"}
                               </span>
                             </td>
@@ -376,28 +378,31 @@ export const CategoriasTable = ({
                                 <button
                                   onClick={() => onViewDetails(subcategoria)}
                                   className="p-1.5 text-blue-600 hover:text-blue-900 hover:bg-blue-50 rounded-full transition-colors"
-                                  title="Ver detalles">
+                                  title="Ver detalles"
+                                >
                                   <VisibilityIcon fontSize="small" />
                                 </button>
                                 <button
                                   onClick={() => onEdit(subcategoria)}
                                   className="p-1.5 text-indigo-600 hover:text-indigo-900 hover:bg-indigo-50 rounded-full transition-colors"
-                                  title="Editar">
+                                  title="Editar"
+                                >
                                   <EditIcon fontSize="small" />
                                 </button>
                                 <button
                                   onClick={() => onToggleStatus(subcategoria)}
-                                  className={`p-1.5 rounded-full transition-colors ${
+                                  className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 ${
                                     subcategoria.isActiva()
-                                      ? "text-red-600 hover:text-red-900 hover:bg-red-50"
-                                      : "text-green-600 hover:text-green-900 hover:bg-green-50"
+                                      ? "bg-green-500 focus:ring-green-500"
+                                      : "bg-red-400 focus:ring-red-400"
                                   }`}
-                                  title={subcategoria.isActiva() ? "Desactivar" : "Activar"}>
-                                  {subcategoria.isActiva() ? (
-                                    <BlockIcon fontSize="small" />
-                                  ) : (
-                                    <CheckCircleIcon fontSize="small" />
-                                  )}
+                                  title={subcategoria.isActiva() ? "Desactivar" : "Activar"}
+                                >
+                                  <span
+                                    className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${
+                                      subcategoria.isActiva() ? "translate-x-5" : "translate-x-1"
+                                    }`}
+                                  />
                                 </button>
                               </div>
                             </td>
@@ -406,9 +411,7 @@ export const CategoriasTable = ({
                       ) : (
                         <tr className="bg-gray-50">
                           <td className="px-6 py-3"></td>
-                          <td
-                            colSpan={6}
-                            className="px-6 py-3 text-center text-sm text-gray-500 italic">
+                          <td colSpan={6} className="px-6 py-3 text-center text-sm text-gray-500 italic">
                             Sin subcategorías
                           </td>
                         </tr>
@@ -416,7 +419,7 @@ export const CategoriasTable = ({
                     </>
                   )}
                 </>
-              );
+              )
             })}
           </tbody>
         </table>
@@ -431,5 +434,5 @@ export const CategoriasTable = ({
         onItemsPerPageChange={onItemsPerPageChange}
       />
     </div>
-  );
-};
+  )
+}

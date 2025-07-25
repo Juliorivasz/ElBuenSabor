@@ -26,4 +26,9 @@ export const pedidoServicio = {
   async rechazarPedido(idPedido: number): Promise<void> {
     await interceptorsApiClient.put(`/pedido/rechazado/${idPedido}`)
   },
+
+  // Marcar pedido como entregado
+  async marcarComoEntregado(idPedido: number): Promise<void> {
+    await interceptorsApiClient.put(`/pedido/entregado/${idPedido}`)
+  },
 }

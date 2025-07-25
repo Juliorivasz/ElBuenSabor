@@ -1,6 +1,7 @@
 import { CategoriaExtendidaDto } from "../models/dto/CategoriaExtendidaDto"
 import { ImagenDTO } from "../models/dto/ImagenDTO"
 import type { NuevaCategoriaDto } from "../models/dto/NuevaCategoriaDto"
+import { interceptorsApiClient } from "./interceptors/axios.interceptors"
 
 const BASE_URL = "http://localhost:8080"
 
@@ -49,20 +50,9 @@ export class CategoriaGestionServicio {
   // POST /categoria/nueva
   static async crearCategoria(nuevaCategoria: NuevaCategoriaDto): Promise<CategoriaExtendidaDto> {
     try {
-      const response = await fetch(`${BASE_URL}/categoria/nueva`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(nuevaCategoria.toJSON()),
-      })
+      const response = await interceptorsApiClient.post("/categoria/nueva", nuevaCategoria.toJSON())
 
-      if (!response.ok) {
-        const errorText = await response.text()
-        throw new Error(`Error al crear categoría: ${response.status} - ${errorText}`)
-      }
-
-      const data: CategoriaApiResponse = await response.json()
+      const data: CategoriaApiResponse = response.data
       const imagenDto = data.imagenModel ? new ImagenDTO(data.imagenModel.url) : new ImagenDTO("")
 
       return new CategoriaExtendidaDto(
