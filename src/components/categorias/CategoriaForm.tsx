@@ -9,6 +9,7 @@ import { useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import type { CategoriaExtendidaDto } from "../../models/dto/CategoriaExtendidaDto"
 import { NuevaCategoriaDto } from "../../models/dto/NuevaCategoriaDto"
+import { useCategoriasStore } from "../../store/categorias/useCategoriasStore"
 import { FileUploadService } from "../../utils/fileUpload"
 import { NotificationService } from "../../utils/notifications"
 
@@ -28,10 +29,19 @@ interface CategoriaFormProps {
   loading: boolean
 }
 
+interface CategoryTreeItem {
+  category: CategoriaExtendidaDto
+  level: number
+}
+
 export const CategoriaForm = ({ categoria, categorias, onSubmit, onCancel, loading }: CategoriaFormProps) => {
   const [previewImage, setPreviewImage] = useState<string>("")
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [dragActive, setDragActive] = useState(false)
+  const [uploadingToCloudinary, setUploadingToCloudinary] = useState(false)
+  const [selectedParentId, setSelectedParentId] = useState<number | null>(null)
+
+  const { getCategoriasParaSelector } = useCategoriasStore()
 
   const {
     register,
@@ -51,6 +61,44 @@ export const CategoriaForm = ({ categoria, categorias, onSubmit, onCancel, loadi
   })
 
   const watchImagenUrl = watch("imagenUrl")
+  const watchIdCategoriaPadre = watch("idCategoriaPadre")
+
+  // Función para construir el árbol jerárquico de categorías para el selector
+  const buildCategoryTree = (
+    categories: CategoriaExtendidaDto[],
+    parentId = 0,
+    level = 0,
+    excludeId?: number,
+  ): CategoryTreeItem[] => {
+    const result: CategoryTreeItem[] = []
+    const children = categories
+      .filter((cat) => {
+        // Filtrar por categoría padre
+        const isChild = cat.getIdCategoriaPadre() === parentId
+        // Excluir la categoría que se está editando para evitar referencias circulares
+        const notExcluded = !excludeId || cat.getIdCategoria() !== excludeId
+        return isChild && notExcluded
+      })
+      .sort((a, b) => a.getNombre().localeCompare(b.getNombre()))
+
+    for (const child of children) {
+      // Limitar la profundidad máxima a 4 niveles
+      if (level < 4) {
+        result.push({ category: child, level })
+        result.push(...buildCategoryTree(categories, child.getIdCategoria(), level + 1, excludeId))
+      }
+    }
+
+    return result
+  }
+
+  // Construir el árbol de categorías disponibles (incluye activas e inactivas)
+  const categoryTree = buildCategoryTree(
+    categorias,
+    0,
+    0,
+    categoria?.getIdCategoria(), // Excluir la categoría actual si se está editando
+  )
 
   // Función para obtener la URL de imagen de una categoría
   const getImageUrl = (categoria: CategoriaExtendidaDto): string => {
@@ -62,19 +110,27 @@ export const CategoriaForm = ({ categoria, categorias, onSubmit, onCancel, loadi
     return categoria.getImagenDto()?.getUrl() || ""
   }
 
+  // Función para verificar si una categoría padre está inactiva
+  const isParentInactive = (parentId: number | null): boolean => {
+    if (!parentId) return false
+    const parent = categorias.find((cat) => cat.getIdCategoria() === parentId)
+    return parent ? !parent.isActiva() : false
+  }
+
   // Cargar datos si es edición
   useEffect(() => {
     if (categoria) {
       const imageUrl = getImageUrl(categoria)
       const data = {
         nombre: categoria.getNombre(),
-        margenGanancia: categoria.getMargenGanancia(),
+        margenGanancia: categoria.getMargenGanancia() * 100, // Convertir a porcentaje para mostrar
         dadoDeAlta: categoria.isActiva(),
         idCategoriaPadre: categoria.getIdCategoriaPadre() || null,
         imagenUrl: imageUrl,
       }
       reset(data)
       setPreviewImage(imageUrl)
+      setSelectedParentId(categoria.getIdCategoriaPadre() || null)
     }
   }, [categoria, reset])
 
@@ -85,17 +141,50 @@ export const CategoriaForm = ({ categoria, categorias, onSubmit, onCancel, loadi
     }
   }, [watchImagenUrl, selectedFile])
 
-  // Filtrar categorías disponibles como padre (solo categorías principales)
-  const categoriasDisponibles = categorias.filter((cat) => {
-    if (categoria) {
-      // No puede ser padre de sí misma
-      if (cat.getIdCategoria() === categoria.getIdCategoria()) return false
-      // No puede ser padre de su propia categoría padre
-      if (cat.getIdCategoriaPadre() === categoria.getIdCategoria()) return false
+  // Efecto para manejar el estado automático basado en la categoría padre
+  useEffect(() => {
+    const parentId = watchIdCategoriaPadre
+    setSelectedParentId(parentId)
+
+    // Si no estamos editando una categoría existente
+    if (!categoria) {
+      if (isParentInactive(parentId)) {
+        // Si el padre está inactivo, desactivar automáticamente la nueva categoría
+        setValue("dadoDeAlta", false)
+        NotificationService.info(
+          "La categoría se ha marcado como inactiva automáticamente porque la categoría padre seleccionada está inactiva.",
+          "Estado automático",
+        )
+      } else {
+        // Si el padre está activo o no hay padre, activar la categoría
+        setValue("dadoDeAlta", true)
+      }
     }
-    // Solo mostrar categorías principales como opciones de padre
-    return cat.esCategoriaPadre()
-  })
+  }, [watchIdCategoriaPadre, categoria, setValue, categorias])
+
+  // Función para subir imagen a Cloudinary
+  const uploadToCloudinary = async (file: File): Promise<string> => {
+    const formData = new FormData()
+    formData.append("file", file)
+    formData.append("upload_preset", "ml_default") // Usar el preset por defecto o configurar uno específico
+
+    try {
+      const response = await fetch("https://api.cloudinary.com/v1_1/dksmkvi49/image/upload", {
+        method: "POST",
+        body: formData,
+      })
+
+      if (!response.ok) {
+        throw new Error("Error al subir imagen a Cloudinary")
+      }
+
+      const data = await response.json()
+      return data.secure_url
+    } catch (error) {
+      console.error("Error uploading to Cloudinary:", error)
+      throw new Error("Error al subir la imagen. Intenta nuevamente.")
+    }
+  }
 
   const handleFileSelect = async (file: File) => {
     const validation = FileUploadService.validateImageFile(file)
@@ -169,11 +258,15 @@ export const CategoriaForm = ({ categoria, categorias, onSubmit, onCancel, loadi
   const onFormSubmit = async (data: CategoriaFormData) => {
     try {
       let imagenModel = null
+      setUploadingToCloudinary(true)
 
       // Determinar qué tipo de imagen usar
       if (selectedFile) {
-        // Si hay un archivo seleccionado, se subirá en el servicio
-        imagenModel = null // El servicio manejará la subida
+        // Subir archivo a Cloudinary
+        const cloudinaryUrl = await uploadToCloudinary(selectedFile)
+        imagenModel = {
+          url: cloudinaryUrl,
+        }
       } else if (data.imagenUrl) {
         // Si hay una URL manual, usarla directamente
         imagenModel = {
@@ -183,14 +276,14 @@ export const CategoriaForm = ({ categoria, categorias, onSubmit, onCancel, loadi
 
       const nuevaCategoria = new NuevaCategoriaDto(
         data.nombre,
-        data.margenGanancia,
+        data.margenGanancia / 100, // Convertir porcentaje a decimal para el backend
         data.dadoDeAlta,
         data.idCategoriaPadre,
         imagenModel,
       )
 
-      // Pasar el archivo al servicio si existe
-      await onSubmit(nuevaCategoria, selectedFile || undefined)
+      // No pasar el archivo ya que se subió a Cloudinary
+      await onSubmit(nuevaCategoria)
 
       // Limpiar preview URLs si existen
       if (selectedFile && previewImage.startsWith("blob:")) {
@@ -198,6 +291,9 @@ export const CategoriaForm = ({ categoria, categorias, onSubmit, onCancel, loadi
       }
     } catch (error) {
       console.error("Error en formulario:", error)
+      NotificationService.error(error instanceof Error ? error.message : "Error al guardar la categoría")
+    } finally {
+      setUploadingToCloudinary(false)
     }
   }
 
@@ -219,7 +315,7 @@ export const CategoriaForm = ({ categoria, categorias, onSubmit, onCancel, loadi
           <button
             onClick={onCancel}
             className="text-gray-400 hover:text-gray-600 transition-colors p-2 hover:bg-gray-100 rounded-full"
-            disabled={loading}
+            disabled={loading || uploadingToCloudinary}
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
@@ -254,7 +350,7 @@ export const CategoriaForm = ({ categoria, categorias, onSubmit, onCancel, loadi
                       errors.nombre ? "border-red-500 bg-red-50" : "border-gray-300"
                     }`}
                     placeholder="Ej: Hamburguesas, Bebidas, Postres..."
-                    disabled={loading}
+                    disabled={loading || uploadingToCloudinary}
                   />
                   {errors.nombre && (
                     <p className="text-red-500 text-sm mt-1 flex items-center">
@@ -293,7 +389,7 @@ export const CategoriaForm = ({ categoria, categorias, onSubmit, onCancel, loadi
                         errors.margenGanancia ? "border-red-500 bg-red-50" : "border-gray-300"
                       }`}
                       placeholder="0.00"
-                      disabled={loading}
+                      disabled={loading || uploadingToCloudinary}
                     />
                     <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                       <span className="text-gray-500 text-sm">%</span>
@@ -311,9 +407,12 @@ export const CategoriaForm = ({ categoria, categorias, onSubmit, onCancel, loadi
                       {errors.margenGanancia.message}
                     </p>
                   )}
+                  <p className="text-xs text-gray-500 mt-1">
+                    Este porcentaje se aplicará como margen de ganancia a los productos de esta categoría
+                  </p>
                 </div>
 
-                {/* Categoría Padre */}
+                {/* Categoría Padre - Selector Jerárquico */}
                 <div className="mb-4">
                   <label className="block text-sm font-medium text-gray-700 mb-2">Categoría Padre</label>
                   <select
@@ -326,22 +425,51 @@ export const CategoriaForm = ({ categoria, categorias, onSubmit, onCancel, loadi
                       },
                     })}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition-colors text-gray-900 bg-white"
-                    disabled={loading}
+                    disabled={loading || uploadingToCloudinary}
                   >
                     <option value="" className="text-gray-900">
                       (Categoría principal)
                     </option>
-                    {categoriasDisponibles.map((cat) => (
-                      <option key={cat.getIdCategoria()} value={cat.getIdCategoria()} className="text-gray-900">
-                        {cat.getNombre()}
-                      </option>
-                    ))}
+                    {categoryTree.map(({ category, level }) => {
+                      const isInactive = !category.isActiva()
+                      return (
+                        <option
+                          key={category.getIdCategoria()}
+                          value={category.getIdCategoria()}
+                          className={`text-gray-900 ${isInactive ? "text-gray-500" : ""}`}
+                          style={{ paddingLeft: `${level * 20}px` }}
+                        >
+                          {"  ".repeat(level)}
+                          {level > 0 && "└─ "}
+                          {category.getNombre()}
+                          {level === 0 && " (Principal)"}
+                          {level === 1 && " (Subcategoría)"}
+                          {level >= 2 && ` (Nivel ${level + 1})`}
+                          {isInactive && " [INACTIVA]"}
+                        </option>
+                      )
+                    })}
                   </select>
-                  <p className="text-xs text-gray-500 mt-1">
-                    {categoriasDisponibles.length === 0
-                      ? "No hay categorías principales disponibles. Esta será una categoría principal."
-                      : "Deja vacío para crear una categoría principal"}
-                  </p>
+                  <div className="mt-2 text-xs text-gray-500 space-y-1">
+                    <p>• Deja vacío para crear una categoría principal</p>
+                    <p>• Puedes crear hasta 4 niveles de jerarquía</p>
+                    <p>• Puedes seleccionar categorías activas o inactivas como padre</p>
+                    <p>• Ejemplo: Bebidas → Con Alcohol → Cervezas → Artesanales</p>
+                    {categoria && (
+                      <p className="text-blue-600">ℹ️ No puedes seleccionar la categoría actual como padre</p>
+                    )}
+                    {selectedParentId && isParentInactive(selectedParentId) && !categoria && (
+                      <p className="text-amber-600">
+                        ⚠️ La categoría padre seleccionada está inactiva. La nueva categoría se marcará como inactiva
+                        automáticamente.
+                      </p>
+                    )}
+                    {categoryTree.length === 0 && (
+                      <p className="text-amber-600">
+                        ⚠️ No hay categorías disponibles. Esta será una categoría principal.
+                      </p>
+                    )}
+                  </div>
                 </div>
 
                 {/* Estado */}
@@ -351,13 +479,18 @@ export const CategoriaForm = ({ categoria, categorias, onSubmit, onCancel, loadi
                       type="checkbox"
                       {...register("dadoDeAlta")}
                       className="h-5 w-5 text-orange-600 focus:ring-orange-500 border-gray-300 rounded"
-                      disabled={loading}
+                      disabled={loading || uploadingToCloudinary || (!categoria && isParentInactive(selectedParentId))}
                     />
                     <div className="ml-3">
                       <span className="text-sm font-medium text-gray-700">Categoría activa</span>
                       <p className="text-xs text-gray-500">
                         Las categorías inactivas no serán visibles para los clientes
                       </p>
+                      {!categoria && isParentInactive(selectedParentId) && (
+                        <p className="text-xs text-amber-600 mt-1">
+                          Estado automático: inactiva porque la categoría padre está inactiva
+                        </p>
+                      )}
                     </div>
                   </label>
                 </div>
@@ -385,7 +518,7 @@ export const CategoriaForm = ({ categoria, categorias, onSubmit, onCancel, loadi
                     accept="image/*"
                     onChange={handleFileInputChange}
                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                    disabled={loading}
+                    disabled={loading || uploadingToCloudinary}
                   />
 
                   <div className="space-y-2">
@@ -395,6 +528,7 @@ export const CategoriaForm = ({ categoria, categorias, onSubmit, onCancel, loadi
                       aquí
                     </div>
                     <p className="text-xs text-gray-500">PNG, JPG, GIF, WEBP hasta 5MB</p>
+                    <p className="text-xs text-blue-600">📁 Se subirá automáticamente a Cloudinary</p>
                     {selectedFile && (
                       <p className="text-xs text-green-600 font-medium">Archivo seleccionado: {selectedFile.name}</p>
                     )}
@@ -417,7 +551,7 @@ export const CategoriaForm = ({ categoria, categorias, onSubmit, onCancel, loadi
                       errors.imagenUrl ? "border-red-500 bg-red-50" : "border-gray-300"
                     }`}
                     placeholder="https://ejemplo.com/imagen.jpg"
-                    disabled={loading}
+                    disabled={loading || uploadingToCloudinary}
                   />
                   {errors.imagenUrl && <p className="text-red-500 text-sm mt-1">{errors.imagenUrl.message}</p>}
                   {selectedFile && watchImagenUrl && (
@@ -443,12 +577,12 @@ export const CategoriaForm = ({ categoria, categorias, onSubmit, onCancel, loadi
                           type="button"
                           onClick={handleRemoveImage}
                           className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
-                          disabled={loading}
+                          disabled={loading || uploadingToCloudinary}
                         >
                           <DeleteIcon className="h-4 w-4" />
                         </button>
                         <div className="absolute bottom-2 left-2 bg-black bg-opacity-50 text-white text-xs px-2 py-1 rounded">
-                          {selectedFile ? "Archivo local" : "URL externa"}
+                          {selectedFile ? "Archivo local → Cloudinary" : "URL externa"}
                         </div>
                       </div>
                     ) : (
@@ -473,27 +607,31 @@ export const CategoriaForm = ({ categoria, categorias, onSubmit, onCancel, loadi
                   clipRule="evenodd"
                 />
               </svg>
-              Información sobre Categorías e Imágenes
+              Información sobre Categorías Jerárquicas
             </h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-blue-800">
               <ul className="space-y-2">
                 <li className="flex items-start">
                   <span className="text-blue-600 mr-2">•</span>
-                  Las categorías principales no tienen categoría padre
-                </li>
-                <li className="flex items-start">
-                  <span className="text-blue-600 mr-2">•</span>
-                  Las subcategorías deben tener una categoría padre
+                  Puedes crear hasta 4 niveles de jerarquía
                 </li>
                 <li className="flex items-start">
                   <span className="text-blue-600 mr-2">•</span>
                   Las imágenes se suben automáticamente a Cloudinary
                 </li>
+                <li className="flex items-start">
+                  <span className="text-blue-600 mr-2">•</span>
+                  El margen se aplica como decimal al backend
+                </li>
+                <li className="flex items-start">
+                  <span className="text-blue-600 mr-2">•</span>
+                  Puedes seleccionar cualquier categoría como padre (activa o inactiva)
+                </li>
               </ul>
               <ul className="space-y-2">
                 <li className="flex items-start">
                   <span className="text-blue-600 mr-2">•</span>
-                  El margen de ganancia se aplica a los productos
+                  Ejemplo: Bebidas → Con Alcohol → Cervezas → Artesanales
                 </li>
                 <li className="flex items-start">
                   <span className="text-blue-600 mr-2">•</span>
@@ -502,6 +640,10 @@ export const CategoriaForm = ({ categoria, categorias, onSubmit, onCancel, loadi
                 <li className="flex items-start">
                   <span className="text-blue-600 mr-2">•</span>
                   Puedes usar archivos locales o URLs externas
+                </li>
+                <li className="flex items-start">
+                  <span className="text-blue-600 mr-2">•</span>
+                  Si el padre está inactivo, la nueva categoría será inactiva automáticamente
                 </li>
               </ul>
             </div>
@@ -513,16 +655,16 @@ export const CategoriaForm = ({ categoria, categorias, onSubmit, onCancel, loadi
               type="button"
               onClick={onCancel}
               className="px-6 py-3 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 transition-colors"
-              disabled={loading}
+              disabled={loading || uploadingToCloudinary}
             >
               Cancelar
             </button>
             <button
               type="submit"
               className="px-8 py-3 text-sm font-medium text-white bg-orange-600 border border-transparent rounded-lg hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center"
-              disabled={loading}
+              disabled={loading || uploadingToCloudinary}
             >
-              {loading ? (
+              {loading || uploadingToCloudinary ? (
                 <>
                   <svg
                     className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
@@ -544,7 +686,7 @@ export const CategoriaForm = ({ categoria, categorias, onSubmit, onCancel, loadi
                       d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                     ></path>
                   </svg>
-                  {selectedFile ? "Subiendo imagen..." : "Guardando..."}
+                  {uploadingToCloudinary ? "Subiendo imagen..." : "Guardando..."}
                 </>
               ) : (
                 <>{isEditing ? "Actualizar Categoría" : "Crear Categoría"}</>

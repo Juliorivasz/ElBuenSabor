@@ -43,6 +43,8 @@ interface CategoriasState {
     totalItems: number
     totalPages: number
   }
+  getCategoriasJerarquicas: () => Array<{ categoria: CategoriaExtendidaDto; level: number }>
+  getCategoriasParaSelector: () => Array<{ categoria: CategoriaExtendidaDto; level: number }>
 }
 
 export const useCategoriasStore = create<CategoriasState>((set, get) => ({
@@ -69,7 +71,7 @@ export const useCategoriasStore = create<CategoriasState>((set, get) => ({
   crearCategoria: async (categoria: NuevaCategoriaDto, archivo?: File) => {
     set({ loading: true, error: null })
     try {
-      await CategoriaGestionServicio.crearCategoria(categoria, archivo)
+      await CategoriaGestionServicio.crearCategoria(categoria)
       await get().fetchCategorias()
       NotificationService.success("Categoría creada exitosamente", "¡Éxito!")
     } catch (error) {
@@ -84,7 +86,7 @@ export const useCategoriasStore = create<CategoriasState>((set, get) => ({
     set({ loading: true, error: null })
     try {
       console.log("Store: actualizando categoría", idCategoria, categoria)
-      await CategoriaGestionServicio.actualizarCategoria(idCategoria, categoria, archivo)
+      await CategoriaGestionServicio.actualizarCategoria(idCategoria, categoria)
       await get().fetchCategorias()
       NotificationService.success("Categoría actualizada exitosamente", "¡Éxito!")
     } catch (error) {
@@ -167,17 +169,14 @@ export const useCategoriasStore = create<CategoriasState>((set, get) => ({
         filtradas = filtradas.filter((categoria) => !categoria.isActiva())
         break
       case "padre":
-        filtradas = filtradas.filter((categoria) => categoria.esCategoriaPadre())
+        filtradas = filtradas.filter((categoria) => categoria.getIdCategoriaPadre() === 0)
         break
       case "subcategorias":
-        filtradas = filtradas.filter((categoria) => !categoria.esCategoriaPadre())
+        filtradas = filtradas.filter((categoria) => categoria.getIdCategoriaPadre() !== 0)
         break
+      case "todas":
       default:
-        // "todas" - para paginación, solo contar categorías padre en vista jerárquica
-        if (filtroActual === "todas") {
-          // En vista "todas", para paginación solo consideramos categorías padre
-          filtradas = filtradas.filter((categoria) => categoria.esCategoriaPadre())
-        }
+        // Mostrar todas las categorías sin filtro adicional
         break
     }
 
@@ -207,8 +206,16 @@ export const useCategoriasStore = create<CategoriasState>((set, get) => ({
   },
 
   getPaginationInfo: () => {
-    const { currentPage, itemsPerPage } = get()
-    const totalItems = get().getCategoriasFiltradas().length
+    const { currentPage, itemsPerPage, filtroActual } = get()
+    let totalItems: number
+
+    if (filtroActual === "todas") {
+      // Para vista jerárquica, contar todas las categorías
+      totalItems = get().getCategoriasFiltradas().length
+    } else {
+      totalItems = get().getCategoriasFiltradas().length
+    }
+
     const totalPages = Math.ceil(totalItems / itemsPerPage)
 
     return {
@@ -217,5 +224,45 @@ export const useCategoriasStore = create<CategoriasState>((set, get) => ({
       totalItems,
       totalPages,
     }
+  },
+
+  getCategoriasJerarquicas: () => {
+    const { categorias } = get()
+
+    const buildHierarchy = (parentId = 0, level = 0): Array<{ categoria: CategoriaExtendidaDto; level: number }> => {
+      const result: Array<{ categoria: CategoriaExtendidaDto; level: number }> = []
+      const children = categorias
+        .filter((cat) => cat.getIdCategoriaPadre() === parentId)
+        .sort((a, b) => a.getNombre().localeCompare(b.getNombre()))
+
+      for (const child of children) {
+        result.push({ categoria: child, level })
+        result.push(...buildHierarchy(child.getIdCategoria(), level + 1))
+      }
+
+      return result
+    }
+
+    return buildHierarchy()
+  },
+
+  getCategoriasParaSelector: () => {
+    const { categorias } = get()
+
+    const buildHierarchy = (parentId = 0, level = 0): Array<{ categoria: CategoriaExtendidaDto; level: number }> => {
+      const result: Array<{ categoria: CategoriaExtendidaDto; level: number }> = []
+      const children = categorias
+        .filter((cat) => cat.getIdCategoriaPadre() === parentId)
+        .sort((a, b) => a.getNombre().localeCompare(b.getNombre()))
+
+      for (const child of children) {
+        result.push({ categoria: child, level })
+        result.push(...buildHierarchy(child.getIdCategoria(), level + 1))
+      }
+
+      return result
+    }
+
+    return buildHierarchy()
   },
 }))
