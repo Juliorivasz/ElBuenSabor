@@ -8,6 +8,21 @@ export default defineConfig({
   server: {
     port: 5173,
     https: true,
+    proxy: {
+      // Proxy para la API REST
+      '/pedido': {
+        target: 'https://localhost:8080',
+        changeOrigin: true,
+        secure: false,
+      },
+      // Proxy para WebSocket (si lo usás desde el front)
+      '/ws-chat': {
+        target: 'wss://localhost:8080',
+        ws: true,
+        changeOrigin: true,
+        secure: false,
+      },
+    },
   },
   plugins: [react(), tailwindcss(), mkcert()],
   define: {

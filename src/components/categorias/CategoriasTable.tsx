@@ -1,5 +1,4 @@
-import BlockIcon from "@mui/icons-material/Block"
-import CheckCircleIcon from "@mui/icons-material/CheckCircle"
+"use client"
 import EditIcon from "@mui/icons-material/Edit"
 import ExpandLessIcon from "@mui/icons-material/ExpandLess"
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
@@ -374,24 +373,60 @@ export const CategoriasTable = ({
                       <div className="flex items-center justify-end space-x-2">
                         <button
                           onClick={() => onViewDetails(categoria)}
-                          className="text-blue-600 hover:text-blue-900 p-2 rounded-full hover:bg-blue-50 transition-colors"
+                          className="text-gray-700 hover:cursor-pointer p-2 rounded-full hover:bg-blue-50 transition-colors"
                           title="Ver detalles"
                         >
                           <VisibilityIcon className="h-4 w-4" />
                         </button>
                         <button
                           onClick={() => onEdit(categoria)}
-                          className="text-orange-600 hover:text-orange-900 p-2 rounded-full hover:bg-orange-50 transition-colors"
+                          className="text-gray-700 hover:cursor-pointer p-2 rounded-full hover:bg-orange-50 transition-colors"
                           title="Editar categoría"
                         >
                           <EditIcon className="h-4 w-4" />
                         </button>
                         <button
                           onClick={() => onToggleStatus(categoria)}
+                          disabled={
+                            // Deshabilitar si es una subcategoría inactiva y su padre también está inactivo
+                            !categoria.isActiva() &&
+                            categoria.getIdCategoriaPadre() !== 0 &&
+                            (() => {
+                              const padre = todasLasCategorias.find(
+                                (cat) => cat.getIdCategoria() === categoria.getIdCategoriaPadre(),
+                              )
+                              return padre ? !padre.isActiva() : false
+                            })()
+                          }
                           className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 ${
-                            categoria.isActiva() ? "bg-green-500 focus:ring-green-500" : "bg-red-400 focus:ring-red-4 00"
+                            categoria.isActiva() ? "bg-green-500 focus:ring-green-500" : "bg-red-400 focus:ring-red-400"
+                          } ${
+                            // Estilo para botón deshabilitado
+                            !categoria.isActiva() &&
+                            categoria.getIdCategoriaPadre() !== 0 &&
+                            (() => {
+                              const padre = todasLasCategorias.find(
+                                (cat) => cat.getIdCategoria() === categoria.getIdCategoriaPadre(),
+                              )
+                              return padre ? !padre.isActiva() : false
+                            })()
+                              ? "opacity-50 cursor-not-allowed"
+                              : ""
                           }`}
-                          title={categoria.isActiva() ? "Desactivar" : "Activar"}
+                          title={
+                            !categoria.isActiva() &&
+                            categoria.getIdCategoriaPadre() !== 0 &&
+                            (() => {
+                              const padre = todasLasCategorias.find(
+                                (cat) => cat.getIdCategoria() === categoria.getIdCategoriaPadre(),
+                              )
+                              return padre ? !padre.isActiva() : false
+                            })()
+                              ? "No se puede activar: la categoría padre está inactiva"
+                              : categoria.isActiva()
+                                ? "Desactivar"
+                                : "Activar"
+                          }
                         >
                           <span
                             className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
@@ -486,32 +521,68 @@ export const CategoriasTable = ({
                             <div className="flex items-center justify-end space-x-2">
                               <button
                                 onClick={() => onViewDetails(subcategoria)}
-                                className="text-blue-600 hover:text-blue-900 p-1.5 rounded-full hover:bg-blue-50 transition-colors"
+                                className="text-gray-700 hover:cursor-pointer p-1.5 rounded-full hover:bg-blue-50 transition-colors"
                                 title="Ver detalles"
                               >
                                 <VisibilityIcon className="h-3.5 w-3.5" />
                               </button>
                               <button
                                 onClick={() => onEdit(subcategoria)}
-                                className="text-orange-600 hover:text-orange-900 p-1.5 rounded-full hover:bg-orange-50 transition-colors"
+                                className="text-gray-700 hover:cursor-pointer p-1.5 rounded-full hover:bg-orange-50 transition-colors"
                                 title="Editar subcategoría"
                               >
                                 <EditIcon className="h-3.5 w-3.5" />
                               </button>
                               <button
                                 onClick={() => onToggleStatus(subcategoria)}
-                                className={`p-1.5 rounded-full transition-colors ${
+                                disabled={
+                                  // Deshabilitar si es una subcategoría inactiva y su padre también está inactivo
+                                  !subcategoria.isActiva() &&
+                                  subcategoria.getIdCategoriaPadre() !== 0 &&
+                                  (() => {
+                                    const padre = todasLasCategorias.find(
+                                      (cat) => cat.getIdCategoria() === subcategoria.getIdCategoriaPadre(),
+                                    )
+                                    return padre ? !padre.isActiva() : false
+                                  })()
+                                }
+                                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 ${
                                   subcategoria.isActiva()
-                                    ? "text-red-600 hover:text-red-900 hover:bg-red-50"
-                                    : "text-green-600 hover:text-green-900 hover:bg-green-50"
+                                    ? "bg-green-500 focus:ring-green-500"
+                                    : "bg-red-400 focus:ring-red-400"
+                                } ${
+                                  // Estilo para botón deshabilitado
+                                  !subcategoria.isActiva() &&
+                                  subcategoria.getIdCategoriaPadre() !== 0 &&
+                                  (() => {
+                                    const padre = todasLasCategorias.find(
+                                      (cat) => cat.getIdCategoria() === subcategoria.getIdCategoriaPadre(),
+                                    )
+                                    return padre ? !padre.isActiva() : false
+                                  })()
+                                    ? "opacity-50 cursor-not-allowed"
+                                    : ""
                                 }`}
-                                title={subcategoria.isActiva() ? "Desactivar subcategoría" : "Activar subcategoría"}
+                                title={
+                                  !subcategoria.isActiva() &&
+                                  subcategoria.getIdCategoriaPadre() !== 0 &&
+                                  (() => {
+                                    const padre = todasLasCategorias.find(
+                                      (cat) => cat.getIdCategoria() === subcategoria.getIdCategoriaPadre(),
+                                    )
+                                    return padre ? !padre.isActiva() : false
+                                  })()
+                                    ? "No se puede activar: la categoría padre está inactiva"
+                                    : subcategoria.isActiva()
+                                      ? "Desactivar"
+                                      : "Activar"
+                                }
                               >
-                                {subcategoria.isActiva() ? (
-                                  <BlockIcon className="h-3.5 w-3.5" />
-                                ) : (
-                                  <CheckCircleIcon className="h-3.5 w-3.5" />
-                                )}
+                                <span
+                                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                                    subcategoria.isActiva() ? "translate-x-6" : "translate-x-1"
+                                  }`}
+                                />
                               </button>
                             </div>
                           </td>

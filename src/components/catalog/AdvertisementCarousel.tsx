@@ -5,7 +5,6 @@ import type React from "react"
 import { useState, useEffect } from "react"
 import { ChevronLeft, ChevronRight, ShoppingCart } from "@mui/icons-material"
 import { motion, AnimatePresence } from "framer-motion"
-import { CartStore } from "../../store/cart/useCartStore"
 import axios from "axios"
 
 interface Advertisement {

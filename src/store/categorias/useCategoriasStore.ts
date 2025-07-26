@@ -106,24 +106,87 @@ export const useCategoriasStore = create<CategoriasState>((set, get) => ({
     }
 
     const accion = categoria.isActiva() ? "desactivar" : "activar"
-    console.log(`Intentando ${accion} categoría:`, categoria.getNombre())
 
-    const confirmed = await NotificationService.confirm(
-      `¿Estás seguro de que deseas ${accion} la categoría "${categoria.getNombre()}"?`,
-      `Confirmar ${accion}`,
-    )
+    // Validar si es una subcategoría y se intenta activar
+    if (!categoria.isActiva() && categoria.getIdCategoriaPadre() !== 0) {
+      const categoriaPadre = get().categorias.find((cat) => cat.getIdCategoria() === categoria.getIdCategoriaPadre())
+      if (categoriaPadre && !categoriaPadre.isActiva()) {
+        NotificationService.error(
+          "No se puede activar una subcategoría cuando su categoría padre está inactiva. Primero active la categoría padre.",
+          "Operación no permitida",
+        )
+        return
+      }
+    }
+
+    // Obtener todas las subcategorías recursivamente
+    const obtenerSubcategoriasRecursivas = (parentId: number): CategoriaExtendidaDto[] => {
+      const subcategorias: CategoriaExtendidaDto[] = []
+      const hijas = get().categorias.filter((cat) => cat.getIdCategoriaPadre() === parentId)
+
+      for (const hija of hijas) {
+        subcategorias.push(hija)
+        subcategorias.push(...obtenerSubcategoriasRecursivas(hija.getIdCategoria()))
+      }
+
+      return subcategorias
+    }
+
+    const subcategorias = obtenerSubcategoriasRecursivas(idCategoria)
+
+    let mensajeConfirmacion = `¿Estás seguro de que deseas ${accion} la categoría "${categoria.getNombre()}"?`
+
+    if (subcategorias.length > 0) {
+      if (categoria.isActiva()) {
+        // Desactivando categoría padre
+        mensajeConfirmacion += `\n\nEsto también desactivará ${subcategorias.length} subcategoría${subcategorias.length > 1 ? "s" : ""} asociada${subcategorias.length > 1 ? "s" : ""}:`
+      } else {
+        // Activando categoría padre
+        mensajeConfirmacion += `\n\nEsto también activará ${subcategorias.length} subcategoría${subcategorias.length > 1 ? "s" : ""} asociada${subcategorias.length > 1 ? "s" : ""}:`
+      }
+
+      subcategorias.slice(0, 5).forEach((sub) => {
+        mensajeConfirmacion += `\n• ${sub.getNombre()}`
+      })
+
+      if (subcategorias.length > 5) {
+        mensajeConfirmacion += `\n• ... y ${subcategorias.length - 5} más`
+      }
+    }
+
+    const confirmed = await NotificationService.confirm(mensajeConfirmacion, `Confirmar ${accion}`)
 
     if (!confirmed) return
 
     set({ loading: true, error: null })
     try {
+      // Cambiar estado de la categoría principal
       await CategoriaGestionServicio.toggleEstadoCategoria(idCategoria)
+
+      // Cambiar estado de todas las subcategorías para que coincidan con el padre
+      const estadoDeseado = !categoria.isActiva() // El nuevo estado que tendrá la categoría padre
+
+      for (const subcategoria of subcategorias) {
+        // Solo cambiar si el estado actual es diferente al deseado
+        if (subcategoria.isActiva() !== estadoDeseado) {
+          try {
+            await CategoriaGestionServicio.toggleEstadoCategoria(subcategoria.getIdCategoria())
+          } catch (error) {
+            console.error(`Error al cambiar estado de subcategoría ${subcategoria.getNombre()}:`, error)
+            // Continuar con las demás subcategorías aunque una falle
+          }
+        }
+      }
+
       console.log("Toggle exitoso, recargando categorías...")
       await get().fetchCategorias()
-      NotificationService.success(
-        `Categoría ${accion === "activar" ? "activada" : "desactivada"} exitosamente`,
-        "¡Éxito!",
-      )
+
+      let mensajeExito = `Categoría ${accion === "activar" ? "activada" : "desactivada"} exitosamente`
+      if (subcategorias.length > 0) {
+        mensajeExito += ` junto con ${subcategorias.length} subcategoría${subcategorias.length > 1 ? "s" : ""}`
+      }
+
+      NotificationService.success(mensajeExito, "¡Éxito!")
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : `Error al ${accion} categoría`
       console.error("Error en toggle:", error)
