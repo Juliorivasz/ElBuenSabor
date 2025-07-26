@@ -9,7 +9,7 @@ export const articuloMapper = (data: ArticuloDTOJson): ArticuloDTO => {
     data.precioVenta,
     data.tiempoDeCocina,
     data.idCategoria,
-    data.imagenModel,
+    data.url,
     data.puedeElaborarse,
   );
 };

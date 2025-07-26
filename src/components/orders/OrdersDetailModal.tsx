@@ -1,4 +1,7 @@
-//
+"use client";
+
+import type React from "react";
+
 import { motion } from "framer-motion";
 import {
   CloseOutlined,
@@ -9,7 +12,9 @@ import {
   PaymentOutlined,
   ReceiptOutlined,
 } from "@mui/icons-material";
-import { Order } from "../../pages/client/orders/Orders";
+import type { Order } from "../../pages/client/orders/Orders";
+import { useState } from "react";
+import Swal from "sweetalert2";
 
 interface OrderDetailModalProps {
   order: Order;
@@ -18,6 +23,8 @@ interface OrderDetailModalProps {
 }
 
 export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({ order, isOpen, onClose }) => {
+  const [downloadingInvoice, setDownloadingInvoice] = useState(false);
+
   if (!isOpen) return null;
 
   const getStatusColor = (estado: string) => {
@@ -69,8 +76,85 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({ order, isOpe
     return address;
   };
 
+  const handleDownloadInvoice = async () => {
+    setDownloadingInvoice(true);
+    try {
+      // Mostrar indicador de carga
+      Swal.fire({
+        title: "Generando factura...",
+        text: "Por favor espera mientras se genera la factura.",
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        },
+      });
+
+      // Realizar la petición para descargar la factura
+      const response = await fetch(`https://localhost:8080/factura/descargar/${order.id}`, {
+        method: "GET",
+        headers: {
+          // Incluir headers de autenticación si son necesarios
+          // 'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      // Verificar si la respuesta es exitosa
+      if (!response.ok) {
+        throw new Error(`Error al descargar la factura: ${response.status} ${response.statusText}`);
+      }
+
+      // Obtener el blob de la respuesta
+      const blob = await response.blob();
+
+      // Obtener el nombre del archivo de las cabeceras de la respuesta o usar uno predeterminado
+      const contentDisposition = response.headers.get("content-disposition");
+      let filename = `factura-pedido-${order.id}.pdf`;
+
+      if (contentDisposition) {
+        const filenameMatch = contentDisposition.match(/filename="(.+)"/);
+        if (filenameMatch && filenameMatch[1]) {
+          filename = filenameMatch[1];
+        }
+      }
+
+      // Crear un objeto URL para el blob
+      const url = window.URL.createObjectURL(blob);
+
+      // Crear un enlace temporal para descargar el archivo
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+
+      // Simular un clic en el enlace para iniciar la descarga
+      link.click();
+
+      // Limpiar
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      // Mostrar mensaje de éxito
+      Swal.fire({
+        title: "¡Factura descargada!",
+        text: "La factura se ha descargado correctamente.",
+        icon: "success",
+        confirmButtonColor: "#10b981",
+      });
+    } catch (error) {
+      console.error("Error al generar factura:", error);
+      Swal.fire({
+        title: "Error",
+        text: "Hubo un error al generar la factura. Inténtalo de nuevo.",
+        icon: "error",
+        confirmButtonColor: "#ef4444",
+      });
+    } finally {
+      setDownloadingInvoice(false);
+    }
+  };
+
   return (
-    <div className="fixed inset-0 bg-orange-50 bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -221,11 +305,22 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({ order, isOpe
 
         {/* Footer */}
         <div className="sticky bottom-0 bg-white border-t border-gray-200 p-4 sm:p-6 rounded-b-2xl">
-          <button
-            onClick={onClose}
-            className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 cursor-pointer">
-            Cerrar
-          </button>
+          <div className="flex flex-col sm:flex-row gap-3">
+            {order.estado === "entregado" && (
+              <button
+                onClick={handleDownloadInvoice}
+                disabled={downloadingInvoice}
+                className="flex items-center justify-center space-x-2 bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 disabled:cursor-not-allowed text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200">
+                <ReceiptOutlined sx={{ fontSize: 20 }} />
+                <span>{downloadingInvoice ? "Descargando..." : "Descargar Factura"}</span>
+              </button>
+            )}
+            <button
+              onClick={onClose}
+              className="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200">
+              Cerrar
+            </button>
+          </div>
         </div>
       </motion.div>
     </div>

@@ -1,8 +1,11 @@
+"use client";
+
 // src/hooks/useWebSocket.ts
 
 import { useEffect, useState, useRef, useCallback } from "react";
-import { Client, IMessage, StompHeaders, StompSubscription } from "@stomp/stompjs";
+import { Client, type IMessage, type StompHeaders, type StompSubscription } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
+import { ChatMessage } from "../components/chat/FixedChat";
 
 /**
  * Define la estructura del servicio WebSocket que el hook retornará.
@@ -16,6 +19,55 @@ interface WebSocketService {
 
 // **IMPORTANTE**: Ajusta esta URL a tu backend de Spring Boot
 const WEBSOCKET_URL = "https://localhost:8080/ws-chat"; // Asegúrate de que esta URL sea correcta
+
+// Funciones para manejar la persistencia de mensajes
+const CHAT_MESSAGES_KEY = "chat_messages";
+const CHAT_UNREAD_COUNT_KEY = "chat_unread_count";
+
+export const saveChatMessage = (message: ChatMessage) => {
+  try {
+    const existingMessages = JSON.parse(localStorage.getItem(CHAT_MESSAGES_KEY) || "[]");
+    const updatedMessages = [...existingMessages, message];
+    localStorage.setItem(CHAT_MESSAGES_KEY, JSON.stringify(updatedMessages));
+  } catch (error) {
+    console.error("Error saving chat message:", error);
+  }
+};
+
+export const getChatMessages = () => {
+  try {
+    return JSON.parse(localStorage.getItem(CHAT_MESSAGES_KEY) || "[]");
+  } catch (error) {
+    console.error("Error loading chat messages:", error);
+    return [];
+  }
+};
+
+export const clearChatMessages = () => {
+  try {
+    localStorage.removeItem(CHAT_MESSAGES_KEY);
+    localStorage.removeItem(CHAT_UNREAD_COUNT_KEY);
+  } catch (error) {
+    console.error("Error clearing chat messages:", error);
+  }
+};
+
+export const saveUnreadCount = (count: number) => {
+  try {
+    localStorage.setItem(CHAT_UNREAD_COUNT_KEY, count.toString());
+  } catch (error) {
+    console.error("Error saving unread count:", error);
+  }
+};
+
+export const getUnreadCount = () => {
+  try {
+    return Number.parseInt(localStorage.getItem(CHAT_UNREAD_COUNT_KEY) || "0", 10);
+  } catch (error) {
+    console.error("Error loading unread count:", error);
+    return 0;
+  }
+};
 
 export const useWebSocket = (): WebSocketService => {
   const [isConnected, setIsConnected] = useState<boolean>(false);
