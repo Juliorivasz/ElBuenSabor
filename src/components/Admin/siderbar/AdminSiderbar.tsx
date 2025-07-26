@@ -25,6 +25,7 @@ import {
   AdminPanelSettings as AdminIcon,
   BarChart as ChartIcon,
   LocalOffer as PromoIcon,
+  Inventory2 as InsumoIcon  
 } from "@mui/icons-material";
 
 interface SidebarItem {
@@ -63,6 +64,12 @@ const sidebarItems: SidebarItem[] = [
     name: "Rubros",
     path: "/admin/rubros",
     icon: RubroIcon,
+    allowedRoles: ["administrador", "cocinero"],
+  },
+  {
+    name: "Insumos",
+    path: "/admin/insumos",
+    icon: InsumoIcon,
     allowedRoles: ["administrador", "cocinero"],
   },
   {

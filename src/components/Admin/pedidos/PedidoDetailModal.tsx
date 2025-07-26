@@ -216,7 +216,7 @@ export const PedidoDetailModal: React.FC<PedidoDetailModalProps> = ({
       })
 
       // Realizar la petición para descargar la factura
-      const response = await fetch(`http://localhost:8080/factura/descargar/${pedido.idPedido}`, {
+      const response = await fetch(`https://localhost:8080/factura/descargar/${pedido.idPedido}`, {
         method: "GET",
         headers: {
           // Incluir headers de autenticación si son necesarios
