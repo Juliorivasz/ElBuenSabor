@@ -1,5 +1,3 @@
-"use client";
-
 import type React from "react";
 
 import { useState, useEffect } from "react";
@@ -34,7 +32,7 @@ export const AdvertisementCarousel: React.FC = () => {
   useEffect(() => {
     const fetchPromociones = async () => {
       try {
-        const response = await axios.get<PromocionCatalogo[]>("https://localhost:8080/promocion/catalogo");
+        const response = await axios.get<PromocionCatalogo[]>("https://localhost:8080/promocion/catalogo")
 
         const promocionesFormateadas: Advertisement[] = response.data.map((promo) => ({
           id: promo.idPromocion.toString(),
