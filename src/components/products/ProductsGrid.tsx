@@ -150,7 +150,7 @@ export const ProductsGrid: FC<ProductsGridProps> = ({ searchTerm = "", onProduct
   const handleAddToCart = useCallback(
     (p: ArticuloDTO, quantity: number) => {
       for (let i = 0; i < quantity; i++) {
-        addItemToCart(p, p.getImagenModel() ?? undefined);
+        addItemToCart(p, p.getUrl() ?? undefined);
       }
       setSelectedProduct(null);
     },

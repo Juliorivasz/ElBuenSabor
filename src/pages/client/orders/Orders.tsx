@@ -1,3 +1,5 @@
+"use client";
+
 import type React from "react";
 
 import { useState, useMemo, useEffect } from "react";
@@ -17,7 +19,8 @@ import {
 import { OrderDetailModal } from "../../../components/orders/OrdersDetailModal";
 import { useNavigate } from "react-router-dom";
 import { pedidoServicio } from "../../../services/pedidoServicio";
-import { BackendDetallePedido, BackendPedido, OrderStatus } from "../../../types/orders";
+import type { BackendDetallePedido, BackendPedido, OrderStatus } from "../../../types/orders";
+import Swal from "sweetalert2";
 
 interface OrderItem {
   id: number;
@@ -90,6 +93,7 @@ export const Orders: React.FC = () => {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [cancellingOrderId, setCancellingOrderId] = useState<number | null>(null);
+  const [downloadingInvoiceId, setDownloadingInvoiceId] = useState<number | null>(null);
 
   // Mapear datos del backend al formato del frontend
   const mapBackendOrderToFrontend = (backendOrder: BackendPedido): Order => {
@@ -289,9 +293,81 @@ export const Orders: React.FC = () => {
     }
   };
 
-  const handleViewInvoice = (orderId: number) => {
-    // Lógica para ver factura
-    console.log("Ver factura:", orderId);
+  const handleDownloadInvoice = async (orderId: number) => {
+    setDownloadingInvoiceId(orderId);
+    try {
+      // Mostrar indicador de carga
+      Swal.fire({
+        title: "Generando factura...",
+        text: "Por favor espera mientras se genera la factura.",
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        },
+      });
+
+      // Realizar la petición para descargar la factura
+      const response = await fetch(`https://localhost:8080/factura/descargar/${orderId}`, {
+        method: "GET",
+        headers: {
+          // Incluir headers de autenticación si son necesarios
+          // 'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      // Verificar si la respuesta es exitosa
+      if (!response.ok) {
+        throw new Error(`Error al descargar la factura: ${response.status} ${response.statusText}`);
+      }
+
+      // Obtener el blob de la respuesta
+      const blob = await response.blob();
+
+      // Obtener el nombre del archivo de las cabeceras de la respuesta o usar uno predeterminado
+      const contentDisposition = response.headers.get("content-disposition");
+      let filename = `factura-pedido-${orderId}.pdf`;
+
+      if (contentDisposition) {
+        const filenameMatch = contentDisposition.match(/filename="(.+)"/);
+        if (filenameMatch && filenameMatch[1]) {
+          filename = filenameMatch[1];
+        }
+      }
+
+      // Crear un objeto URL para el blob
+      const url = window.URL.createObjectURL(blob);
+
+      // Crear un enlace temporal para descargar el archivo
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+
+      // Simular un clic en el enlace para iniciar la descarga
+      link.click();
+
+      // Limpiar
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      // Mostrar mensaje de éxito
+      Swal.fire({
+        title: "¡Factura descargada!",
+        text: "La factura se ha descargado correctamente.",
+        icon: "success",
+        confirmButtonColor: "#10b981",
+      });
+    } catch (error) {
+      console.error("Error al generar factura:", error);
+      Swal.fire({
+        title: "Error",
+        text: "Hubo un error al generar la factura. Inténtalo de nuevo.",
+        icon: "error",
+        confirmButtonColor: "#ef4444",
+      });
+    } finally {
+      setDownloadingInvoiceId(null);
+    }
   };
 
   const canCancelOrder = (estado: string) => {
@@ -576,11 +652,12 @@ export const Orders: React.FC = () => {
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
-                                handleViewInvoice(order.id);
+                                handleDownloadInvoice(order.id);
                               }}
-                              className="flex items-center space-x-1 bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-1.5 rounded-lg transition-colors duration-200 text-sm">
+                              disabled={downloadingInvoiceId === order.id}
+                              className="flex items-center space-x-1 bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-1.5 rounded-lg transition-colors duration-200 text-sm disabled:opacity-50 disabled:cursor-not-allowed">
                               <ReceiptOutlined sx={{ fontSize: 16 }} />
-                              <span>Factura</span>
+                              <span>{downloadingInvoiceId === order.id ? "Descargando..." : "Factura"}</span>
                             </button>
                           )}
                         </>
@@ -667,10 +744,11 @@ export const Orders: React.FC = () => {
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
-                                handleViewInvoice(order.id);
+                                handleDownloadInvoice(order.id);
                               }}
-                              className="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs">
-                              Factura
+                              disabled={downloadingInvoiceId === order.id}
+                              className="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs disabled:opacity-50 disabled:cursor-not-allowed">
+                              {downloadingInvoiceId === order.id ? "Descargando..." : "Factura"}
                             </button>
                           )}
                         </>

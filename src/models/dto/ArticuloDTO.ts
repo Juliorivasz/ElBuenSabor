@@ -7,7 +7,7 @@ export class ArticuloDTO {
   private precioVenta: number;
   private tiempoDeCocina: number;
   private idCategoria: number;
-  private imagenModel: string | null;
+  private url: string | null;
   private puedeElaborarse: boolean;
 
   constructor(
@@ -17,7 +17,7 @@ export class ArticuloDTO {
     precioVenta: number,
     tiempoDeCocina: number,
     idCategoria: number,
-    imagenModel: string | null,
+    url: string | null,
     puedeElaborarse: boolean,
   ) {
     this.idArticulo = idArticulo;
@@ -26,7 +26,7 @@ export class ArticuloDTO {
     this.precioVenta = precioVenta;
     this.tiempoDeCocina = tiempoDeCocina;
     this.idCategoria = idCategoria;
-    this.imagenModel = imagenModel;
+    this.url = url;
     this.puedeElaborarse = puedeElaborarse;
   }
 
@@ -55,8 +55,8 @@ export class ArticuloDTO {
     return this.idCategoria;
   }
 
-  public getImagenModel(): string | null {
-    return this.imagenModel;
+  public getUrl(): string | null {
+    return this.url;
   }
 
   public getPuedeElaborarse(): boolean {
@@ -88,8 +88,8 @@ export class ArticuloDTO {
     this.idCategoria = idCategoria;
   }
 
-  public setImagenModel(nuevoImagenModel: string): void {
-    this.imagenModel = nuevoImagenModel;
+  public setUrl(nuevoUrl: string): void {
+    this.url = nuevoUrl;
   }
 
   public setPuedeElaborarse(puedeElaborarse: boolean): void {
@@ -105,7 +105,7 @@ export class ArticuloDTO {
       precioVenta: this.precioVenta,
       tiempoDeCocina: this.tiempoDeCocina,
       idCategoria: this.idCategoria,
-      imagenModel: this.imagenModel || null,
+      url: this.url || null,
       puedeElaborarse: this.puedeElaborarse,
     };
   }
@@ -119,7 +119,7 @@ export class ArticuloDTO {
       json.precioVenta,
       json.tiempoDeCocina,
       json.idCategoria,
-      json.imagenModel,
+      json.url,
       json.puedeElaborarse,
     );
   }

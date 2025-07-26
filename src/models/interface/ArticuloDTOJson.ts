@@ -5,6 +5,6 @@ export interface ArticuloDTOJson {
   precioVenta: number;
   tiempoDeCocina: number;
   idCategoria: number;
-  imagenModel: string | null;
+  url: string | null;
   puedeElaborarse: boolean;
 }

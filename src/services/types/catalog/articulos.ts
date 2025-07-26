@@ -1,11 +1,5 @@
 import { ArticuloDTO } from "../../../models/dto/ArticuloDTO";
 import { ArticuloDTOJson } from "../../../models/interface/ArticuloDTOJson";
-export type Page = {
-  number: number;
-  size: number;
-  totalElements: number;
-  totalPages: number;
-};
 
 export type Page = {
   number: number;
