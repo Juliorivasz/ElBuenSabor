@@ -12,9 +12,11 @@ import { direccionServicio } from "../../../services/direccionServicio"
 import { AddressCard } from "../../../components/address/AddressCard"
 import { AddressModal } from "../../../components/address/AddressModal"
 import { AddAddressButton } from "../../../components/address/AddAddressButton"
+import { useLocation } from "react-router-dom"
 
 export const Address: React.FC = () => {
   const { isAuthenticated, isLoading: isAuth0Loading } = useAuth0()
+  const location = useLocation()
 
   const [direcciones, setDirecciones] = useState<Direccion[]>([])
   const [departamentos, setDepartamentos] = useState<Departamento[]>([])
@@ -40,6 +42,11 @@ export const Address: React.FC = () => {
       ])
       setDirecciones(direccionesData)
       setDepartamentos(departamentosData)
+
+      // Si viene del carrito con la instrucción de abrir el modal
+      if (location.state?.openModal) {
+        setIsModalOpen(true)
+      }
     } catch (err) {
       console.error("Error al cargar datos:", err)
       setError("Error al cargar las direcciones. Intenta de nuevo más tarde.")

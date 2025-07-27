@@ -2,6 +2,16 @@ import { interceptorsApiClient } from "./interceptors/axios.interceptors";
 import type { BackendPaginatedResponse, BackendPedido } from "../types/orders";
 import { PedidosPaginadosDTO } from "../models/dto/PedidoDTO";
 
+export interface NuevoPedidoRequest {
+  tipoEnvio: string
+  metodoDePago: string
+  idDireccion: number | null
+  detalles: {
+    idArticulo: number
+    cantidad: number
+  }[]
+}
+
 export const pedidoServicio = {
   // Obtener lista paginada de pedidos
   async obtenerPedidosPaginados(page = 0, size = 10, estado?: string): Promise<PedidosPaginadosDTO> {
@@ -16,7 +26,7 @@ export const pedidoServicio = {
 
     const response = await interceptorsApiClient.get(`/pedido/cajero?${params.toString()}`);
     return response.data;
-  },
+  },  
 
   // Confirmar pedido
   async confirmarPedido(idPedido: number): Promise<void> {
@@ -47,5 +57,15 @@ export const pedidoServicio = {
   // Marcar pedido como entregado
   async marcarComoEntregado(idPedido: number): Promise<void> {
     await interceptorsApiClient.put(`/pedido/entregado/${idPedido}`)
+  },
+
+  async crearNuevoPedido(pedido: NuevoPedidoRequest): Promise<any> {
+    try {
+      const response = await interceptorsApiClient.post(`/pedido/nuevo`, pedido)
+      return response.data
+    } catch (error) {
+      console.error("Error al crear nuevo pedido:", error)
+      throw error
+    }
   },
 };
