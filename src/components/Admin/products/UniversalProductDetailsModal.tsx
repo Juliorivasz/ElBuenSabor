@@ -148,6 +148,19 @@ export const UniversalProductDetailsModal: React.FC<UniversalProductDetailsModal
     }
   }
 
+  const getStock = () => {
+    try {
+      if (!isManufacturado) {
+        const noElaborado = product as InformacionArticuloNoElaboradoDto
+        return noElaborado.getStock?.() || 0
+      }
+      return 0
+    } catch (error) {
+      console.error("Error getting stock:", error)
+      return 0
+    }
+  }
+
   return (
     <div className="fixed inset-0 bg-black/30 backdrop-blur-sm overflow-y-auto h-full w-full z-50">
       <div className="relative top-10 mx-auto p-6 border w-11/12 max-w-4xl shadow-lg rounded-lg bg-white">
@@ -228,6 +241,31 @@ export const UniversalProductDetailsModal: React.FC<UniversalProductDetailsModal
                   <span className="text-sm font-medium text-gray-500">Descripción</span>
                   <p className="text-gray-900 mt-1 leading-relaxed">{getDescripcion()}</p>
                 </div>
+                {!isManufacturado && (
+                  <div>
+                    <span className="text-sm font-medium text-gray-500">Stock Disponible</span>
+                    <div className="flex items-center mt-1">
+                      <span className={`text-lg font-semibold text-gray-700`}>
+                        {getStock()} unidades
+                      </span>
+                      {getStock() <= 10 && getStock() > 0 && (
+                        <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
+                          Stock bajo
+                        </span>
+                      )}
+                      {getStock() === 0 && (
+                        <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
+                          Sin stock
+                        </span>
+                      )}
+                      {getStock() > 10 && (
+                        <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-200 text-green-800">
+                          Stock suficiente
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 

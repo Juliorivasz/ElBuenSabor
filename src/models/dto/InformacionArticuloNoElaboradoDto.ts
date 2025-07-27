@@ -10,6 +10,7 @@ export class InformacionArticuloNoElaboradoDto {
   private idCategoria: number;
   private nombreCategoria: string;
   private imagenUrl: string | null;
+  private stock: number;
 
   constructor(
     idArticulo: number,
@@ -21,6 +22,7 @@ export class InformacionArticuloNoElaboradoDto {
     idCategoria: number,
     nombreCategoria: string,
     imagenUrl: string | null,
+    stock: number
   ) {
     this.idArticulo = idArticulo;
     this.nombre = nombre;
@@ -31,6 +33,7 @@ export class InformacionArticuloNoElaboradoDto {
     this.idCategoria = idCategoria;
     this.nombreCategoria = nombreCategoria;
     this.imagenUrl = imagenUrl;
+    this.stock = stock;
   }
 
   // Getters y setters si los necesitas
@@ -106,6 +109,14 @@ export class InformacionArticuloNoElaboradoDto {
     this.imagenUrl = value;
   }
 
+  public getStock(): number {
+    return this.stock;
+  }
+
+  public setStock(value: number): void {
+    this.stock = value;
+  }
+
   public toJSON(): IInformacionArticuloNoElaboradoDtoJson {
     return {
       idArticulo: this.idArticulo,
@@ -117,6 +128,7 @@ export class InformacionArticuloNoElaboradoDto {
       idCategoria: this.idCategoria,
       nombreCategoria: this.nombreCategoria,
       imagenUrl: this.imagenUrl || null,
+      stock: this.stock,
     };
   }
 
@@ -131,6 +143,7 @@ export class InformacionArticuloNoElaboradoDto {
       json.idCategoria,
       json.nombreCategoria,
       json.imagenUrl,
+      json.stock
     );
   }
 }

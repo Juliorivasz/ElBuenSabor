@@ -11,6 +11,7 @@ import type { InsumoAbmDto } from "../../../models/dto/InsumoAbmDto"
 import type { NuevoInsumoDto } from "../../../models/dto/NuevoInsumoDto"
 import type { ModificarInsumoDto } from "../../../models/dto/ModificarInsumoDto"
 import { NotificationService } from "../../../utils/notifications"
+import { Plus, RefreshCw } from "lucide-react"
 
 export const Insumos = () => {
   const {
@@ -185,14 +186,16 @@ export const Insumos = () => {
         <div className="flex space-x-3">
           <button
             onClick={handleRecargarStock}
-            className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors font-medium"
+            className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200 flex items-center space-x-2"
           >
+            <RefreshCw className="h-4 w-4 mr-2" />
             Recargar Stock
           </button>
           <button
             onClick={handleNewInsumo}
-            className="bg-orange-500 text-white px-4 py-2 rounded-md hover:bg-orange-600 transition-colors font-medium"
+            className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200 flex items-center space-x-2"
           >
+            <Plus className="h-4 w-4 mr-2" />
             Nuevo Insumo
           </button>
         </div>
