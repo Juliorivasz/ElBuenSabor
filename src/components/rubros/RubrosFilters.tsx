@@ -1,19 +1,19 @@
-"use client"
+"use client";
 
-import ClearIcon from "@mui/icons-material/Clear"
-import SearchIcon from "@mui/icons-material/Search"
-import { useEffect, useState } from "react"
+import ClearIcon from "@mui/icons-material/Clear";
+import SearchIcon from "@mui/icons-material/Search";
+import { useEffect, useState } from "react";
 
 interface RubrosFiltersProps {
-  totalRubros: number
-  rubrosActivos: number
-  rubrosInactivos: number
-  rubrosPadre: number
-  subrubros: number
-  filtroActual: "todos" | "activos" | "inactivos" | "padre" | "subrubros"
-  onFiltroChange: (filtro: "todos" | "activos" | "inactivos" | "padre" | "subrubros") => void
-  busqueda: string
-  onBusquedaChange: (busqueda: string) => void
+  totalRubros: number;
+  rubrosActivos: number;
+  rubrosInactivos: number;
+  rubrosPadre: number;
+  subrubros: number;
+  filtroActual: "todos" | "activos" | "inactivos" | "padre" | "subrubros";
+  onFiltroChange: (filtro: "todos" | "activos" | "inactivos" | "padre" | "subrubros") => void;
+  busqueda: string;
+  onBusquedaChange: (busqueda: string) => void;
 }
 
 export const RubrosFilters = ({
@@ -27,21 +27,21 @@ export const RubrosFilters = ({
   busqueda,
   onBusquedaChange,
 }: RubrosFiltersProps) => {
-  const [searchTerm, setSearchTerm] = useState(busqueda)
+  const [searchTerm, setSearchTerm] = useState(busqueda);
 
   // Búsqueda en tiempo real con debounce
   useEffect(() => {
     const timeoutId = setTimeout(() => {
-      onBusquedaChange(searchTerm)
-    }, 300)
+      onBusquedaChange(searchTerm);
+    }, 300);
 
-    return () => clearTimeout(timeoutId)
-  }, [searchTerm, onBusquedaChange])
+    return () => clearTimeout(timeoutId);
+  }, [searchTerm, onBusquedaChange]);
 
   const handleClearSearch = () => {
-    setSearchTerm("")
-    onBusquedaChange("")
-  }
+    setSearchTerm("");
+    onBusquedaChange("");
+  };
 
   const tabs = [
     {
@@ -79,7 +79,7 @@ export const RubrosFilters = ({
       color: "bg-orange-100 text-orange-800 border-orange-200",
       description: "Solo subrubros",
     },
-  ]
+  ];
 
   return (
     <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6">
@@ -99,7 +99,9 @@ export const RubrosFilters = ({
             />
             {searchTerm && (
               <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
-                <button onClick={handleClearSearch} className="text-gray-400 hover:text-gray-600 focus:outline-none">
+                <button
+                  onClick={handleClearSearch}
+                  className="text-gray-400 hover:text-gray-600 focus:outline-none">
                   <ClearIcon className="h-5 w-5" />
                 </button>
               </div>
@@ -117,14 +119,12 @@ export const RubrosFilters = ({
               className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 border ${
                 filtroActual === tab.key ? tab.color : "bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100"
               }`}
-              title={tab.description}
-            >
+              title={tab.description}>
               {tab.label}
               <span
                 className={`ml-2 px-2 py-0.5 rounded-full text-xs font-semibold ${
                   filtroActual === tab.key ? "bg-white bg-opacity-50" : "bg-gray-200 text-gray-600"
-                }`}
-              >
+                }`}>
                 {tab.count}
               </span>
             </button>
@@ -143,12 +143,11 @@ export const RubrosFilters = ({
             </span>
             <button
               onClick={() => {
-                setSearchTerm("")
-                onBusquedaChange("")
-                onFiltroChange("todos")
+                setSearchTerm("");
+                onBusquedaChange("");
+                onFiltroChange("todos");
               }}
-              className="text-orange-600 hover:text-orange-800 font-medium"
-            >
+              className="text-orange-600 hover:text-orange-800 font-medium">
               Limpiar filtros
             </button>
           </div>
@@ -159,7 +158,10 @@ export const RubrosFilters = ({
       {filtroActual === "todos" && (
         <div className="mt-4 pt-4 border-t border-gray-200">
           <div className="flex items-center text-sm text-blue-600">
-            <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+            <svg
+              className="w-4 h-4 mr-2"
+              fill="currentColor"
+              viewBox="0 0 20 20">
               <path
                 fillRule="evenodd"
                 d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
@@ -171,5 +173,5 @@ export const RubrosFilters = ({
         </div>
       )}
     </div>
-  )
-}
+  );
+};

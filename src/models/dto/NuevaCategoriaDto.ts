@@ -1,26 +1,14 @@
-export interface ImagenModel {
-  url: string
-}
-
 export class NuevaCategoriaDto {
-  nombre: string
-  margenGanancia: number
-  dadoDeAlta: boolean
-  idCategoriaPadre: number | null
-  imagenModel: ImagenModel | null
+  nombre: string;
+  margenGanancia: number;
+  dadoDeAlta: boolean;
+  idCategoriaPadre: number | null;
 
-  constructor(
-    nombre: string,
-    margenGanancia: number,
-    dadoDeAlta: boolean,
-    idCategoriaPadre: number | null,
-    imagenModel: ImagenModel | null,
-  ) {
-    this.nombre = nombre
-    this.margenGanancia = margenGanancia
-    this.dadoDeAlta = dadoDeAlta
-    this.idCategoriaPadre = idCategoriaPadre
-    this.imagenModel = imagenModel
+  constructor(nombre: string, margenGanancia: number, dadoDeAlta: boolean, idCategoriaPadre: number | null) {
+    this.nombre = nombre;
+    this.margenGanancia = margenGanancia;
+    this.dadoDeAlta = dadoDeAlta;
+    this.idCategoriaPadre = idCategoriaPadre;
   }
 
   toJSON() {
@@ -29,7 +17,6 @@ export class NuevaCategoriaDto {
       margenGanancia: this.margenGanancia,
       dadoDeAlta: this.dadoDeAlta,
       idCategoriaPadre: this.idCategoriaPadre,
-      imagenModel: this.imagenModel,
-    }
+    };
   }
 }

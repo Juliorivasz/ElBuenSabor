@@ -1,39 +1,38 @@
-"use client"
-import EditIcon from "@mui/icons-material/Edit"
-import ExpandLessIcon from "@mui/icons-material/ExpandLess"
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
-import FolderIcon from "@mui/icons-material/Folder"
-import SubdirectoryArrowRightIcon from "@mui/icons-material/SubdirectoryArrowRight"
-import VisibilityIcon from "@mui/icons-material/Visibility"
-import { Plus } from "lucide-react"
-import { useState } from "react"
-import type { CategoriaExtendidaDto } from "../../models/dto/CategoriaExtendidaDto"
-import { useCategoriasStore } from "../../store/categorias/useCategoriasStore"
-import { Pagination } from "../Admin/products/Pagination"
+import EditIcon from "@mui/icons-material/Edit";
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import FolderIcon from "@mui/icons-material/Folder";
+import SubdirectoryArrowRightIcon from "@mui/icons-material/SubdirectoryArrowRight";
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import { Plus } from "lucide-react";
+import { useState } from "react";
+import type { CategoriaExtendidaDto } from "../../models/dto/CategoriaExtendidaDto";
+import { useCategoriasStore } from "../../store/categorias/useCategoriasStore";
+import { Pagination } from "../Admin/products/Pagination";
 
 interface PaginationState {
-  currentPage: number
-  itemsPerPage: number
-  totalItems: number
-  totalPages: number
+  currentPage: number;
+  itemsPerPage: number;
+  totalItems: number;
+  totalPages: number;
 }
 
 interface CategoriasTableProps {
-  categorias: CategoriaExtendidaDto[]
-  loading: boolean
-  pagination: PaginationState
-  onPageChange: (page: number) => void
-  onItemsPerPageChange: (itemsPerPage: number) => void
-  onEdit: (categoria: CategoriaExtendidaDto) => void
-  onViewDetails: (categoria: CategoriaExtendidaDto) => void
-  onToggleStatus: (categoria: CategoriaExtendidaDto) => void
-  onNuevaCategoria: () => void
-  filtroActual: "todas" | "activas" | "inactivas" | "padre" | "subcategorias"
+  categorias: CategoriaExtendidaDto[];
+  loading: boolean;
+  pagination: PaginationState;
+  onPageChange: (page: number) => void;
+  onItemsPerPageChange: (itemsPerPage: number) => void;
+  onEdit: (categoria: CategoriaExtendidaDto) => void;
+  onViewDetails: (categoria: CategoriaExtendidaDto) => void;
+  onToggleStatus: (categoria: CategoriaExtendidaDto) => void;
+  onNuevaCategoria: () => void;
+  filtroActual: "todas" | "activas" | "inactivas" | "padre" | "subcategorias";
 }
 
 interface CategoryWithLevel {
-  categoria: CategoriaExtendidaDto
-  level: number
+  categoria: CategoriaExtendidaDto;
+  level: number;
 }
 
 export const CategoriasTable = ({
@@ -48,27 +47,18 @@ export const CategoriasTable = ({
   onNuevaCategoria,
   filtroActual,
 }: CategoriasTableProps) => {
-  const [expandedCategories, setExpandedCategories] = useState<Set<number>>(new Set())
-  const { categorias: todasLasCategorias } = useCategoriasStore.getState()
+  const [expandedCategories, setExpandedCategories] = useState<Set<number>>(new Set());
+  const { categorias: todasLasCategorias } = useCategoriasStore.getState();
 
   const toggleExpanded = (idCategoria: number) => {
-    const newExpanded = new Set(expandedCategories)
+    const newExpanded = new Set(expandedCategories);
     if (newExpanded.has(idCategoria)) {
-      newExpanded.delete(idCategoria)
+      newExpanded.delete(idCategoria);
     } else {
-      newExpanded.add(idCategoria)
+      newExpanded.add(idCategoria);
     }
-    setExpandedCategories(newExpanded)
-  }
-
-  const getImageUrl = (categoria: CategoriaExtendidaDto): string => {
-    // Primero intentar con la estructura nueva (imagenModel.url)
-    if ((categoria as any).imagenModel?.url) {
-      return (categoria as any).imagenModel.url
-    }
-    // Fallback a la estructura anterior
-    return categoria.getImagenDto()?.getUrl() || ""
-  }
+    setExpandedCategories(newExpanded);
+  };
 
   // Función para obtener todas las subcategorías recursivamente
   const getAllSubcategories = (
@@ -76,16 +66,16 @@ export const CategoriasTable = ({
     allCategories: CategoriaExtendidaDto[],
     level = 1,
   ): CategoryWithLevel[] => {
-    const result: CategoryWithLevel[] = []
-    const directChildren = allCategories.filter((cat) => cat.getIdCategoriaPadre() === parentId)
+    const result: CategoryWithLevel[] = [];
+    const directChildren = allCategories.filter((cat) => cat.getIdCategoriaPadre() === parentId);
 
     for (const child of directChildren) {
-      result.push({ categoria: child, level })
-      result.push(...getAllSubcategories(child.getIdCategoria(), allCategories, level + 1))
+      result.push({ categoria: child, level });
+      result.push(...getAllSubcategories(child.getIdCategoria(), allCategories, level + 1));
     }
 
-    return result
-  }
+    return result;
+  };
 
   // Función para obtener colores por nivel
   const getLevelColors = (level: number) => {
@@ -94,23 +84,23 @@ export const CategoriasTable = ({
       { bg: "bg-blue-100", text: "text-blue-800", border: "border-blue-200", icon: "text-blue-600" }, // Subcategoría
       { bg: "bg-green-100", text: "text-green-800", border: "border-green-200", icon: "text-green-600" }, // Sub-subcategoría
       { bg: "bg-orange-100", text: "text-orange-800", border: "border-orange-200", icon: "text-orange-600" }, // Niveles adicionales
-    ]
-    return colors[Math.min(level, colors.length - 1)]
-  }
+    ];
+    return colors[Math.min(level, colors.length - 1)];
+  };
 
   // Función para obtener el nombre del tipo de categoría
   const getCategoryTypeName = (level: number) => {
-    const names = ["Principal", "Subcategoría", "Sub-subcategoría", "Nivel 4+"]
-    return names[Math.min(level, names.length - 1)]
-  }
+    const names = ["Principal", "Subcategoría", "Sub-subcategoría", "Nivel 4+"];
+    return names[Math.min(level, names.length - 1)];
+  };
 
   // Función para obtener subcategorías de una categoría padre
   const getSubcategorias = (idCategoriaPadre: number): CategoriaExtendidaDto[] => {
-    return todasLasCategorias.filter((sub) => sub.getIdCategoriaPadre() === idCategoriaPadre)
-  }
+    return todasLasCategorias.filter((sub) => sub.getIdCategoriaPadre() === idCategoriaPadre);
+  };
 
   // Determinar si mostrar el comportamiento desplegable
-  const shouldShowDropdown = filtroActual === "todas"
+  const shouldShowDropdown = filtroActual === "todas";
 
   // Función para determinar qué categorías mostrar según el filtro
   const getCategoriasToShow = (): CategoriaExtendidaDto[] => {
@@ -118,22 +108,22 @@ export const CategoriasTable = ({
       case "todas":
         // En vista "todas", mostrar solo categorías principales (padre = 0) para la paginación
         // Las subcategorías se muestran expandidas dentro de cada categoría padre
-        return categorias.filter((cat) => cat.getIdCategoriaPadre() === 0)
+        return categorias.filter((cat) => cat.getIdCategoriaPadre() === 0);
       case "padre":
         // Mostrar solo categorías principales
-        return categorias.filter((cat) => cat.getIdCategoriaPadre() === 0)
+        return categorias.filter((cat) => cat.getIdCategoriaPadre() === 0);
       case "subcategorias":
         // Mostrar solo subcategorías (que tienen padre != 0)
-        return categorias.filter((cat) => cat.getIdCategoriaPadre() !== 0)
+        return categorias.filter((cat) => cat.getIdCategoriaPadre() !== 0);
       case "activas":
       case "inactivas":
       default:
         // Para filtros de estado, mostrar todas las categorías filtradas
-        return categorias
+        return categorias;
     }
-  }
+  };
 
-  const categoriasAMostrar = getCategoriasToShow()
+  const categoriasAMostrar = getCategoriasToShow();
 
   if (loading) {
     return (
@@ -145,7 +135,9 @@ export const CategoriasTable = ({
           </div>
           <div className="space-y-3">
             {[...Array(5)].map((_, i) => (
-              <div key={i} className="flex space-x-4">
+              <div
+                key={i}
+                className="flex space-x-4">
                 <div className="h-12 w-12 bg-gray-200 rounded-full"></div>
                 <div className="flex-1 space-y-2">
                   <div className="h-4 bg-gray-200 rounded w-3/4"></div>
@@ -156,7 +148,7 @@ export const CategoriasTable = ({
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   if (categoriasAMostrar.length === 0) {
@@ -168,14 +160,13 @@ export const CategoriasTable = ({
           <p className="text-gray-500 mb-6">Comienza creando tu primera categoría para organizar tus productos</p>
           <button
             onClick={onNuevaCategoria}
-            className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-orange-500 hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-colors"
-          >
+            className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-orange-500 hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-colors">
             <Plus className="h-4 w-4 mr-2" />
             Nueva Categoría
           </button>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -192,8 +183,7 @@ export const CategoriasTable = ({
           </div>
           <button
             onClick={onNuevaCategoria}
-            className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-orange-500 hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-colors"
-          >
+            className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-orange-500 hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-colors">
             <Plus className="h-4 w-4 mr-2" />
             Nueva Categoría
           </button>
@@ -225,28 +215,30 @@ export const CategoriasTable = ({
             {categoriasAMostrar.map((categoria) => {
               const subcategorias = shouldShowDropdown
                 ? getAllSubcategories(categoria.getIdCategoria(), todasLasCategorias)
-                : []
-              const isExpanded = expandedCategories.has(categoria.getIdCategoria())
+                : [];
+              const isExpanded = expandedCategories.has(categoria.getIdCategoria());
 
               // Calcular el nivel de la categoría actual
-              let nivel = 0
+              let nivel = 0;
               if (categoria.getIdCategoriaPadre() !== 0) {
                 // Es una subcategoría, calcular su nivel
-                let currentCat = categoria
+                let currentCat = categoria;
                 while (currentCat.getIdCategoriaPadre() !== 0) {
-                  nivel++
-                  const parent = todasLasCategorias.find((c) => c.getIdCategoria() === currentCat.getIdCategoriaPadre())
-                  if (!parent) break
-                  currentCat = parent
+                  nivel++;
+                  const parent = todasLasCategorias.find(
+                    (c) => c.getIdCategoria() === currentCat.getIdCategoriaPadre(),
+                  );
+                  if (!parent) break;
+                  currentCat = parent;
                 }
               }
 
-              const levelColors = getLevelColors(nivel)
+              const levelColors = getLevelColors(nivel);
 
               return (
                 <>
                   {/* Fila principal de la categoría */}
-                  <tr key={categoria.getIdCategoria()} className="hover:bg-gray-50 transition-colors">
+                  <tr className="hover:bg-gray-50 transition-colors">
                     {/* Columna de expansión (solo en modo dropdown) */}
                     {shouldShowDropdown && (
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -254,8 +246,7 @@ export const CategoriasTable = ({
                           <button
                             onClick={() => toggleExpanded(categoria.getIdCategoria())}
                             className="p-1 rounded-full hover:bg-gray-100 transition-colors"
-                            title={isExpanded ? "Contraer subcategorías" : "Expandir subcategorías"}
-                          >
+                            title={isExpanded ? "Contraer subcategorías" : "Expandir subcategorías"}>
                             {isExpanded ? (
                               <ExpandLessIcon className="h-5 w-5 text-gray-600" />
                             ) : (
@@ -271,19 +262,12 @@ export const CategoriasTable = ({
                     )}
 
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center" style={{ paddingLeft: `${nivel * 24}px` }}>
+                      <div
+                        className="flex items-center"
+                        style={{ paddingLeft: `${nivel * 24}px` }}>
                         {nivel > 0 && <SubdirectoryArrowRightIcon className={`h-4 w-4 mr-2 ${levelColors.icon}`} />}
                         <div className="flex items-center">
-                          <div className="flex-shrink-0 h-12 w-12">
-                            <img
-                              className="h-12 w-12 rounded-full object-cover border-2 border-gray-200"
-                              src={getImageUrl(categoria) || "/placeholder.svg?height=48&width=48"}
-                              alt={categoria.getNombre()}
-                              onError={(e) => {
-                                ;(e.target as HTMLImageElement).src = "/placeholder.svg?height=48&width=48"
-                              }}
-                            />
-                          </div>
+                          <div className="flex-shrink-0 h-12 w-12"></div>
                           <div className="ml-4">
                             <div className="text-sm font-medium text-gray-900">{categoria.getNombre()}</div>
                             <div className="text-sm text-gray-500">ID: {categoria.getIdCategoria()}</div>
@@ -294,8 +278,7 @@ export const CategoriasTable = ({
 
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${levelColors.bg} ${levelColors.text}`}
-                      >
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${levelColors.bg} ${levelColors.text}`}>
                         {(categoria.getMargenGanancia() * 100).toFixed(2)}%
                       </span>
                     </td>
@@ -306,21 +289,18 @@ export const CategoriasTable = ({
                           categoria.isActiva()
                             ? "bg-green-100 text-green-800 border border-green-200"
                             : "bg-red-100 text-red-800 border border-red-200"
-                        }`}
-                      >
+                        }`}>
                         <span
                           className={`w-2 h-2 rounded-full mr-2 ${
                             categoria.isActiva() ? "bg-green-400" : "bg-red-400"
-                          }`}
-                        ></span>
+                          }`}></span>
                         {categoria.isActiva() ? "Activa" : "Inactiva"}
                       </span>
                     </td>
 
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       <span
-                        className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${levelColors.bg} ${levelColors.text} ${levelColors.border} border`}
-                      >
+                        className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${levelColors.bg} ${levelColors.text} ${levelColors.border} border`}>
                         {nivel === 0 ? (
                           <FolderIcon className="h-3 w-3 mr-1" />
                         ) : (
@@ -333,32 +313,24 @@ export const CategoriasTable = ({
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {shouldShowDropdown ? (
                         <span
-                          className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${levelColors.bg} ${levelColors.text} ${levelColors.border} border`}
-                        >
+                          className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${levelColors.bg} ${levelColors.text} ${levelColors.border} border`}>
                           {subcategorias.length} subcategoría{subcategorias.length !== 1 ? "s" : ""}
                         </span>
                       ) : // Mostrar subcategorías en modo normal (filtros activos)
                       subcategorias.length > 0 ? (
                         <div className="space-y-1">
                           {subcategorias.slice(0, 2).map(({ categoria: sub, level }) => {
-                            const subLevelColors = getLevelColors(level)
+                            const subLevelColors = getLevelColors(level);
                             return (
-                              <div key={sub.getIdCategoria()} className="flex items-center space-x-2">
-                                <img
-                                  src={getImageUrl(sub) || "/placeholder.svg?height=32&width=32"}
-                                  alt={sub.getNombre()}
-                                  className="h-6 w-6 rounded-full object-cover border border-gray-200"
-                                  onError={(e) => {
-                                    ;(e.target as HTMLImageElement).src = "/placeholder.svg?height=32&width=32"
-                                  }}
-                                />
+                              <div
+                                key={sub.getIdCategoria()}
+                                className="flex items-center space-x-2">
                                 <span
-                                  className={`text-xs px-2 py-1 rounded ${subLevelColors.bg} ${subLevelColors.text}`}
-                                >
+                                  className={`text-xs px-2 py-1 rounded ${subLevelColors.bg} ${subLevelColors.text}`}>
                                   {sub.getNombre()}
                                 </span>
                               </div>
-                            )
+                            );
                           })}
                           {subcategorias.length > 2 && (
                             <div className="text-xs text-gray-400">+{subcategorias.length - 2} más</div>
@@ -374,15 +346,13 @@ export const CategoriasTable = ({
                         <button
                           onClick={() => onViewDetails(categoria)}
                           className="text-gray-700 hover:cursor-pointer p-2 rounded-full hover:bg-blue-50 transition-colors"
-                          title="Ver detalles"
-                        >
+                          title="Ver detalles">
                           <VisibilityIcon className="h-4 w-4" />
                         </button>
                         <button
                           onClick={() => onEdit(categoria)}
                           className="text-gray-700 hover:cursor-pointer p-2 rounded-full hover:bg-orange-50 transition-colors"
-                          title="Editar categoría"
-                        >
+                          title="Editar categoría">
                           <EditIcon className="h-4 w-4" />
                         </button>
                         <button
@@ -394,8 +364,8 @@ export const CategoriasTable = ({
                             (() => {
                               const padre = todasLasCategorias.find(
                                 (cat) => cat.getIdCategoria() === categoria.getIdCategoriaPadre(),
-                              )
-                              return padre ? !padre.isActiva() : false
+                              );
+                              return padre ? !padre.isActiva() : false;
                             })()
                           }
                           className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 ${
@@ -407,8 +377,8 @@ export const CategoriasTable = ({
                             (() => {
                               const padre = todasLasCategorias.find(
                                 (cat) => cat.getIdCategoria() === categoria.getIdCategoriaPadre(),
-                              )
-                              return padre ? !padre.isActiva() : false
+                              );
+                              return padre ? !padre.isActiva() : false;
                             })()
                               ? "opacity-50 cursor-not-allowed"
                               : ""
@@ -419,15 +389,14 @@ export const CategoriasTable = ({
                             (() => {
                               const padre = todasLasCategorias.find(
                                 (cat) => cat.getIdCategoria() === categoria.getIdCategoriaPadre(),
-                              )
-                              return padre ? !padre.isActiva() : false
+                              );
+                              return padre ? !padre.isActiva() : false;
                             })()
                               ? "No se puede activar: la categoría padre está inactiva"
                               : categoria.isActiva()
-                                ? "Desactivar"
-                                : "Activar"
-                          }
-                        >
+                              ? "Desactivar"
+                              : "Activar"
+                          }>
                           <span
                             className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
                               categoria.isActiva() ? "translate-x-6" : "translate-x-1"
@@ -442,12 +411,11 @@ export const CategoriasTable = ({
                   {shouldShowDropdown &&
                     isExpanded &&
                     subcategorias.map(({ categoria: subcategoria, level }) => {
-                      const subLevelColors = getLevelColors(level)
+                      const subLevelColors = getLevelColors(level);
                       return (
                         <tr
                           key={`sub-${subcategoria.getIdCategoria()}`}
-                          className="bg-gray-50 hover:bg-gray-100 transition-colors"
-                        >
+                          className="bg-gray-50 hover:bg-gray-100 transition-colors">
                           <td className="px-6 py-3 whitespace-nowrap">
                             <div className="w-7 h-7 flex items-center justify-center">
                               <div className="w-1 h-1 bg-gray-400 rounded-full"></div>
@@ -455,19 +423,12 @@ export const CategoriasTable = ({
                           </td>
 
                           <td className="px-6 py-3 whitespace-nowrap">
-                            <div className="flex items-center" style={{ paddingLeft: `${level * 24}px` }}>
+                            <div
+                              className="flex items-center"
+                              style={{ paddingLeft: `${level * 24}px` }}>
                               <SubdirectoryArrowRightIcon className={`h-4 w-4 mr-2 ${subLevelColors.icon}`} />
                               <div className="flex items-center">
-                                <div className="flex-shrink-0 h-10 w-10">
-                                  <img
-                                    className="h-10 w-10 rounded-full object-cover border-2 border-gray-200"
-                                    src={getImageUrl(subcategoria) || "/placeholder.svg?height=40&width=40"}
-                                    alt={subcategoria.getNombre()}
-                                    onError={(e) => {
-                                      ;(e.target as HTMLImageElement).src = "/placeholder.svg?height=40&width=40"
-                                    }}
-                                  />
-                                </div>
+                                <div className="flex-shrink-0 h-10 w-10"></div>
                                 <div className="ml-3">
                                   <div className="text-sm font-medium text-gray-900">{subcategoria.getNombre()}</div>
                                   <div className="text-xs text-gray-500">ID: {subcategoria.getIdCategoria()}</div>
@@ -478,8 +439,7 @@ export const CategoriasTable = ({
 
                           <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-900">
                             <span
-                              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${subLevelColors.bg} ${subLevelColors.text}`}
-                            >
+                              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${subLevelColors.bg} ${subLevelColors.text}`}>
                               {(subcategoria.getMargenGanancia() * 100).toFixed(2)}%
                             </span>
                           </td>
@@ -490,21 +450,18 @@ export const CategoriasTable = ({
                                 subcategoria.isActiva()
                                   ? "bg-green-100 text-green-800 border border-green-200"
                                   : "bg-red-100 text-red-800 border border-red-200"
-                              }`}
-                            >
+                              }`}>
                               <span
                                 className={`w-1.5 h-1.5 rounded-full mr-1.5 ${
                                   subcategoria.isActiva() ? "bg-green-400" : "bg-red-400"
-                                }`}
-                              ></span>
+                                }`}></span>
                               {subcategoria.isActiva() ? "Activa" : "Inactiva"}
                             </span>
                           </td>
 
                           <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-900">
                             <span
-                              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${subLevelColors.bg} ${subLevelColors.text} ${subLevelColors.border} border`}
-                            >
+                              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${subLevelColors.bg} ${subLevelColors.text} ${subLevelColors.border} border`}>
                               <SubdirectoryArrowRightIcon className="h-3 w-3 mr-1" />
                               {getCategoryTypeName(level)}
                             </span>
@@ -522,15 +479,13 @@ export const CategoriasTable = ({
                               <button
                                 onClick={() => onViewDetails(subcategoria)}
                                 className="text-gray-700 hover:cursor-pointer p-1.5 rounded-full hover:bg-blue-50 transition-colors"
-                                title="Ver detalles"
-                              >
+                                title="Ver detalles">
                                 <VisibilityIcon className="h-3.5 w-3.5" />
                               </button>
                               <button
                                 onClick={() => onEdit(subcategoria)}
                                 className="text-gray-700 hover:cursor-pointer p-1.5 rounded-full hover:bg-orange-50 transition-colors"
-                                title="Editar subcategoría"
-                              >
+                                title="Editar subcategoría">
                                 <EditIcon className="h-3.5 w-3.5" />
                               </button>
                               <button
@@ -542,8 +497,8 @@ export const CategoriasTable = ({
                                   (() => {
                                     const padre = todasLasCategorias.find(
                                       (cat) => cat.getIdCategoria() === subcategoria.getIdCategoriaPadre(),
-                                    )
-                                    return padre ? !padre.isActiva() : false
+                                    );
+                                    return padre ? !padre.isActiva() : false;
                                   })()
                                 }
                                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 ${
@@ -557,8 +512,8 @@ export const CategoriasTable = ({
                                   (() => {
                                     const padre = todasLasCategorias.find(
                                       (cat) => cat.getIdCategoria() === subcategoria.getIdCategoriaPadre(),
-                                    )
-                                    return padre ? !padre.isActiva() : false
+                                    );
+                                    return padre ? !padre.isActiva() : false;
                                   })()
                                     ? "opacity-50 cursor-not-allowed"
                                     : ""
@@ -569,15 +524,14 @@ export const CategoriasTable = ({
                                   (() => {
                                     const padre = todasLasCategorias.find(
                                       (cat) => cat.getIdCategoria() === subcategoria.getIdCategoriaPadre(),
-                                    )
-                                    return padre ? !padre.isActiva() : false
+                                    );
+                                    return padre ? !padre.isActiva() : false;
                                   })()
                                     ? "No se puede activar: la categoría padre está inactiva"
                                     : subcategoria.isActiva()
-                                      ? "Desactivar"
-                                      : "Activar"
-                                }
-                              >
+                                    ? "Desactivar"
+                                    : "Activar"
+                                }>
                                 <span
                                   className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
                                     subcategoria.isActiva() ? "translate-x-6" : "translate-x-1"
@@ -587,10 +541,10 @@ export const CategoriasTable = ({
                             </div>
                           </td>
                         </tr>
-                      )
+                      );
                     })}
                 </>
-              )
+              );
             })}
           </tbody>
         </table>
@@ -608,5 +562,5 @@ export const CategoriasTable = ({
         />
       </div>
     </div>
-  )
-}
+  );
+};

@@ -1,37 +1,37 @@
-"use client"
+"use client";
 
-import type React from "react"
-import EditIcon from "@mui/icons-material/Edit"
-import ExpandLessIcon from "@mui/icons-material/ExpandLess"
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
-import FolderIcon from "@mui/icons-material/Folder"
-import SubdirectoryArrowRightIcon from "@mui/icons-material/SubdirectoryArrowRight"
-import VisibilityIcon from "@mui/icons-material/Visibility"
-import AddIcon from "@mui/icons-material/Add"
-import { useState } from "react"
-import type { RubroInsumoDto } from "../../models/dto/RubroInsumoDto"
-import { Pagination } from "../Admin/products/Pagination"
+import type React from "react";
+import EditIcon from "@mui/icons-material/Edit";
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import FolderIcon from "@mui/icons-material/Folder";
+import SubdirectoryArrowRightIcon from "@mui/icons-material/SubdirectoryArrowRight";
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import AddIcon from "@mui/icons-material/Add";
+import { useState } from "react";
+import type { RubroInsumoDto } from "../../models/dto/RubroInsumoDto";
+import { Pagination } from "../Admin/products/Pagination";
 
 interface PaginationState {
-  currentPage: number
-  itemsPerPage: number
-  totalItems: number
-  totalPages: number
+  currentPage: number;
+  itemsPerPage: number;
+  totalItems: number;
+  totalPages: number;
 }
 
 interface RubrosTableProps {
-  rubros: RubroInsumoDto[]
-  loading: boolean
-  pagination: PaginationState
-  onPageChange: (page: number) => void
-  onItemsPerPageChange: (itemsPerPage: number) => void
-  onEdit: (rubro: RubroInsumoDto) => void
-  onViewDetails: (rubro: RubroInsumoDto) => void
-  onToggleStatus: (rubro: RubroInsumoDto) => void
-  onNuevoRubro: () => void
-  onNuevoSubrubro: (rubroPadre: RubroInsumoDto) => void
-  filtroActual: "todos" | "activos" | "inactivos" | "padre" | "subrubros"
-  todosLosRubros: RubroInsumoDto[]
+  rubros: RubroInsumoDto[];
+  loading: boolean;
+  pagination: PaginationState;
+  onPageChange: (page: number) => void;
+  onItemsPerPageChange: (itemsPerPage: number) => void;
+  onEdit: (rubro: RubroInsumoDto) => void;
+  onViewDetails: (rubro: RubroInsumoDto) => void;
+  onToggleStatus: (rubro: RubroInsumoDto) => void;
+  onNuevoRubro: () => void;
+  onNuevoSubrubro: (rubroPadre: RubroInsumoDto) => void;
+  filtroActual: "todos" | "activos" | "inactivos" | "padre" | "subrubros";
+  todosLosRubros: RubroInsumoDto[];
 }
 
 export const RubrosTable = ({
@@ -48,47 +48,46 @@ export const RubrosTable = ({
   filtroActual,
   todosLosRubros,
 }: RubrosTableProps) => {
-  const [expandedRubros, setExpandedRubros] = useState<Set<number>>(new Set())
+  const [expandedRubros, setExpandedRubros] = useState<Set<number>>(new Set());
 
   const toggleExpanded = (idRubro: number) => {
-    const newExpanded = new Set(expandedRubros)
+    const newExpanded = new Set(expandedRubros);
     if (newExpanded.has(idRubro)) {
-      newExpanded.delete(idRubro)
+      newExpanded.delete(idRubro);
     } else {
-      newExpanded.add(idRubro)
+      newExpanded.add(idRubro);
     }
-    setExpandedRubros(newExpanded)
-  }
+    setExpandedRubros(newExpanded);
+  };
 
   // Función recursiva para obtener todos los subrubros de un rubro
   const obtenerTodosLosSubrubros = (rubro: RubroInsumoDto): RubroInsumoDto[] => {
-    let subrubros: RubroInsumoDto[] = []
+    let subrubros: RubroInsumoDto[] = [];
 
-    const subrubrosDirectos = todosLosRubros.filter((r) => r.getIdRubroInsumoPadre() === rubro.getIdRubroInsumo())
-    subrubros = [...subrubrosDirectos]
+    const subrubrosDirectos = todosLosRubros.filter((r) => r.getIdRubroInsumoPadre() === rubro.getIdRubroInsumo());
+    subrubros = [...subrubrosDirectos];
 
     subrubrosDirectos.forEach((subrubro) => {
-      subrubros = [...subrubros, ...obtenerTodosLosSubrubros(subrubro)]
-    })
+      subrubros = [...subrubros, ...obtenerTodosLosSubrubros(subrubro)];
+    });
 
-    return subrubros
-  }
+    return subrubros;
+  };
 
   // Determinar si mostrar el comportamiento desplegable
-  const shouldShowDropdown = filtroActual === "todos"
+  const shouldShowDropdown = filtroActual === "todos";
 
   // Función para renderizar una fila de rubro
   const renderRubroRow = (rubro: RubroInsumoDto, nivel = 0, esSubrubro = false): React.ReactNode => {
-    const subrubros = obtenerTodosLosSubrubros(rubro)
-    const isExpanded = expandedRubros.has(rubro.getIdRubroInsumo())
+    const subrubros = obtenerTodosLosSubrubros(rubro);
+    const isExpanded = expandedRubros.has(rubro.getIdRubroInsumo());
 
     return (
       <>
         {/* Fila principal del rubro */}
         <tr
           key={rubro.getIdRubroInsumo()}
-          className={`hover:bg-gray-50 transition-colors ${esSubrubro ? "bg-gray-50" : ""}`}
-        >
+          className={`hover:bg-gray-50 transition-colors ${esSubrubro ? "bg-gray-50" : ""}`}>
           {/* Columna de expansión (solo en modo dropdown) */}
           {shouldShowDropdown && (
             <td className="px-6 py-4 whitespace-nowrap">
@@ -96,8 +95,7 @@ export const RubrosTable = ({
                 <button
                   onClick={() => toggleExpanded(rubro.getIdRubroInsumo())}
                   className="p-1 rounded-full hover:bg-gray-100 transition-colors"
-                  title={isExpanded ? "Contraer subrubros" : "Expandir subrubros"}
-                >
+                  title={isExpanded ? "Contraer subrubros" : "Expandir subrubros"}>
                   {isExpanded ? (
                     <ExpandLessIcon className="h-5 w-5 text-gray-600" />
                   ) : (
@@ -111,7 +109,9 @@ export const RubrosTable = ({
           )}
 
           <td className="px-6 py-4 whitespace-nowrap">
-            <div className="flex items-center" style={{ paddingLeft: `${nivel * 24}px` }}>
+            <div
+              className="flex items-center"
+              style={{ paddingLeft: `${nivel * 24}px` }}>
               {nivel > 0 && <SubdirectoryArrowRightIcon className="h-4 w-4 text-gray-400 mr-2" />}
               <div className="flex items-center">
                 <div className="flex-shrink-0 h-10 w-10">
@@ -137,8 +137,7 @@ export const RubrosTable = ({
                 rubro.isActivo()
                   ? "bg-green-100 text-green-800 border border-green-200"
                   : "bg-red-100 text-red-800 border border-red-200"
-              }`}
-            >
+              }`}>
               <span className={`w-2 h-2 rounded-full mr-2 ${rubro.isActivo() ? "bg-green-400" : "bg-red-400"}`}></span>
               {rubro.isActivo() ? "Activo" : "Inactivo"}
             </span>
@@ -163,15 +162,13 @@ export const RubrosTable = ({
               <button
                 onClick={() => onViewDetails(rubro)}
                 className="p-2 text-gray-700 hover:cursor-pointer rounded-full transition-colors"
-                title="Ver detalles"
-              >
+                title="Ver detalles">
                 <VisibilityIcon fontSize="small" />
               </button>
               <button
                 onClick={() => onEdit(rubro)}
                 className="p-2 text-gray-700 hover:cursor-pointer rounded-full transition-colors"
-                title="Editar"
-              >
+                title="Editar">
                 <EditIcon fontSize="small" />
               </button>
               <button
@@ -179,8 +176,7 @@ export const RubrosTable = ({
                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 ${
                   rubro.isActivo() ? "bg-green-500 focus:ring-green-500" : "bg-red-400 focus:ring-red-400"
                 }`}
-                title={rubro.isActivo() ? "Desactivar" : "Activar"}
-              >
+                title={rubro.isActivo() ? "Desactivar" : "Activar"}>
                 <span
                   className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
                     rubro.isActivo() ? "translate-x-6" : "translate-x-1"
@@ -190,8 +186,7 @@ export const RubrosTable = ({
               <button
                 onClick={() => onNuevoSubrubro(rubro)}
                 className="p-2 text-gray-700 hover:cursor-pointer rounded-full transition-colors"
-                title="Agregar subrubro"
-              >
+                title="Agregar subrubro">
                 <AddIcon fontSize="small" />
               </button>
             </div>
@@ -203,8 +198,8 @@ export const RubrosTable = ({
           <>{subrubros.map((subrubro) => renderRubroRow(subrubro, nivel + 1, true))}</>
         )}
       </>
-    )
-  }
+    );
+  };
 
   if (loading) {
     return (
@@ -216,7 +211,9 @@ export const RubrosTable = ({
           </div>
           <div className="space-y-3">
             {[...Array(5)].map((_, i) => (
-              <div key={i} className="flex space-x-4">
+              <div
+                key={i}
+                className="flex space-x-4">
                 <div className="h-12 w-12 bg-gray-200 rounded-full"></div>
                 <div className="flex-1 space-y-2">
                   <div className="h-4 bg-gray-200 rounded w-3/4"></div>
@@ -227,7 +224,7 @@ export const RubrosTable = ({
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   if (rubros.length === 0) {
@@ -239,16 +236,24 @@ export const RubrosTable = ({
           <p className="text-gray-500 mb-6">Comienza creando tu primer rubro para organizar tus insumos</p>
           <button
             onClick={onNuevoRubro}
-            className="inline-flex items-center px-6 py-3 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-colors"
-          >
-            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            className="inline-flex items-center px-6 py-3 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-colors">
+            <svg
+              className="w-5 h-5 mr-2"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+              />
             </svg>
             Nuevo Rubro
           </button>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -265,10 +270,18 @@ export const RubrosTable = ({
           </div>
           <button
             onClick={onNuevoRubro}
-            className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-colors"
-          >
-            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-colors">
+            <svg
+              className="w-4 h-4 mr-2"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+              />
             </svg>
             Nuevo Rubro
           </button>
@@ -303,5 +316,5 @@ export const RubrosTable = ({
         onItemsPerPageChange={onItemsPerPageChange}
       />
     </div>
-  )
-}
+  );
+};

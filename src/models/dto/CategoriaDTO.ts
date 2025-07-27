@@ -1,16 +1,12 @@
-import { ImagenDTO } from "./ImagenDTO";
-
 export class CategoriaDTO {
   private idCategoria: number;
   private nombre: string;
   private idCategoriaPadre: number;
-  private imagenDto: ImagenDTO;
 
-  constructor(idCategoria: number, nombre: string, idCategoriaPadre: number, imagenDto: ImagenDTO) {
+  constructor(idCategoria: number, nombre: string, idCategoriaPadre: number) {
     this.idCategoria = idCategoria;
     this.nombre = nombre;
     this.idCategoriaPadre = idCategoriaPadre;
-    this.imagenDto = imagenDto;
   }
 
   // Getter y Setter para idCategoria
@@ -38,14 +34,5 @@ export class CategoriaDTO {
 
   public setIdCategoriaPadre(idCategoriaPadre: number): void {
     this.idCategoriaPadre = idCategoriaPadre;
-  }
-
-  // Getter y Setter para imagenDto
-  public getImagenDto(): ImagenDTO {
-    return this.imagenDto;
-  }
-
-  public setImagenDto(imagenDto: ImagenDTO): void {
-    this.imagenDto = imagenDto;
   }
 }
