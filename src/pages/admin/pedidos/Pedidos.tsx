@@ -1,3 +1,5 @@
+"use client";
+
 import type React from "react";
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { PedidosFilters } from "../../../components/Admin/pedidos/PedidosFilters";
@@ -5,11 +7,12 @@ import { PedidosTable } from "../../../components/Admin/pedidos/PedidosTable";
 import { PedidoDetailModal } from "../../../components/Admin/pedidos/PedidoDetailModal";
 import { Pagination } from "../../../components/Admin/products/Pagination";
 import type { PedidoDTO, PedidosPaginadosDTO, PedidoStatusUpdateDto } from "../../../models/dto/PedidoDTO";
-import { pedidoServicio } from "../../../services/PedidoServicio";
+import { pedidoServicio } from "../../../services/pedidoServicio";
 import { EstadoPedido } from "../../../models/enum/EstadoPedido";
 import { Assignment, Refresh } from "@mui/icons-material";
 import { useWebSocket } from "../../../hooks/useWebSocket";
-import { IMessage } from "@stomp/stompjs";
+import type { IMessage } from "@stomp/stompjs";
+import { FixedChat } from "../../../components/chat/FixedChat";
 
 export const Pedidos: React.FC = () => {
   const { isConnected, subscribe } = useWebSocket();
@@ -69,8 +72,6 @@ export const Pedidos: React.FC = () => {
   const pedidosPaginados = pedidosFiltradosYOrdenados.slice(startIndex, endIndex);
 
   // Determinar si hay divisiones entre los grupos en la página actual
-  // Se eliminan 'hayPrimeraDivision' y 'haySegundaDivision' de la desestructuración
-  // ya que solo se usan internamente en la lógica de este useMemo.
   const { indicePrimeraDivision, indiceSegundaDivision } = useMemo(() => {
     if (estadoSeleccionado !== "TODOS")
       return {
@@ -182,9 +183,6 @@ export const Pedidos: React.FC = () => {
               // Idealmente, el backend enviaría un PedidoDTO completo para nuevos pedidos.
               // Como workaround, si llega un nuevo pedido A_CONFIRMAR, forzamos una recarga completa.
               // O mejor, si el backend envía el DTO completo, lo parseamos y añadimos.
-              // Por simplicidad y para no complicar el DTO de update, si es un nuevo pedido A_CONFIRMAR,
-              // o si el estado es uno que implica que el pedido ha desaparecido de la vista (ej. ENTREGADO, RECHAZADO, CANCELADO)
-              // y no lo queremos ver más, disparamos una recarga completa.
               // Para un sistema robusto, el PedidoStatusUpdateDto debería ser más completo o
               // el backend debería enviar un DTO diferente para "nuevo pedido".
               // Por ahora, para un nuevo pedido A_CONFIRMAR, recargamos.
@@ -311,6 +309,9 @@ export const Pedidos: React.FC = () => {
           onClose={handleCloseModal}
           onPedidoActualizado={handlePedidoActualizado}
         />
+
+        {/* Chat fijo para cajero */}
+        <FixedChat userRole="Cajero" />
       </div>
     </div>
   );

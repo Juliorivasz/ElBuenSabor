@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useEffect, useCallback } from "react";
 import { RefreshOutlined, RestaurantMenuOutlined, CheckCircleOutlined } from "@mui/icons-material";
 import type { PedidoCocineroDTO } from "../../../models/dto/PedidoCocineroDTO";
@@ -6,8 +8,9 @@ import { cocineroServicio } from "../../../services/cocineroServicio";
 import { KitchenOrderCard } from "../../../components/kitchen/KitchenOrderCard";
 import Swal from "sweetalert2";
 import { useWebSocket } from "../../../hooks/useWebSocket";
-import { IMessage } from "@stomp/stompjs";
+import type { IMessage } from "@stomp/stompjs";
 import type { PedidoStatusUpdateDto } from "../../../models/dto/PedidoDTO";
+import { FixedChat } from "../../../components/chat/FixedChat";
 
 export const Kitchen = () => {
   const { isConnected, subscribe } = useWebSocket();
@@ -198,6 +201,9 @@ export const Kitchen = () => {
             )}
           </div>
         </div>
+
+        {/* Chat fijo para cocinero */}
+        <FixedChat userRole="Cocinero" />
       </div>
     </div>
   );

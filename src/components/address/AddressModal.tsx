@@ -1,20 +1,18 @@
-"use client"
-
-import type React from "react"
-import { useState, useEffect } from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import { CloseOutlined } from "@mui/icons-material"
-import type { Direccion } from "../../models/Direccion"
-import type { Departamento } from "../../models/Departamento"
-import { DireccionDTO } from "../../models/dto/DireccionDTO"
+import type React from "react";
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { CloseOutlined } from "@mui/icons-material";
+import type { Direccion } from "../../models/Direccion";
+import type { Departamento } from "../../models/Departamento";
+import { DireccionDTO } from "../../models/dto/DireccionDTO";
 
 interface AddressModalProps {
-  isOpen: boolean
-  onClose: () => void
-  onSave: (direccion: DireccionDTO) => void
-  direccion?: Direccion | null
-  departamentos: Departamento[]
-  isLoading?: boolean
+  isOpen: boolean;
+  onClose: () => void;
+  onSave: (direccion: DireccionDTO) => void;
+  direccion?: Direccion | null;
+  departamentos: Departamento[];
+  isLoading?: boolean;
 }
 
 export const AddressModal: React.FC<AddressModalProps> = ({
@@ -25,8 +23,8 @@ export const AddressModal: React.FC<AddressModalProps> = ({
   departamentos,
   isLoading = false,
 }) => {
-  const [formData, setFormData] = useState<DireccionDTO>(new DireccionDTO())
-  const [errors, setErrors] = useState<Record<string, string>>({})
+  const [formData, setFormData] = useState<DireccionDTO>(new DireccionDTO());
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (direccion) {
@@ -39,58 +37,57 @@ export const AddressModal: React.FC<AddressModalProps> = ({
           direccion.dpto,
           direccion.idDepartamento,
         ),
-      )
+      );
     } else {
-      setFormData(new DireccionDTO())
+      setFormData(new DireccionDTO());
     }
-    setErrors({})
-  }, [direccion, isOpen])
+    setErrors({});
+  }, [direccion, isOpen]);
 
   const validateForm = (): boolean => {
-    const newErrors: Record<string, string> = {}
+    const newErrors: Record<string, string> = {};
 
     if (!formData.nombre.trim()) {
-      newErrors.nombre = "El nombre es obligatorio"
+      newErrors.nombre = "El nombre es obligatorio";
     }
     if (!formData.calle.trim()) {
-      newErrors.calle = "La calle es obligatoria"
+      newErrors.calle = "La calle es obligatoria";
     }
     if (!formData.numero.trim()) {
-      newErrors.numero = "El número es obligatorio"
+      newErrors.numero = "El número es obligatorio";
     }
     if (!formData.idDepartamento || formData.idDepartamento === 0) {
-      newErrors.idDepartamento = "Debe seleccionar un departamento"
+      newErrors.idDepartamento = "Debe seleccionar un departamento";
     }
 
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
     if (validateForm()) {
-      onSave(formData)
+      onSave(formData);
     }
-  }
+  };
 
   const handleInputChange = (field: keyof DireccionDTO, value: string | number) => {
-    setFormData((prev) => ({ ...prev, [field]: value }))
+    setFormData((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: "" }))
+      setErrors((prev) => ({ ...prev, [field]: "" }));
     }
-  }
+  };
 
-  if (!isOpen) return null
+  if (!isOpen) return null;
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+      <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center p-4 z-50">
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.95 }}
-          className="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto"
-        >
+          className="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
           <div className="p-6">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-semibold text-gray-800">
@@ -99,13 +96,14 @@ export const AddressModal: React.FC<AddressModalProps> = ({
               <button
                 onClick={onClose}
                 className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                disabled={isLoading}
-              >
+                disabled={isLoading}>
                 <CloseOutlined />
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form
+              onSubmit={handleSubmit}
+              className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Nombre *</label>
                 <input
@@ -185,11 +183,12 @@ export const AddressModal: React.FC<AddressModalProps> = ({
                   className={`text-gray-700 w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent ${
                     errors.idDepartamento ? "border-red-500" : "border-gray-300"
                   }`}
-                  disabled={isLoading}
-                >
+                  disabled={isLoading}>
                   <option value={0}>Seleccionar departamento</option>
                   {departamentos.map((dept) => (
-                    <option key={dept.id} value={dept.id}>
+                    <option
+                      key={dept.id}
+                      value={dept.id}>
                       {dept.nombre}
                     </option>
                   ))}
@@ -202,15 +201,13 @@ export const AddressModal: React.FC<AddressModalProps> = ({
                   type="button"
                   onClick={onClose}
                   className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-                  disabled={isLoading}
-                >
+                  disabled={isLoading}>
                   Cancelar
                 </button>
                 <button
                   type="submit"
                   className="flex-1 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors disabled:opacity-50"
-                  disabled={isLoading}
-                >
+                  disabled={isLoading}>
                   {isLoading ? "Guardando..." : "Guardar"}
                 </button>
               </div>
@@ -219,5 +216,5 @@ export const AddressModal: React.FC<AddressModalProps> = ({
         </motion.div>
       </div>
     </AnimatePresence>
-  )
-}
+  );
+};

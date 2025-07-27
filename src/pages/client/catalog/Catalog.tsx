@@ -34,7 +34,7 @@ export const Catalog = () => {
       loginWithRedirect({ appState: { returnTo: window.location.pathname } });
       return;
     }
-    addItem(product, product.getImagenModel() ?? undefined);
+    addItem(product, product.getUrl() ?? undefined);
     // Lógica para agregar al carrito
   };
 
