@@ -1,23 +1,23 @@
-"use client"
-import { useEffect, useState } from "react"
-import { useForm } from "react-hook-form"
-import type { RubroInsumoDto } from "../../models/dto/RubroInsumoDto"
-import { NuevoRubroInsumoDto } from "../../models/dto/NuevoRubroInsumoDto"
+"use client";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import type { RubroInsumoDto } from "../../models/dto/RubroInsumoDto";
+import { NuevoRubroInsumoDto } from "../../models/dto/NuevoRubroInsumoDto";
 
 interface RubroFormData {
-  nombre: string
-  dadoDeBaja: boolean
-  tieneRubroPadre: boolean
-  idRubroInsumoPadre: number | null
+  nombre: string;
+  dadoDeBaja: boolean;
+  tieneRubroPadre: boolean;
+  idRubroInsumoPadre: number | null;
 }
 
 interface RubroFormProps {
-  rubro?: RubroInsumoDto
-  rubros: RubroInsumoDto[]
-  onSubmit: (rubro: NuevoRubroInsumoDto) => void
-  onCancel: () => void
-  loading: boolean
-  rubroPadrePreseleccionado?: RubroInsumoDto
+  rubro?: RubroInsumoDto;
+  rubros: RubroInsumoDto[];
+  onSubmit: (rubro: NuevoRubroInsumoDto) => void;
+  onCancel: () => void;
+  loading: boolean;
+  rubroPadrePreseleccionado?: RubroInsumoDto;
 }
 
 export const RubroForm = ({
@@ -28,7 +28,7 @@ export const RubroForm = ({
   loading,
   rubroPadrePreseleccionado,
 }: RubroFormProps) => {
-  const [tieneRubroPadre, setTieneRubroPadre] = useState(false)
+  const [tieneRubroPadre, setTieneRubroPadre] = useState(false);
 
   const {
     register,
@@ -44,21 +44,21 @@ export const RubroForm = ({
       tieneRubroPadre: false,
       idRubroInsumoPadre: null,
     },
-  })
+  });
 
-  const watchTieneRubroPadre = watch("tieneRubroPadre")
+  const watchTieneRubroPadre = watch("tieneRubroPadre");
 
   // Cargar datos si es edición
   useEffect(() => {
     if (rubro) {
       const data = {
         nombre: rubro.getNombre(),
-        dadoDeBaja: rubro.isDadoDeBaja(),
+        dadoDeBaja: rubro.isDadoDeAlta(),
         tieneRubroPadre: !rubro.esRubroPadre(),
         idRubroInsumoPadre: rubro.getIdRubroInsumoPadre(),
-      }
-      reset(data)
-      setTieneRubroPadre(!rubro.esRubroPadre())
+      };
+      reset(data);
+      setTieneRubroPadre(!rubro.esRubroPadre());
     } else if (rubroPadrePreseleccionado) {
       // Si se está creando un subrubro
       const data = {
@@ -66,49 +66,49 @@ export const RubroForm = ({
         dadoDeBaja: false,
         tieneRubroPadre: true,
         idRubroInsumoPadre: rubroPadrePreseleccionado.getIdRubroInsumo(),
-      }
-      reset(data)
-      setTieneRubroPadre(true)
+      };
+      reset(data);
+      setTieneRubroPadre(true);
     }
-  }, [rubro, rubroPadrePreseleccionado, reset])
+  }, [rubro, rubroPadrePreseleccionado, reset]);
 
   // Actualizar estado cuando cambia el checkbox
   useEffect(() => {
-    setTieneRubroPadre(watchTieneRubroPadre)
+    setTieneRubroPadre(watchTieneRubroPadre);
     if (!watchTieneRubroPadre) {
-      setValue("idRubroInsumoPadre", null)
+      setValue("idRubroInsumoPadre", null);
     }
-  }, [watchTieneRubroPadre, setValue])
+  }, [watchTieneRubroPadre, setValue]);
 
   // Obtener todos los rubros disponibles como padre (recursivamente)
   const obtenerTodosLosRubros = (rubrosLista: RubroInsumoDto[]): RubroInsumoDto[] => {
-    const todosLosRubros: RubroInsumoDto[] = []
+    const todosLosRubros: RubroInsumoDto[] = [];
 
     const procesarRubros = (rubros: RubroInsumoDto[]) => {
       rubros.forEach((rubro) => {
-        todosLosRubros.push(rubro)
+        todosLosRubros.push(rubro);
         if (rubro.getSubrubros().length > 0) {
-          procesarRubros(rubro.getSubrubros())
+          procesarRubros(rubro.getSubrubros());
         }
-      })
-    }
+      });
+    };
 
-    procesarRubros(rubrosLista)
-    return todosLosRubros
-  }
+    procesarRubros(rubrosLista);
+    return todosLosRubros;
+  };
 
-  const todosLosRubros = obtenerTodosLosRubros(rubros)
+  const todosLosRubros = obtenerTodosLosRubros(rubros);
 
   // Filtrar rubros disponibles como padre
   const rubrosDisponibles = todosLosRubros.filter((r) => {
     if (rubro) {
       // No puede ser padre de sí mismo
-      if (r.getIdRubroInsumo() === rubro.getIdRubroInsumo()) return false
+      if (r.getIdRubroInsumo() === rubro.getIdRubroInsumo()) return false;
       // No puede ser padre de su propio padre
-      if (r.getIdRubroInsumoPadre() === rubro.getIdRubroInsumo()) return false
+      if (r.getIdRubroInsumoPadre() === rubro.getIdRubroInsumo()) return false;
     }
-    return true
-  })
+    return true;
+  });
 
   const onFormSubmit = async (data: RubroFormData) => {
     try {
@@ -116,16 +116,16 @@ export const RubroForm = ({
         data.nombre,
         data.dadoDeBaja,
         data.tieneRubroPadre ? data.idRubroInsumoPadre : null,
-      )
+      );
 
-      await onSubmit(nuevoRubro)
+      await onSubmit(nuevoRubro);
     } catch (error) {
-      console.error("Error en formulario:", error)
+      console.error("Error en formulario:", error);
     }
-  }
+  };
 
-  const isEditing = !!rubro
-  const title = isEditing ? "Editar Rubro" : rubroPadrePreseleccionado ? "Nuevo Subrubro" : "Nuevo Rubro"
+  const isEditing = !!rubro;
+  const title = isEditing ? "Editar Rubro" : rubroPadrePreseleccionado ? "Nuevo Subrubro" : "Nuevo Rubro";
 
   return (
     <div className="fixed inset-0 bg-black/30 backdrop-blur-sm overflow-y-auto h-full w-full z-50">
@@ -137,22 +137,32 @@ export const RubroForm = ({
               {isEditing
                 ? "Modifica los datos del rubro"
                 : rubroPadrePreseleccionado
-                  ? `Crear subrubro de "${rubroPadrePreseleccionado.getNombre()}"`
-                  : "Completa la información para crear un nuevo rubro"}
+                ? `Crear subrubro de "${rubroPadrePreseleccionado.getNombre()}"`
+                : "Completa la información para crear un nuevo rubro"}
             </p>
           </div>
           <button
             onClick={onCancel}
             className="text-gray-400 hover:text-gray-600 transition-colors p-2 hover:bg-gray-100 rounded-full"
-            disabled={loading}
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+            disabled={loading}>
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
           </button>
         </div>
 
-        <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-6">
+        <form
+          onSubmit={handleSubmit(onFormSubmit)}
+          className="space-y-6">
           <div className="bg-gray-50 p-6 rounded-lg">
             <h4 className="text-lg font-semibold text-gray-900 mb-4">Información del Rubro</h4>
 
@@ -180,7 +190,10 @@ export const RubroForm = ({
               />
               {errors.nombre && (
                 <p className="text-red-500 text-sm mt-1 flex items-center">
-                  <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                  <svg
+                    className="w-4 h-4 mr-1"
+                    fill="currentColor"
+                    viewBox="0 0 20 20">
                     <path
                       fillRule="evenodd"
                       d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
@@ -235,28 +248,35 @@ export const RubroForm = ({
                     required: tieneRubroPadre ? "Debe seleccionar un rubro padre" : false,
                     setValueAs: (value) => {
                       if (value === "" || value === "null" || value === null) {
-                        return null
+                        return null;
                       }
-                      return Number(value)
+                      return Number(value);
                     },
                   })}
                   className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition-colors text-gray-900 bg-white ${
                     errors.idRubroInsumoPadre ? "border-red-500 bg-red-50" : "border-gray-300"
                   }`}
-                  disabled={loading || !!rubroPadrePreseleccionado}
-                >
-                  <option value="" className="text-gray-900">
+                  disabled={loading || !!rubroPadrePreseleccionado}>
+                  <option
+                    value=""
+                    className="text-gray-900">
                     Seleccionar rubro padre...
                   </option>
                   {rubrosDisponibles.map((r) => (
-                    <option key={r.getIdRubroInsumo()} value={r.getIdRubroInsumo()} className="text-gray-900">
+                    <option
+                      key={r.getIdRubroInsumo()}
+                      value={r.getIdRubroInsumo()}
+                      className="text-gray-900">
                       {r.getNombre()}
                     </option>
                   ))}
                 </select>
                 {errors.idRubroInsumoPadre && (
                   <p className="text-red-500 text-sm mt-1 flex items-center">
-                    <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                    <svg
+                      className="w-4 h-4 mr-1"
+                      fill="currentColor"
+                      viewBox="0 0 20 20">
                       <path
                         fillRule="evenodd"
                         d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
@@ -278,7 +298,10 @@ export const RubroForm = ({
           {/* Información adicional */}
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
             <h4 className="text-sm font-medium text-blue-900 mb-3 flex items-center">
-              <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+              <svg
+                className="w-5 h-5 mr-2"
+                fill="currentColor"
+                viewBox="0 0 20 20">
                 <path
                   fillRule="evenodd"
                   d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
@@ -325,36 +348,31 @@ export const RubroForm = ({
               type="button"
               onClick={onCancel}
               className="px-6 py-3 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 transition-colors"
-              disabled={loading}
-            >
+              disabled={loading}>
               Cancelar
             </button>
             <button
               type="submit"
               className="px-8 py-3 text-sm font-medium text-white bg-orange-600 border border-transparent rounded-lg hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center"
-              disabled={loading}
-            >
+              disabled={loading}>
               {loading ? (
                 <>
                   <svg
                     className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
-                    viewBox="0 0 24 24"
-                  >
+                    viewBox="0 0 24 24">
                     <circle
                       className="opacity-25"
                       cx="12"
                       cy="12"
                       r="10"
                       stroke="currentColor"
-                      strokeWidth="4"
-                    ></circle>
+                      strokeWidth="4"></circle>
                     <path
                       className="opacity-75"
                       fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    ></path>
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
                   Guardando...
                 </>
@@ -366,5 +384,5 @@ export const RubroForm = ({
         </form>
       </div>
     </div>
-  )
-}
+  );
+};

@@ -1,14 +1,13 @@
-import CategoryIcon from '@mui/icons-material/Category'
-import { useEffect, useState } from "react"
-import { CategoriaDetailsModal } from "../../../components/categorias/CategoriaDetailsModal"
-import { CategoriaForm } from "../../../components/categorias/CategoriaForm"
-import { CategoriasFilters } from "../../../components/categorias/CategoriasFilters"
-import { CategoriasTable } from "../../../components/categorias/CategoriasTable"
-import { PageHeader } from "../../../components/shared/PageHeader"
-import type { CategoriaExtendidaDto } from "../../../models/dto/CategoriaExtendidaDto"
-import type { NuevaCategoriaDto } from "../../../models/dto/NuevaCategoriaDto"
-import { useAuth0Store } from "../../../store/auth/useAuth0Store"
-import { useCategoriasStore } from "../../../store/categorias/useCategoriasStore"
+import CategoryIcon from "@mui/icons-material/Category";
+import { useEffect, useState } from "react";
+import { CategoriaDetailsModal } from "../../../components/categorias/CategoriaDetailsModal";
+import { CategoriaForm } from "../../../components/categorias/CategoriaForm";
+import { CategoriasFilters } from "../../../components/categorias/CategoriasFilters";
+import { CategoriasTable } from "../../../components/categorias/CategoriasTable";
+import { PageHeader } from "../../../components/shared/PageHeader";
+import type { CategoriaExtendidaDto } from "../../../models/dto/CategoriaExtendidaDto";
+import type { NuevaCategoriaDto } from "../../../models/dto/NuevaCategoriaDto";
+import { useCategoriasStore } from "../../../store/categorias/useCategoriasStore";
 
 export const Categorias = () => {
   const {
@@ -30,12 +29,10 @@ export const Categorias = () => {
     getPaginationInfo,
   } = useCategoriasStore();
 
-  const { user } = useAuth0Store()
-
-  const [showForm, setShowForm] = useState(false)
-  const [showDetails, setShowDetails] = useState(false)
-  const [selectedCategoria, setSelectedCategoria] = useState<CategoriaExtendidaDto | null>(null)
-  const [isEditing, setIsEditing] = useState(false)
+  const [showForm, setShowForm] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
+  const [selectedCategoria, setSelectedCategoria] = useState<CategoriaExtendidaDto | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
 
   // Cargar categorías al montar el componente
   useEffect(() => {

@@ -5,32 +5,27 @@ import { interceptorsApiClient } from "./interceptors/axios.interceptors";
 const BASE_URL = "https://localhost:8080";
 
 interface RubroInsumoApiResponse {
-  idRubroInsumo: number
-  nombre: string
-  dadoDeAlta: boolean
-  idRubroInsumoPadre?: number | null
+  idRubroInsumo: number;
+  nombre: string;
+  dadoDeAlta: boolean;
+  idRubroInsumoPadre?: number | null;
 }
 
 interface ListaRubrosResponse {
-  rubrosDto: RubroInsumoApiResponse[]
+  rubrosDto: RubroInsumoApiResponse[];
 }
 
 export class RubroInsumoServicio {
   // GET /rubroInsumo/lista
   static async listarRubros(): Promise<RubroInsumoDto[]> {
     try {
-      const response = await interceptorsApiClient(`/rubroInsumo/abm`)      
+      const response = await interceptorsApiClient(`/rubroInsumo/abm`);
 
-      const data: ListaRubrosResponse = await response.data
+      const data: ListaRubrosResponse = await response.data;
 
       // Convertir a RubroInsumoDto
       const rubros = data.rubrosDto.map((item) => {
-        return new RubroInsumoDto(
-          item.idRubroInsumo,
-          item.nombre,
-          item.dadoDeAlta,
-          item.idRubroInsumoPadre || null,
-        );
+        return new RubroInsumoDto(item.idRubroInsumo, item.nombre, item.dadoDeAlta, item.idRubroInsumoPadre || null);
       });
 
       // Organizar jerarquía
@@ -78,12 +73,7 @@ export class RubroInsumoServicio {
 
       const data: RubroInsumoApiResponse = await response.json();
 
-      return new RubroInsumoDto(
-        data.idRubroInsumo,
-        data.nombre,
-        data.dadoDeAlta,
-        data.idRubroInsumoPadre || null,
-      );
+      return new RubroInsumoDto(data.idRubroInsumo, data.nombre, data.dadoDeAlta, data.idRubroInsumoPadre || null);
     } catch (error) {
       console.error("Error al actualizar rubro:", error);
       throw error;

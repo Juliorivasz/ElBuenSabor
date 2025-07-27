@@ -1,18 +1,18 @@
-"use client"
+"use client";
 
-import { Search } from "lucide-react"
-import type React from "react"
+import { Search } from "lucide-react";
+import type React from "react";
 
 interface SearchFieldProps {
-  onSearch: (searchTerm: string) => void
-  placeholder?: string
-  className?: string
+  onSearch: (searchTerm: string) => void;
+  placeholder?: string;
+  className?: string;
 }
 
 const SearchField: React.FC<SearchFieldProps> = ({ onSearch, placeholder = "Buscar...", className = "" }) => {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    onSearch(e.target.value)
-  }
+    onSearch(e.target.value);
+  };
 
   return (
     <div className={`relative ${className}`}>
@@ -26,7 +26,7 @@ const SearchField: React.FC<SearchFieldProps> = ({ onSearch, placeholder = "Busc
         className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-orange-500 focus:border-orange-500 text-gray-900 sm:text-sm"
       />
     </div>
-  )
-}
+  );
+};
 
-export default SearchField
+export default SearchField;

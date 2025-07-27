@@ -1,4 +1,7 @@
-//
+"use client";
+
+import type React from "react";
+
 import type { CategoryProps } from "../types/category";
 import { HorizontalScroll } from "../categoryFilter/HorizontalScroll";
 
@@ -6,32 +9,25 @@ export const Category: React.FC<CategoryProps> = ({ categorias, selected, onSele
   return (
     <div className="w-full">
       {/* Desktop - Layout original */}
-      <div className="hidden lg:flex gap-4 flex-wrap min-h-[150px]">
+      <div className="hidden lg:flex gap-4 flex-wrap min-h-[120px]">
         <div
           key={0}
           className="group">
           <button
             onClick={() => onSelect("todos")}
-            className={`flex flex-col items-center p-2 rounded-full shadow-md transition-all duration-500 cursor-pointer overflow-hidden ${
-              selected === "todos" ? "bg-orange-500 text-white" : "bg-white text-black"
+            className={`flex flex-col items-center justify-center p-4 rounded-xl shadow-md transition-all duration-300 cursor-pointer min-w-[100px] min-h-[80px] ${
+              selected === "todos"
+                ? "bg-orange-500 text-white shadow-lg scale-105"
+                : "bg-white text-gray-700 hover:bg-orange-50 hover:shadow-lg hover:scale-105"
             }`}>
-            <div className="bg-gray-900 rounded-full ">
-              <img
-                src={"/icons/cubiertos.svg"}
-                alt={"todos"}
-                className={`bg-white w-20 h-20 object-cover p-2 rounded-full border-4 border-orange-500 ${
-                  selected === "todos" ? "border-white" : "border-orange-500"
-                }`}
-              />
-            </div>
-            <span className="text-sm font-extrabold translate-y-full text-center max-w-[80px] opacity-0 overflow-hidden text-ellipsis break-words leading-tight max-h-0 group-hover:mt-2 group-hover:p-1 group-hover:opacity-100 group-hover:max-h-10 group-hover:-translate-y-1 transition-all duration-500 ease-in-out">
-              {"todos"}
+            <span className="text-sm font-bold text-center max-w-[80px] overflow-hidden text-ellipsis break-words leading-tight">
+              Todos
             </span>
           </button>
         </div>
+
         {categorias.map((categoria) => {
           const nombre = categoria.getNombre();
-          const imagen = categoria.getImagenDto().getUrl() || "https://placehold.co/150";
           const id = categoria.getIdCategoria().toString();
 
           return (
@@ -40,17 +36,12 @@ export const Category: React.FC<CategoryProps> = ({ categorias, selected, onSele
               className="group">
               <button
                 onClick={() => onSelect(id)}
-                className={`flex flex-col items-center p-2 rounded-full shadow-md transition-all duration-500 cursor-pointer overflow-hidden ${
-                  selected === id ? "bg-orange-500 text-white" : "bg-white text-black"
+                className={`flex flex-col items-center justify-center p-4 rounded-xl shadow-md transition-all duration-300 cursor-pointer min-w-[100px] min-h-[80px] ${
+                  selected === id
+                    ? "bg-orange-500 text-white shadow-lg scale-105"
+                    : "bg-white text-gray-700 hover:bg-orange-50 hover:shadow-lg hover:scale-105"
                 }`}>
-                <img
-                  src={imagen}
-                  alt={nombre}
-                  className={`bg-white w-20 h-20 object-cover p-2 rounded-full border-4 border-orange-500 ${
-                    selected === id ? "border-white" : "border-orange-500"
-                  }`}
-                />
-                <span className="text-sm font-extrabold translate-y-full text-center max-w-[80px] opacity-0 overflow-hidden text-ellipsis break-words leading-tight max-h-0 group-hover:mt-2 group-hover:p-1 group-hover:opacity-100 group-hover:max-h-10 group-hover:-translate-y-1 transition-all duration-500 ease-in-out">
+                <span className="text-sm font-bold text-center max-w-[80px] overflow-hidden text-ellipsis break-words leading-tight">
                   {nombre}
                 </span>
               </button>
@@ -59,26 +50,21 @@ export const Category: React.FC<CategoryProps> = ({ categorias, selected, onSele
         })}
       </div>
 
-      {/* Mobile & Tablet - Horizontal Scroll como subcategorías */}
+      {/* Mobile & Tablet - Horizontal Scroll */}
       <div className="lg:hidden">
         <HorizontalScroll>
-          <div className="flex gap-3 px-4 py-2 min-h-[120px]">
+          <div className="flex gap-3 px-4 py-2 min-h-[80px]">
             {/* Botón "todos" */}
-            <div className="flex-shrink-0 group">
+            <div className="flex-shrink-0">
               <button
                 onClick={() => onSelect("todos")}
-                className={`flex flex-col items-center p-2 rounded-full shadow-md transition-all duration-500 cursor-pointer overflow-hidden min-w-[80px] ${
-                  selected === "todos" ? "bg-orange-500 text-white" : "bg-white text-black"
+                className={`flex items-center justify-center px-4 py-3 rounded-lg shadow-md transition-all duration-300 cursor-pointer min-w-[80px] ${
+                  selected === "todos"
+                    ? "bg-orange-500 text-white shadow-lg"
+                    : "bg-white text-gray-700 hover:bg-orange-50"
                 }`}>
-                <img
-                  src={"/icons/cubiertos.svg"}
-                  alt={"todos"}
-                  className={`bg-white w-16 h-16 object-cover p-2 rounded-full border-4 border-orange-500 ${
-                    selected === "todos" ? "border-white" : "border-orange-500"
-                  }`}
-                />
-                <span className="text-xs font-extrabold translate-y-full text-center max-w-[64px] opacity-0 overflow-hidden text-ellipsis break-words leading-tight max-h-0 group-hover:mt-1 group-hover:p-1 group-hover:opacity-100 group-hover:max-h-8 group-hover:-translate-y-1 transition-all duration-500 ease-in-out">
-                  {"todos"}
+                <span className="text-xs font-bold text-center max-w-[64px] overflow-hidden text-ellipsis break-words leading-tight">
+                  Todos
                 </span>
               </button>
             </div>
@@ -86,26 +72,20 @@ export const Category: React.FC<CategoryProps> = ({ categorias, selected, onSele
             {/* Categorías */}
             {categorias.map((categoria) => {
               const nombre = categoria.getNombre();
-              const imagen = categoria.getImagenDto().getUrl() || "https://placehold.co/150";
               const id = categoria.getIdCategoria().toString();
 
               return (
                 <div
                   key={id}
-                  className="flex-shrink-0 group">
+                  className="flex-shrink-0">
                   <button
                     onClick={() => onSelect(id)}
-                    className={`flex flex-col items-center p-2 rounded-full shadow-md transition-all duration-500 cursor-pointer overflow-hidden min-w-[80px] ${
-                      selected === id ? "bg-orange-500 text-white" : "bg-white text-black"
+                    className={`flex items-center justify-center px-4 py-3 rounded-lg shadow-md transition-all duration-300 cursor-pointer min-w-[80px] ${
+                      selected === id
+                        ? "bg-orange-500 text-white shadow-lg"
+                        : "bg-white text-gray-700 hover:bg-orange-50"
                     }`}>
-                    <img
-                      src={imagen}
-                      alt={nombre}
-                      className={`bg-white w-16 h-16 object-cover p-2 rounded-full border-4 border-orange-500 ${
-                        selected === id ? "border-white" : "border-orange-500"
-                      }`}
-                    />
-                    <span className="text-xs font-extrabold translate-y-full text-center max-w-[64px] opacity-0 overflow-hidden text-ellipsis break-words leading-tight max-h-0 group-hover:mt-1 group-hover:p-1 group-hover:opacity-100 group-hover:max-h-8 group-hover:-translate-y-1 transition-all duration-500 ease-in-out">
+                    <span className="text-xs font-bold text-center max-w-[64px] overflow-hidden text-ellipsis break-words leading-tight">
                       {nombre}
                     </span>
                   </button>

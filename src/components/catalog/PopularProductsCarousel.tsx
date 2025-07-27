@@ -231,12 +231,12 @@ export const PopularProductsCarousel: React.FC<PopularProductsCarouselProps> = (
           <>
             <button
               onClick={goToPrevious}
-              className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-4 bg-white shadow-lg hover:shadow-xl text-gray-700 p-3 rounded-full transition-all duration-200 z-10">
+              className="absolute -left-8 top-1/2 transform -translate-y-1/2 -translate-x-4 bg-white shadow-lg hover:shadow-xl text-gray-700 p-3 rounded-full transition-all duration-200 z-10">
               <ChevronLeft sx={{ fontSize: 24 }} />
             </button>
             <button
               onClick={goToNext}
-              className="absolute right-0 top-1/2 transform -translate-y-1/2 translate-x-4 bg-white shadow-lg hover:shadow-xl text-gray-700 p-3 rounded-full transition-all duration-200 z-10">
+              className="absolute -right-8 top-1/2 transform -translate-y-1/2 translate-x-4 bg-white shadow-lg hover:shadow-xl text-gray-700 p-3 rounded-full transition-all duration-200 z-10">
               <ChevronRight sx={{ fontSize: 24 }} />
             </button>
           </>
