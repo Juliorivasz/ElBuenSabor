@@ -264,7 +264,7 @@ export const FixedChat: React.FC<FixedChatProps> = ({ userRole }) => {
                 onKeyPress={handleKeyPress}
                 placeholder={isConnected ? "Escribe un mensaje..." : "Conectando..."}
                 disabled={!isConnected}
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed text-sm"
+                className="text-gray-700 flex-1 px-3 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed text-sm"
               />
               <button
                 onClick={handleSendMessage}
