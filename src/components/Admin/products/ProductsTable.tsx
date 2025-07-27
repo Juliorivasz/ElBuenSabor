@@ -151,6 +151,9 @@ export function ProductsTable<T extends BaseProduct>({
                   Precio
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Stock
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Estado
                 </th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -199,6 +202,9 @@ export function ProductsTable<T extends BaseProduct>({
                         </span>
                       )}
                     </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {(product as any).getStock ? (product as any).getStock() : "-"}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span
@@ -262,7 +268,7 @@ export function ProductsTable<T extends BaseProduct>({
           <button
             onClick={() => setShowUpdatePricesModal(true)}
             disabled={isUpdatingPrices}
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-500 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {isUpdatingPrices ? (
               <>
@@ -293,7 +299,7 @@ export function ProductsTable<T extends BaseProduct>({
 
       {/* Modal de confirmación */}
       {showUpdatePricesModal && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm overflow-y-auto h-full w-full z-50">
           <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
             <div className="mt-3">
               <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-yellow-100">
@@ -323,7 +329,7 @@ export function ProductsTable<T extends BaseProduct>({
                     <button
                       onClick={handleUpdatePrices}
                       disabled={isUpdatingPrices}
-                      className="px-4 py-2 bg-indigo-600 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-300 disabled:opacity-50"
+                      className="px-4 py-2 bg-blue-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-indigo-300 disabled:opacity-50"
                     >
                       {isUpdatingPrices ? "Actualizando..." : "Confirmar"}
                     </button>

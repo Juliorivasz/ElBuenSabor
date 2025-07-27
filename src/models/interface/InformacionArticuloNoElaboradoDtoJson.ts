@@ -8,4 +8,5 @@ export interface IInformacionArticuloNoElaboradoDtoJson {
   idCategoria: number;
   nombreCategoria: string;
   imagenUrl: string | null;
+  stock: number;
 }
