@@ -1,51 +1,51 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useCartStore } from "../../store/cart/useCartStore"
-import type { DeliveryType } from "./DeliverySelector"
-import type { PaymentMethod } from "./PaymentMethodSelector"
-import type { Direccion } from "../../models/Direccion"
-import { MercadoPagoButton } from "./MercadoPagoButton"
-import { pedidoServicio, type NuevoPedidoRequest } from "../../services/pedidoServicio"
-import { TipoEnvio } from "../../models/enum/TipoEnvio"
-import { MetodoDePago } from "../../models/enum/MetodoDePago"
+import { useState } from "react";
+import { useCartStore } from "../../store/cart/useCartStore";
+import type { DeliveryType } from "./DeliverySelector";
+import type { PaymentMethod } from "./PaymentMethodSelector";
+import type { Direccion } from "../../models/Direccion";
+import { MercadoPagoButton } from "./MercadoPagoButton";
+import { pedidoServicio, type NuevoPedidoRequest } from "../../services/pedidoServicio";
+import { TipoEnvio } from "../../models/enum/TipoEnvio";
+import { MetodoDePago } from "../../models/enum/MetodoDePago";
 
 interface OrderSummaryProps {
-  deliveryType: DeliveryType
-  paymentMethod: PaymentMethod
-  selectedAddress?: Direccion
-  onConfirmOrder: () => void
+  deliveryType: DeliveryType;
+  paymentMethod: PaymentMethod;
+  selectedAddress?: Direccion;
+  onConfirmOrder: () => void;
 }
 
 export const OrderSummary = ({ deliveryType, paymentMethod, selectedAddress, onConfirmOrder }: OrderSummaryProps) => {
-  const { items, getTotalPrice, getTotalItems, clearCart } = useCartStore()
-  const [isOrderConfirmed, setIsOrderConfirmed] = useState(false)
-  const [isProcessing, setIsProcessing] = useState(false)
+  const { items, getTotalPrice, getTotalItems, clearCart, isPromocionalDiscount } = useCartStore();
+  const [isOrderConfirmed, setIsOrderConfirmed] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
 
-  const subtotal = getTotalPrice()
-  const deliveryCost = deliveryType === "delivery" ? 2000 : 0
-  const total = subtotal + deliveryCost
-  const totalItems = getTotalItems()
+  const subtotal = getTotalPrice();
+  const deliveryCost = deliveryType === "delivery" ? 2000 : 0;
+  const total = subtotal + deliveryCost;
+  const totalItems = getTotalItems();
 
   // Validar si se puede confirmar el pedido
   const canConfirmOrder = () => {
-    if (totalItems === 0) return false
-    if (deliveryType === "delivery" && !selectedAddress) return false
-    return true
-  }
+    if (totalItems === 0) return false;
+    if (deliveryType === "delivery" && !selectedAddress) return false;
+    return true;
+  };
 
   const handleConfirmOrder = async () => {
-    if (!canConfirmOrder() || isProcessing) return
+    if (!canConfirmOrder() || isProcessing) return;
 
     // Si es Mercado Pago, solo confirmar y mostrar botón de pago
     if (paymentMethod === "mercado_pago") {
-      onConfirmOrder()
-      setIsOrderConfirmed(true)
-      return
+      onConfirmOrder();
+      setIsOrderConfirmed(true);
+      return;
     }
 
     // Si es efectivo, crear el pedido
-    setIsProcessing(true)
+    setIsProcessing(true);
 
     try {
       const nuevoPedido: NuevoPedidoRequest = {
@@ -56,23 +56,23 @@ export const OrderSummary = ({ deliveryType, paymentMethod, selectedAddress, onC
           idArticulo: item.articulo.getIdArticulo(),
           cantidad: item.quantity,
         })),
-      }
+      };
 
-      await pedidoServicio.crearNuevoPedido(nuevoPedido)
+      await pedidoServicio.crearNuevoPedido(nuevoPedido);
 
       // Limpiar carrito y confirmar pedido
-      clearCart()
-      onConfirmOrder()
-      setIsOrderConfirmed(true)
+      clearCart();
+      onConfirmOrder();
+      setIsOrderConfirmed(true);
 
-      alert("¡Pedido creado exitosamente! Gracias por tu compra.")
+      alert("¡Pedido creado exitosamente! Gracias por tu compra.");
     } catch (error) {
-      console.error("Error al crear el pedido:", error)
-      alert("Hubo un error al procesar tu pedido. Por favor, intenta nuevamente.")
+      console.error("Error al crear el pedido:", error);
+      alert("Hubo un error al procesar tu pedido. Por favor, intenta nuevamente.");
     } finally {
-      setIsProcessing(false)
+      setIsProcessing(false);
     }
-  }
+  };
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
@@ -81,19 +81,27 @@ export const OrderSummary = ({ deliveryType, paymentMethod, selectedAddress, onC
       {/* Lista de productos con subtotales */}
       <div className="space-y-3 mb-6">
         {items.map((item) => {
-          const itemSubtotal = item.articulo.getPrecioVenta() * item.quantity
+          const itemSubtotal = item.articulo.getPrecioVenta() * item.quantity * (item.promocionalDiscount ?? 1);
           return (
-            <div key={item.articulo.getIdArticulo()} className="flex justify-between text-sm">
+            <div
+              key={item.articulo.getIdArticulo()}
+              className="flex justify-between text-sm">
               <span className="text-gray-600">
                 {item.articulo.getDescripcion()} x{item.quantity}
               </span>
               <span className="font-medium text-gray-900">${itemSubtotal.toFixed(2)}</span>
             </div>
-          )
+          );
         })}
       </div>
 
       <hr className="border-gray-200 mb-4" />
+
+      {isPromocionalDiscount() && (
+        <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-4">
+          <p className="text-green-800 text-sm font-medium">¡Descuento aplicado!</p>
+        </div>
+      )}
 
       {/* Resumen de costos */}
       <div className="space-y-3 mb-6">
@@ -132,8 +140,7 @@ export const OrderSummary = ({ deliveryType, paymentMethod, selectedAddress, onC
         <button
           onClick={handleConfirmOrder}
           disabled={!canConfirmOrder() || isProcessing}
-          className="w-full bg-yellow-500 hover:bg-yellow-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-semibold py-4 px-6 rounded-lg transition-colors text-lg shadow-sm hover:shadow-md"
-        >
+          className="w-full bg-yellow-500 hover:bg-yellow-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-semibold py-4 px-6 rounded-lg transition-colors text-lg shadow-sm hover:shadow-md">
           {isProcessing ? "Procesando..." : "Confirmar Pedido"}
         </button>
       ) : (
@@ -143,9 +150,9 @@ export const OrderSummary = ({ deliveryType, paymentMethod, selectedAddress, onC
               ? "¡Pedido confirmado! Pagarás al recibir tu pedido."
               : "¡Pedido confirmado! Procede con el pago:"}
           </div>
-          {paymentMethod === "mercado_pago" && <MercadoPagoButton />}
+          {paymentMethod === "mercado_pago" && <MercadoPagoButton costoEnvio={deliveryCost} />}
         </div>
       )}
     </div>
-  )
-}
+  );
+};
