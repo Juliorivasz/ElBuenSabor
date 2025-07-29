@@ -32,7 +32,7 @@ export const getRedirectPathByRole = (roles: string[]): string => {
   const lowerRoles = roles.map((r) => r.toLowerCase());
 
   if (lowerRoles.includes(ROLES.ADMINISTRADOR)) {
-    return "/admin/dashboard";
+    return "/admin/estadisticas";
   }
   if (lowerRoles.includes(ROLES.COCINERO)) {
     return "/admin/cocina";

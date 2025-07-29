@@ -35,13 +35,7 @@ interface SidebarItem {
   allowedRoles: string[];
 }
 
-const sidebarItems: SidebarItem[] = [
-  {
-    name: "Dashboard",
-    path: "/admin/dashboard",
-    icon: DashboardIcon,
-    allowedRoles: ["administrador"],
-  },
+const sidebarItems: SidebarItem[] = [ 
   {
     name: "Empleados",
     path: "/admin/empleados",
