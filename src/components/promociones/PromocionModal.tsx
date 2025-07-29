@@ -1,16 +1,16 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { useState, useEffect } from "react"
-import { Close as CloseIcon, CloudUpload as UploadIcon, Link as LinkIcon } from "@mui/icons-material"
-import type { Promocion } from "../../models/Promocion"
-import { promocionServicio, type PromocionData, type ArticuloListado } from "../../services/promocionServicio"
-import { NotificationService } from "../../utils/notifications"
+import type React from "react";
+import { useState, useEffect } from "react";
+import { Close as CloseIcon, CloudUpload as UploadIcon, Link as LinkIcon } from "@mui/icons-material";
+import type { Promocion } from "../../models/Promocion";
+import { promocionServicio, type PromocionData, type ArticuloListado } from "../../services/promocionServicio";
+import { NotificationService } from "../../utils/notifications";
 
 interface PromocionModalProps {
-  promocion?: Promocion | null
-  onClose: () => void
-  onSuccess: () => void
+  promocion?: Promocion | null;
+  onClose: () => void;
+  onSuccess: () => void;
 }
 
 export const PromocionModal: React.FC<PromocionModalProps> = ({ promocion, onClose, onSuccess }) => {
@@ -22,19 +22,19 @@ export const PromocionModal: React.FC<PromocionModalProps> = ({ promocion, onClo
     horarioFin: "",
     activo: true,
     idArticulo: 0,
-  })
+  });
 
-  const [articulos, setArticulos] = useState<ArticuloListado[]>([])
-  const [loading, setLoading] = useState(false)
-  const [imageOption, setImageOption] = useState<"file" | "url">("file")
-  const [selectedFile, setSelectedFile] = useState<File | null>(null)
-  const [imageUrl, setImageUrl] = useState("")
-  const [previewUrl, setPreviewUrl] = useState("")
+  const [articulos, setArticulos] = useState<ArticuloListado[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [imageOption, setImageOption] = useState<"file" | "url">("file");
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [imageUrl, setImageUrl] = useState("");
+  const [previewUrl, setPreviewUrl] = useState("");
 
-  const isEditing = !!promocion
+  const isEditing = !!promocion;
 
   useEffect(() => {
-    cargarArticulos()
+    cargarArticulos();
     if (promocion) {
       setFormData({
         titulo: promocion.getTitulo(),
@@ -44,100 +44,100 @@ export const PromocionModal: React.FC<PromocionModalProps> = ({ promocion, onClo
         horarioFin: promocion.getHorarioFin(),
         activo: promocion.getActivo(),
         idArticulo: promocion.getIdArticulo(),
-      })
+      });
       if (promocion.getUrl()) {
-        setImageUrl(promocion.getUrl())
-        setPreviewUrl(promocion.getUrl())
-        setImageOption("url")
+        setImageUrl(promocion.getUrl());
+        setPreviewUrl(promocion.getUrl());
+        setImageOption("url");
       }
     }
-  }, [promocion])
+  }, [promocion]);
 
   const cargarArticulos = async () => {
     try {
-      const data = await promocionServicio.obtenerArticulos()
-      setArticulos(data)
+      const data = await promocionServicio.obtenerArticulos();
+      setArticulos(data);
     } catch (error) {
-      console.error("Error al cargar artículos:", error)
-      NotificationService.error("Error al cargar la lista de artículos")
+      console.error("Error al cargar artículos:", error);
+      NotificationService.error("Error al cargar la lista de artículos");
     }
-  }
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value, type } = e.target
+    const { name, value, type } = e.target;
     setFormData((prev) => ({
       ...prev,
       [name]:
         type === "number"
           ? Number.parseFloat(value) || 0
           : type === "checkbox"
-            ? (e.target as HTMLInputElement).checked
-            : value,
-    }))
-  }
+          ? (e.target as HTMLInputElement).checked
+          : value,
+    }));
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
+    const file = e.target.files?.[0];
     if (file) {
-      setSelectedFile(file)
-      const url = URL.createObjectURL(file)
-      setPreviewUrl(url)
-      setImageUrl("")
+      setSelectedFile(file);
+      const url = URL.createObjectURL(file);
+      setPreviewUrl(url);
+      setImageUrl("");
     }
-  }
+  };
 
   const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const url = e.target.value
-    setImageUrl(url)
-    setPreviewUrl(url)
-    setSelectedFile(null)
-  }
+    const url = e.target.value;
+    setImageUrl(url);
+    setPreviewUrl(url);
+    setSelectedFile(null);
+  };
 
   const handleImageOptionChange = (option: "file" | "url") => {
-    setImageOption(option)
+    setImageOption(option);
     if (option === "file") {
-      setImageUrl("")
+      setImageUrl("");
     } else {
-      setSelectedFile(null)
+      setSelectedFile(null);
     }
-    setPreviewUrl("")
-  }
+    setPreviewUrl("");
+  };
 
   const validateForm = () => {
     if (!formData.titulo.trim()) {
-      NotificationService.error("El título es obligatorio")
-      return false
+      NotificationService.error("El título es obligatorio");
+      return false;
     }
     if (!formData.descripcion.trim()) {
-      NotificationService.error("La descripción es obligatoria")
-      return false
+      NotificationService.error("La descripción es obligatoria");
+      return false;
     }
     if (formData.descuento <= 0 || formData.descuento > 1) {
-      NotificationService.error("El descuento debe ser un valor entre 0.01 y 1")
-      return false
+      NotificationService.error("El descuento debe ser un valor entre 0.01 y 1");
+      return false;
     }
     if (formData.idArticulo === 0) {
-      NotificationService.error("Debe seleccionar un artículo")
-      return false
+      NotificationService.error("Debe seleccionar un artículo");
+      return false;
     }
     if (imageOption === "file" && !selectedFile && !isEditing) {
-      NotificationService.error("Debe seleccionar una imagen")
-      return false
+      NotificationService.error("Debe seleccionar una imagen");
+      return false;
     }
     if (imageOption === "url" && !imageUrl.trim()) {
-      NotificationService.error("Debe proporcionar una URL de imagen")
-      return false
+      NotificationService.error("Debe proporcionar una URL de imagen");
+      return false;
     }
-    return true
-  }
+    return true;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
-    if (!validateForm()) return
+    if (!validateForm()) return;
 
     try {
-      setLoading(true)
+      setLoading(true);
 
       if (isEditing) {
         await promocionServicio.modificarPromocion(
@@ -145,25 +145,25 @@ export const PromocionModal: React.FC<PromocionModalProps> = ({ promocion, onClo
           formData,
           imageOption === "file" ? selectedFile || undefined : undefined,
           imageOption === "url" ? imageUrl : undefined,
-        )
-        NotificationService.success("Promoción actualizada correctamente")
+        );
+        NotificationService.success("Promoción actualizada correctamente");
       } else {
         await promocionServicio.crearPromocion(
           formData,
           imageOption === "file" ? selectedFile || undefined : undefined,
           imageOption === "url" ? imageUrl : undefined,
-        )
-        NotificationService.success("Promoción creada correctamente")
+        );
+        NotificationService.success("Promoción creada correctamente");
       }
 
-      onSuccess()
+      onSuccess();
     } catch (error) {
-      console.error("Error al guardar promoción:", error)
-      NotificationService.error("Error al guardar la promoción")
+      console.error("Error al guardar promoción:", error);
+      NotificationService.error("Error al guardar la promoción");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 p-4">
@@ -171,13 +171,17 @@ export const PromocionModal: React.FC<PromocionModalProps> = ({ promocion, onClo
         {/* Header */}
         <div className="flex justify-between items-center p-6 border-b border-gray-200">
           <h2 className="text-2xl font-bold text-gray-800">{isEditing ? "Editar Promoción" : "Nueva Promoción"}</h2>
-          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+          <button
+            onClick={onClose}
+            className="p-2 hover:bg-gray-100 rounded-full transition-colors">
             <CloseIcon />
           </button>
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="p-6">
+        <form
+          onSubmit={handleSubmit}
+          className="p-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Columna izquierda */}
             <div className="space-y-4">
@@ -217,11 +221,12 @@ export const PromocionModal: React.FC<PromocionModalProps> = ({ promocion, onClo
                   value={formData.idArticulo}
                   onChange={handleInputChange}
                   className="text-gray-600 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                  required
-                >
+                  required>
                   <option value={0}>Seleccione un artículo</option>
                   {articulos.map((articulo) => (
-                    <option key={articulo.idArticulo} value={articulo.idArticulo}>
+                    <option
+                      key={articulo.idArticulo}
+                      value={articulo.idArticulo}>
                       {articulo.nombre}
                     </option>
                   ))}
@@ -323,7 +328,9 @@ export const PromocionModal: React.FC<PromocionModalProps> = ({ promocion, onClo
                       className="hidden"
                       id="file-upload"
                     />
-                    <label htmlFor="file-upload" className="cursor-pointer">
+                    <label
+                      htmlFor="file-upload"
+                      className="cursor-pointer">
                       <UploadIcon className="mx-auto h-12 w-12 text-gray-400 mb-4" />
                       <p className="text-sm text-gray-600">Haz clic para seleccionar o arrastra una imagen aquí</p>
                       <p className="text-xs text-gray-500 mt-2">PNG, JPG, GIF hasta 10MB</p>
@@ -372,20 +379,18 @@ export const PromocionModal: React.FC<PromocionModalProps> = ({ promocion, onClo
             <button
               type="button"
               onClick={onClose}
-              className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-            >
+              className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
               Cancelar
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="px-6 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
-            >
+              className="px-6 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200">
               {loading ? "Guardando..." : isEditing ? "Actualizar" : "Crear"}
             </button>
           </div>
         </form>
       </div>
     </div>
-  )
-}
+  );
+};

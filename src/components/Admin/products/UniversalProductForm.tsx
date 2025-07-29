@@ -1,41 +1,41 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState, useEffect, type FC } from "react"
-import { InformacionArticuloManufacturadoDto } from "../../../models/dto/InformacionArticuloManufacturadoDto"
-import { InformacionArticuloNoElaboradoDto } from "../../../models/dto/InformacionArticuloNoElaboradoDto"
-import type { CategoriaDTO } from "../../../models/dto/CategoriaDTO"
-import type { InsumoDTO } from "../../../models/dto/InsumoDTO"
-import { InformacionDetalleDto } from "../../../models/dto/InformacionDetalleDto"
+import { useState, useEffect, type FC } from "react";
+import { InformacionArticuloManufacturadoDto } from "../../../models/dto/InformacionArticuloManufacturadoDto";
+import { InformacionArticuloNoElaboradoDto } from "../../../models/dto/InformacionArticuloNoElaboradoDto";
+import type { CategoriaDTO } from "../../../models/dto/CategoriaDTO";
+import type { InsumoDTO } from "../../../models/dto/InsumoDTO";
+import { InformacionDetalleDto } from "../../../models/dto/InformacionDetalleDto";
 
-type ProductUnion = InformacionArticuloManufacturadoDto | InformacionArticuloNoElaboradoDto
+type ProductUnion = InformacionArticuloManufacturadoDto | InformacionArticuloNoElaboradoDto;
 
 interface UniversalProductFormProps {
-  product?: ProductUnion
-  categories: CategoriaDTO[]
-  ingredients?: InsumoDTO[] // Solo para manufacturados
-  onSubmit: (product: ProductUnion, file?: File) => void
-  onCancel: () => void
-  loading: boolean
-  type: "manufacturado" | "noElaborado"
+  product?: ProductUnion;
+  categories: CategoriaDTO[];
+  ingredients?: InsumoDTO[]; // Solo para manufacturados
+  onSubmit: (product: ProductUnion, file?: File) => void;
+  onCancel: () => void;
+  loading: boolean;
+  type: "manufacturado" | "noElaborado";
 }
 
 interface FormData {
-  nombre: string
-  descripcion: string
-  precioVenta: number
-  precioModificado: boolean // Cambiado a boolean para representar checkbox
-  idCategoria: number
-  idSubcategoria: number // Separamos categoría y subcategoría
-  imagenUrl: string
+  nombre: string;
+  descripcion: string;
+  precioVenta: number;
+  precioModificado: boolean; // Cambiado a boolean para representar checkbox
+  idCategoria: number;
+  idSubcategoria: number; // Separamos categoría y subcategoría
+  imagenUrl: string;
   // Campos específicos para manufacturados
-  receta?: string
-  tiempoDeCocina?: number
+  receta?: string;
+  tiempoDeCocina?: number;
   detalles?: Array<{
-    idArticuloInsumo: number
-    cantidad: number
-  }>
+    idArticuloInsumo: number;
+    cantidad: number;
+  }>;
 }
 
 export const UniversalProductForm: FC<UniversalProductFormProps> = ({
@@ -58,19 +58,19 @@ export const UniversalProductForm: FC<UniversalProductFormProps> = ({
     receta: "",
     tiempoDeCocina: 0,
     detalles: [],
-  })
+  });
 
-  const [errors, setErrors] = useState<Record<string, string>>({})
-  const [activeTab, setActiveTab] = useState<"general" | "detalles">("general")
-  const [availableSubcategories, setAvailableSubcategories] = useState<CategoriaDTO[]>([])
-  const [suggestedPrice, setSuggestedPrice] = useState<number>(0)
-  const [costoTotal, setCostoTotal] = useState<number>(0)
-  const [margenGanancia, setMargenGanancia] = useState<number>(1)
-  const [selectedFile, setSelectedFile] = useState<File | null>(null)
-  const [imageSource, setImageSource] = useState<"url" | "file">("url")
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [activeTab, setActiveTab] = useState<"general" | "detalles">("general");
+  const [availableSubcategories, setAvailableSubcategories] = useState<CategoriaDTO[]>([]);
+  const [suggestedPrice, setSuggestedPrice] = useState<number>(0);
+  const [costoTotal, setCostoTotal] = useState<number>(0);
+  const [margenGanancia, setMargenGanancia] = useState<number>(1);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [imageSource, setImageSource] = useState<"url" | "file">("url");
 
   // Obtener categorías principales y subcategorías
-  const mainCategories = categories.filter((cat) => cat.getIdCategoriaPadre() === 0 || !cat.getIdCategoriaPadre())
+  const mainCategories = categories.filter((cat) => cat.getIdCategoriaPadre() === 0 || !cat.getIdCategoriaPadre());
 
   // Calcular precio sugerido basado en ingredientes (solo para manufacturados)
   useEffect(() => {
@@ -78,56 +78,56 @@ export const UniversalProductForm: FC<UniversalProductFormProps> = ({
       // Por ahora, usar un precio base fijo o lógica alternativa
       // ya que no tenemos acceso a precios de ingredientes
 
-      setMargenGanancia(2)
-      const basePrice = calcularPrecioSugerido()
-      setSuggestedPrice(basePrice)
+      setMargenGanancia(2);
+      const basePrice = calcularPrecioSugerido();
+      setSuggestedPrice(basePrice);
 
       // Si no es precio modificado (es sugerido), actualizar el precio automáticamente
       if (!formData.precioModificado) {
-        setFormData((prev) => ({ ...prev, precioVenta: basePrice }))
+        setFormData((prev) => ({ ...prev, precioVenta: basePrice }));
       }
     } else {
-      setSuggestedPrice(0)
+      setSuggestedPrice(0);
     }
-  }, [formData.detalles, formData.precioModificado, type])
+  }, [formData.detalles, formData.precioModificado, type]);
 
   // Obtener subcategorías de la categoría seleccionada
   useEffect(() => {
     if (formData.idCategoria > 0) {
       // Buscar subcategorías que tengan como padre la categoría seleccionada
-      const subcategories = categories.filter((cat) => cat.getIdCategoriaPadre() === formData.idCategoria)
-      setAvailableSubcategories(subcategories)
+      const subcategories = categories.filter((cat) => cat.getIdCategoriaPadre() === formData.idCategoria);
+      setAvailableSubcategories(subcategories);
     } else {
-      setAvailableSubcategories([])
+      setAvailableSubcategories([]);
     }
-  }, [formData.idCategoria, categories])
+  }, [formData.idCategoria, categories]);
 
   // Determinar si un ID de categoría es una subcategoría
   const isSubcategory = (categoryId: number): boolean => {
-    const category = categories.find((cat) => cat.getIdCategoria() === categoryId)
-    return category ? category.getIdCategoriaPadre() !== 0 && !!category.getIdCategoriaPadre() : false
-  }
+    const category = categories.find((cat) => cat.getIdCategoria() === categoryId);
+    return category ? category.getIdCategoriaPadre() !== 0 && !!category.getIdCategoriaPadre() : false;
+  };
 
   // Obtener el ID de la categoría padre de una subcategoría
   const getParentCategoryId = (subcategoryId: number): number => {
-    const subcategory = categories.find((cat) => cat.getIdCategoria() === subcategoryId)
-    return subcategory ? subcategory.getIdCategoriaPadre() || 0 : 0
-  }
+    const subcategory = categories.find((cat) => cat.getIdCategoria() === subcategoryId);
+    return subcategory ? subcategory.getIdCategoriaPadre() || 0 : 0;
+  };
 
   // Cargar datos del producto para edición
   useEffect(() => {
     if (product) {
-      let productCategoryId = 0
-      let productSubcategoryId = 0
+      let productCategoryId = 0;
+      let productSubcategoryId = 0;
 
       if (type === "manufacturado") {
-        const manufacturado = product as InformacionArticuloManufacturadoDto
-        productCategoryId = manufacturado.getIdCategoria()
+        const manufacturado = product as InformacionArticuloManufacturadoDto;
+        productCategoryId = manufacturado.getIdCategoria();
 
         // Determinar si la categoría del producto es una subcategoría
         if (isSubcategory(productCategoryId)) {
-          productSubcategoryId = productCategoryId
-          productCategoryId = getParentCategoryId(productCategoryId)
+          productSubcategoryId = productCategoryId;
+          productCategoryId = getParentCategoryId(productCategoryId);
         }
 
         setFormData({
@@ -144,15 +144,15 @@ export const UniversalProductForm: FC<UniversalProductFormProps> = ({
             idArticuloInsumo: detalle.getIdArticuloInsumo(),
             cantidad: detalle.getCantidad(),
           })),
-        })
+        });
       } else {
-        const noElaborado = product as InformacionArticuloNoElaboradoDto
-        productCategoryId = noElaborado.getIdCategoria()
+        const noElaborado = product as InformacionArticuloNoElaboradoDto;
+        productCategoryId = noElaborado.getIdCategoria();
 
         // Determinar si la categoría del producto es una subcategoría
         if (isSubcategory(productCategoryId)) {
-          productSubcategoryId = productCategoryId
-          productCategoryId = getParentCategoryId(productCategoryId)
+          productSubcategoryId = productCategoryId;
+          productCategoryId = getParentCategoryId(productCategoryId);
         }
 
         setFormData({
@@ -164,96 +164,96 @@ export const UniversalProductForm: FC<UniversalProductFormProps> = ({
           idSubcategoria: productSubcategoryId,
           imagenUrl: noElaborado.getImagenUrl() || "",
           detalles: [],
-        })
+        });
       }
     }
-  }, [product, type, categories])
+  }, [product, type, categories]);
 
   const validateForm = () => {
-    const newErrors: Record<string, string> = {}
+    const newErrors: Record<string, string> = {};
 
     if (!formData.nombre.trim()) {
-      newErrors.nombre = "El nombre es requerido"
+      newErrors.nombre = "El nombre es requerido";
     }
 
     if (!formData.descripcion.trim()) {
-      newErrors.descripcion = "La descripción es requerida"
+      newErrors.descripcion = "La descripción es requerida";
     }
 
     if (formData.precioModificado && formData.precioVenta <= 0) {
-      newErrors.precioVenta = "El precio debe ser mayor a 0"
+      newErrors.precioVenta = "El precio debe ser mayor a 0";
     }
 
     if (formData.idCategoria === 0) {
-      newErrors.idCategoria = "Debe seleccionar una categoría"
+      newErrors.idCategoria = "Debe seleccionar una categoría";
     }
 
     // Validar imagen: debe tener URL o archivo seleccionado
     if (imageSource === "url" && !formData.imagenUrl.trim()) {
-      newErrors.imagenUrl = "La URL de la imagen es requerida"
+      newErrors.imagenUrl = "La URL de la imagen es requerida";
     }
 
     if (imageSource === "file" && !selectedFile && !product) {
-      newErrors.file = "Debe seleccionar un archivo de imagen"
+      newErrors.file = "Debe seleccionar un archivo de imagen";
     }
 
     if (type === "manufacturado") {
       if (!formData.tiempoDeCocina || formData.tiempoDeCocina <= 0) {
-        newErrors.tiempoDeCocina = "El tiempo de cocina debe ser mayor a 0"
+        newErrors.tiempoDeCocina = "El tiempo de cocina debe ser mayor a 0";
       }
 
       if (!formData.receta?.trim()) {
-        newErrors.receta = "La receta es requerida"
+        newErrors.receta = "La receta es requerida";
       }
 
       if (!formData.detalles || formData.detalles.length === 0) {
-        newErrors.detalles = "Debe agregar al menos un ingrediente"
+        newErrors.detalles = "Debe agregar al menos un ingrediente";
       }
 
       // Validar que todos los ingredientes tengan valores válidos
       formData.detalles?.forEach((detalle, index) => {
         if (detalle.idArticuloInsumo === 0) {
-          newErrors[`detalle_${index}_insumo`] = "Debe seleccionar un ingrediente"
+          newErrors[`detalle_${index}_insumo`] = "Debe seleccionar un ingrediente";
         }
         if (detalle.cantidad <= 0) {
-          newErrors[`detalle_${index}_cantidad`] = "La cantidad debe ser mayor a 0"
+          newErrors[`detalle_${index}_cantidad`] = "La cantidad debe ser mayor a 0";
         }
-      })
+      });
     }
 
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   // Update the handleSubmit function to ensure it passes the file:
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
     if (!validateForm()) {
-      return
+      return;
     }
 
     // Determine the category final (main category or subcategory)
-    const finalCategoryId = formData.idSubcategoria > 0 ? formData.idSubcategoria : formData.idCategoria
-    const selectedCategory = categories.find((cat) => cat.getIdCategoria() === finalCategoryId)
+    const finalCategoryId = formData.idSubcategoria > 0 ? formData.idSubcategoria : formData.idCategoria;
+    const selectedCategory = categories.find((cat) => cat.getIdCategoria() === finalCategoryId);
 
     // Use URL only if no file selected
-    const imagenUrl = imageSource === "file" ? "" : formData.imagenUrl
+    const imagenUrl = imageSource === "file" ? "" : formData.imagenUrl;
 
     // Determine the price final according to whether it is manual or suggested
-    const finalPrice = formData.precioModificado ? formData.precioVenta : suggestedPrice
+    const finalPrice = formData.precioModificado ? formData.precioVenta : suggestedPrice;
 
     if (type === "manufacturado") {
       const detalles =
         formData.detalles?.map((detalle) => {
-          const insumo = ingredients.find((ing) => ing.getIdArticuloInsumo() === detalle.idArticuloInsumo)
+          const insumo = ingredients.find((ing) => ing.getIdArticuloInsumo() === detalle.idArticuloInsumo);
           return new InformacionDetalleDto(
             detalle.idArticuloInsumo,
             insumo?.getNombre() || "",
             insumo?.getUnidadDeMedida() || "",
             detalle.cantidad,
-          )
-        }) || []
+          );
+        }) || [];
 
       const productData = new InformacionArticuloManufacturadoDto(
         (product as InformacionArticuloManufacturadoDto)?.getidArticulo() || 0,
@@ -268,10 +268,10 @@ export const UniversalProductForm: FC<UniversalProductFormProps> = ({
         selectedCategory?.getNombre() || "",
         imagenUrl,
         detalles,
-      )
+      );
 
       // Pass the file only if imageSource is "file" and a file is selected
-      onSubmit(productData, imageSource === "file" ? selectedFile || undefined : undefined)
+      onSubmit(productData, imageSource === "file" ? selectedFile || undefined : undefined);
     } else {
       const productData = new InformacionArticuloNoElaboradoDto(
         (product as InformacionArticuloNoElaboradoDto)?.getIdArticulo() || 0,
@@ -283,35 +283,35 @@ export const UniversalProductForm: FC<UniversalProductFormProps> = ({
         finalCategoryId,
         selectedCategory?.getNombre() || "",
         imagenUrl, //arreglar esto
-      )
+      );
 
       // Pass the file only if imageSource is "file" and a file is selected
-      onSubmit(productData, imageSource === "file" ? selectedFile || undefined : undefined)
+      onSubmit(productData, imageSource === "file" ? selectedFile || undefined : undefined);
     }
-  }
+  };
 
   const calcularPrecioSugerido = (): number => {
-    if (!formData.detalles || !formData.idCategoria) return 0
+    if (!formData.detalles || !formData.idCategoria) return 0;
 
     // const margen = formData.categoria.margenGanancia || 1;
-    const margen = margenGanancia
+    const margen = margenGanancia;
 
     const costoTotal = formData.detalles.reduce((acc, detalle) => {
-      const insumo = ingredients.find((i) => i.getIdArticuloInsumo() === detalle.idArticuloInsumo)
-      const precio = insumo?.getCosto() || 0
-      return acc + detalle.cantidad * precio
-    }, 0)
-    setCostoTotal(costoTotal)
+      const insumo = ingredients.find((i) => i.getIdArticuloInsumo() === detalle.idArticuloInsumo);
+      const precio = insumo?.getCosto() || 0;
+      return acc + detalle.cantidad * precio;
+    }, 0);
+    setCostoTotal(costoTotal);
 
-    return costoTotal * margen
-  }
+    return costoTotal * margen;
+  };
 
   const handleInputChange = (field: keyof FormData, value: string | number | boolean) => {
-    setFormData((prev) => ({ ...prev, [field]: value }))
+    setFormData((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: "" }))
+      setErrors((prev) => ({ ...prev, [field]: "" }));
     }
-  }
+  };
 
   const handlePriceTypeChange = (isPrecioModificado: boolean) => {
     setFormData((prev) => ({
@@ -319,101 +319,113 @@ export const UniversalProductForm: FC<UniversalProductFormProps> = ({
       precioModificado: isPrecioModificado,
       // Si cambia a sugerido, actualizar el precio con el sugerido
       precioVenta: !isPrecioModificado ? suggestedPrice : prev.precioVenta,
-    }))
+    }));
     if (errors.precioTipo) {
-      setErrors((prev) => ({ ...prev, precioTipo: "" }))
+      setErrors((prev) => ({ ...prev, precioTipo: "" }));
     }
-  }
+  };
 
   const handleCategoryChange = (categoryId: number) => {
     setFormData((prev) => ({
       ...prev,
       idCategoria: categoryId,
       idSubcategoria: 0, // Resetear subcategoría al cambiar categoría
-    }))
+    }));
     if (errors.idCategoria) {
-      setErrors((prev) => ({ ...prev, idCategoria: "" }))
+      setErrors((prev) => ({ ...prev, idCategoria: "" }));
     }
-  }
+  };
 
   const handleSubcategoryChange = (subcategoryId: number) => {
     setFormData((prev) => ({
       ...prev,
       idSubcategoria: subcategoryId,
-    }))
-  }
+    }));
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
+    const file = e.target.files?.[0];
     if (file) {
-      setSelectedFile(file)
+      setSelectedFile(file);
       if (errors.file) {
-        setErrors((prev) => ({ ...prev, file: "" }))
+        setErrors((prev) => ({ ...prev, file: "" }));
       }
     }
-  }
+  };
 
   const handleImageSourceChange = (source: "url" | "file") => {
-    setImageSource(source)
-    setSelectedFile(null)
-    setFormData((prev) => ({ ...prev, imagenUrl: "" }))
+    setImageSource(source);
+    setSelectedFile(null);
+    setFormData((prev) => ({ ...prev, imagenUrl: "" }));
     // Limpiar errores relacionados con imagen
     setErrors((prev) => {
-      const newErrors = { ...prev }
-      delete newErrors.imagenUrl
-      delete newErrors.file
-      return newErrors
-    })
-  }
+      const newErrors = { ...prev };
+      delete newErrors.imagenUrl;
+      delete newErrors.file;
+      return newErrors;
+    });
+  };
 
   const addIngredient = () => {
     setFormData((prev) => ({
       ...prev,
       detalles: [...(prev.detalles || []), { idArticuloInsumo: 0, cantidad: 0 }],
-    }))
-  }
+    }));
+  };
 
   const removeIngredient = (index: number) => {
     setFormData((prev) => ({
       ...prev,
       detalles: prev.detalles?.filter((_, i) => i !== index) || [],
-    }))
+    }));
     // Limpiar errores relacionados con este ingrediente
     setErrors((prev) => {
-      const newErrors = { ...prev }
-      delete newErrors[`detalle_${index}_insumo`]
-      delete newErrors[`detalle_${index}_cantidad`]
-      return newErrors
-    })
-  }
+      const newErrors = { ...prev };
+      delete newErrors[`detalle_${index}_insumo`];
+      delete newErrors[`detalle_${index}_cantidad`];
+      return newErrors;
+    });
+  };
 
   const updateIngredient = (index: number, field: "idArticuloInsumo" | "cantidad", value: number) => {
     setFormData((prev) => ({
       ...prev,
       detalles: prev.detalles?.map((detalle, i) => (i === index ? { ...detalle, [field]: value } : detalle)) || [],
-    }))
+    }));
     // Limpiar error específico
     if (errors[`detalle_${index}_${field === "idArticuloInsumo" ? "insumo" : "cantidad"}`]) {
       setErrors((prev) => ({
         ...prev,
         [`detalle_${index}_${field === "idArticuloInsumo" ? "insumo" : "cantidad"}`]: "",
-      }))
+      }));
     }
-  }
+  };
 
-  const isManufacturado = type === "manufacturado"
+  const isManufacturado = type === "manufacturado";
   const title = product
     ? `Editar Producto ${isManufacturado ? "Manufacturado" : "No Elaborado"}`
-    : `Nuevo Producto ${isManufacturado ? "Manufacturado" : "No Elaborado"}`
+    : `Nuevo Producto ${isManufacturado ? "Manufacturado" : "No Elaborado"}`;
 
   return (
     <div className="fixed inset-0 bg-black/30 backdrop-blur-sm overflow-y-auto h-full w-full z-50">
       <div className="relative top-10 mx-auto p-5 border w-11/12 max-w-4xl shadow-lg rounded-md bg-white">
         <div className="flex justify-between items-center mb-6">
           <h3 className="text-xl font-semibold text-gray-900">{title}</h3>
-          <button onClick={onCancel} className="text-gray-400 hover:text-gray-600 transition-colors" disabled={loading}>
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+          <button
+            onClick={onCancel}
+            className="text-gray-400 hover:text-gray-600 transition-colors"
+            disabled={loading}>
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
           </button>
         </div>
@@ -428,8 +440,7 @@ export const UniversalProductForm: FC<UniversalProductFormProps> = ({
                   activeTab === "general"
                     ? "border-orange-500 text-orange-600"
                     : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                }`}
-              >
+                }`}>
                 Información General
               </button>
               <button
@@ -438,8 +449,7 @@ export const UniversalProductForm: FC<UniversalProductFormProps> = ({
                   activeTab === "detalles"
                     ? "border-orange-500 text-orange-600"
                     : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                }`}
-              >
+                }`}>
                 Ingredientes
                 {formData.detalles && formData.detalles.length > 0 && (
                   <span className="ml-2 bg-orange-100 text-orange-800 py-0.5 px-2 rounded-full text-xs">
@@ -451,7 +461,9 @@ export const UniversalProductForm: FC<UniversalProductFormProps> = ({
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-6 text-black">
+        <form
+          onSubmit={handleSubmit}
+          className="space-y-6 text-black">
           {/* Información General */}
           {(!isManufacturado || activeTab === "general") && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -501,7 +513,9 @@ export const UniversalProductForm: FC<UniversalProductFormProps> = ({
                       className="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded"
                       disabled={loading}
                     />
-                    <label htmlFor="precioManual" className="text-sm text-gray-700">
+                    <label
+                      htmlFor="precioManual"
+                      className="text-sm text-gray-700">
                       Manual
                     </label>
                   </div>
@@ -593,11 +607,12 @@ export const UniversalProductForm: FC<UniversalProductFormProps> = ({
                     className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 ${
                       errors.idCategoria ? "border-red-500" : "border-gray-300"
                     }`}
-                    disabled={loading}
-                  >
+                    disabled={loading}>
                     <option value={0}>Seleccionar categoría</option>
                     {mainCategories.map((category) => (
-                      <option key={category.getIdCategoria()} value={category.getIdCategoria()}>
+                      <option
+                        key={category.getIdCategoria()}
+                        value={category.getIdCategoria()}>
                         {category.getNombre()}
                       </option>
                     ))}
@@ -613,11 +628,12 @@ export const UniversalProductForm: FC<UniversalProductFormProps> = ({
                       value={formData.idSubcategoria}
                       onChange={(e) => handleSubcategoryChange(Number.parseInt(e.target.value))}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
-                      disabled={loading}
-                    >
+                      disabled={loading}>
                       <option value={0}>Sin subcategoría</option>
                       {availableSubcategories.map((subcategory) => (
-                        <option key={subcategory.getIdCategoria()} value={subcategory.getIdCategoria()}>
+                        <option
+                          key={subcategory.getIdCategoria()}
+                          value={subcategory.getIdCategoria()}>
                           {subcategory.getNombre()}
                         </option>
                       ))}
@@ -707,13 +723,13 @@ export const UniversalProductForm: FC<UniversalProductFormProps> = ({
                           imageSource === "file" && selectedFile
                             ? URL.createObjectURL(selectedFile)
                             : imageSource === "url" && formData.imagenUrl
-                              ? formData.imagenUrl
-                              : (product as ProductUnion)?.getImagenUrl?.() || ""
+                            ? formData.imagenUrl
+                            : (product as ProductUnion)?.getImagenUrl?.() || ""
                         }
                         alt="Vista previa"
                         className="w-32 h-32 object-cover rounded-md border border-gray-300"
                         onError={(e) => {
-                          ;(e.target as HTMLImageElement).style.display = "none"
+                          (e.target as HTMLImageElement).style.display = "none";
                         }}
                       />
                     </div>
@@ -732,8 +748,7 @@ export const UniversalProductForm: FC<UniversalProductFormProps> = ({
                   type="button"
                   onClick={addIngredient}
                   className="bg-orange-500 text-white px-4 py-2 rounded-md hover:bg-orange-600 transition-colors"
-                  disabled={loading}
-                >
+                  disabled={loading}>
                   Agregar Ingrediente
                 </button>
               </div>
@@ -742,7 +757,9 @@ export const UniversalProductForm: FC<UniversalProductFormProps> = ({
 
               <div className="space-y-3 max-h-96 overflow-y-auto">
                 {formData.detalles?.map((detalle, index) => (
-                  <div key={index} className="flex items-center space-x-3 p-3 border border-gray-200 rounded-md">
+                  <div
+                    key={index}
+                    className="flex items-center space-x-3 p-3 border border-gray-200 rounded-md">
                     <div className="flex-1">
                       <select
                         value={detalle.idArticuloInsumo}
@@ -750,11 +767,12 @@ export const UniversalProductForm: FC<UniversalProductFormProps> = ({
                         className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 ${
                           errors[`detalle_${index}_insumo`] ? "border-red-500" : "border-gray-300"
                         }`}
-                        disabled={loading}
-                      >
+                        disabled={loading}>
                         <option value={0}>Seleccionar ingrediente</option>
                         {ingredients.map((ingredient) => (
-                          <option key={ingredient.getIdArticuloInsumo()} value={ingredient.getIdArticuloInsumo()}>
+                          <option
+                            key={ingredient.getIdArticuloInsumo()}
+                            value={ingredient.getIdArticuloInsumo()}>
                             {ingredient.getNombre()} ({ingredient.getUnidadDeMedida()})
                           </option>
                         ))}
@@ -786,9 +804,12 @@ export const UniversalProductForm: FC<UniversalProductFormProps> = ({
                       type="button"
                       onClick={() => removeIngredient(index)}
                       className="text-red-500 hover:text-red-700 transition-colors"
-                      disabled={loading}
-                    >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      disabled={loading}>
+                      <svg
+                        className="w-5 h-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24">
                         <path
                           strokeLinecap="round"
                           strokeLinejoin="round"
@@ -821,20 +842,18 @@ export const UniversalProductForm: FC<UniversalProductFormProps> = ({
               type="button"
               onClick={onCancel}
               className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
-              disabled={loading}
-            >
+              disabled={loading}>
               Cancelar
             </button>
             <button
               type="submit"
               className="px-4 py-2 bg-orange-500 text-white rounded-md hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled={loading}
-            >
+              disabled={loading}>
               {loading ? "Guardando..." : product ? "Actualizar" : "Crear"}
             </button>
           </div>
         </form>
       </div>
     </div>
-  )
-}
+  );
+};
