@@ -1,34 +1,32 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import type { RubroInsumoDto } from "../../models/dto/RubroInsumoDto";
+import type { RubroInsumoAbmDto } from "../../models/dto/RubroInsumoAbmDto";
 import { NuevoRubroInsumoDto } from "../../models/dto/NuevoRubroInsumoDto";
+import { useRubrosInsumoStore } from "../../store/rubrosInsumo/useRubrosInsumoStore";
+import { NotificationService } from "../../utils/notifications";
 
-interface RubroFormData {
+interface RubroInsumoFormData {
   nombre: string;
-  dadoDeBaja: boolean;
-  tieneRubroPadre: boolean;
+  dadoDeAlta: boolean;
   idRubroInsumoPadre: number | null;
 }
 
-interface RubroFormProps {
-  rubro?: RubroInsumoDto;
-  rubros: RubroInsumoDto[];
+interface RubroInsumoFormProps {
+  rubro?: RubroInsumoAbmDto;
   onSubmit: (rubro: NuevoRubroInsumoDto) => void;
   onCancel: () => void;
   loading: boolean;
-  rubroPadrePreseleccionado?: RubroInsumoDto;
 }
 
-export const RubroForm = ({
-  rubro,
-  rubros,
-  onSubmit,
-  onCancel,
-  loading,
-  rubroPadrePreseleccionado,
-}: RubroFormProps) => {
-  const [tieneRubroPadre, setTieneRubroPadre] = useState(false);
+interface RubroTreeItem {
+  rubro: RubroInsumoAbmDto;
+  level: number;
+}
+
+export const RubroInsumoForm = ({ rubro, onSubmit, onCancel, loading }: RubroInsumoFormProps) => {
+  const { rubros, fetchRubrosLista } = useRubrosInsumoStore();
+  const [selectedParentId, setSelectedParentId] = useState<number | null>(null);
 
   const {
     register,
@@ -37,95 +35,107 @@ export const RubroForm = ({
     setValue,
     formState: { errors },
     reset,
-  } = useForm<RubroFormData>({
+  } = useForm<RubroInsumoFormData>({
     defaultValues: {
       nombre: "",
-      dadoDeBaja: false,
-      tieneRubroPadre: false,
+      dadoDeAlta: true,
       idRubroInsumoPadre: null,
     },
   });
 
-  const watchTieneRubroPadre = watch("tieneRubroPadre");
+  const watchIdRubroInsumoPadre = watch("idRubroInsumoPadre");
+
+  // Función para construir el árbol jerárquico de rubros para el selector
+  const buildRubroTree = (
+    rubrosData: RubroInsumoAbmDto[],
+    parentId = 0,
+    level = 0,
+    excludeId?: number,
+  ): RubroTreeItem[] => {
+    const result: RubroTreeItem[] = [];
+    const children = rubrosData
+      .filter((r) => {
+        const isChild = (r.getIdRubroPadre() || 0) === parentId;
+        const notExcluded = !excludeId || r.getIdRubroInsumo() !== excludeId;
+        return isChild && notExcluded;
+      })
+      .sort((a, b) => a.getNombre().localeCompare(b.getNombre()));
+
+    for (const child of children) {
+      if (level < 4) {
+        result.push({ rubro: child, level });
+        result.push(...buildRubroTree(rubrosData, child.getIdRubroInsumo(), level + 1, excludeId));
+      }
+    }
+
+    return result;
+  };
+
+  // Construir el árbol de rubros disponibles
+  const rubroTree = buildRubroTree(
+    rubros,
+    0,
+    0,
+    rubro?.getIdRubroInsumo(), // Excluir el rubro actual si se está editando
+  );
+
+  // Función para verificar si un rubro padre está inactivo
+  const isParentInactive = (parentId: number | null): boolean => {
+    if (!parentId) return false;
+    const parent = rubros.find((r) => r.getIdRubroInsumo() === parentId);
+    return parent ? !parent.isDadoDeAlta() : false;
+  };
 
   // Cargar datos si es edición
   useEffect(() => {
     if (rubro) {
       const data = {
         nombre: rubro.getNombre(),
-        dadoDeBaja: rubro.isDadoDeAlta(),
-        tieneRubroPadre: !rubro.esRubroPadre(),
-        idRubroInsumoPadre: rubro.getIdRubroInsumoPadre(),
+        dadoDeAlta: rubro.isDadoDeAlta(),
+        idRubroInsumoPadre: rubro.getIdRubroPadre(),
       };
       reset(data);
-      setTieneRubroPadre(!rubro.esRubroPadre());
-    } else if (rubroPadrePreseleccionado) {
-      // Si se está creando un subrubro
-      const data = {
-        nombre: "",
-        dadoDeBaja: false,
-        tieneRubroPadre: true,
-        idRubroInsumoPadre: rubroPadrePreseleccionado.getIdRubroInsumo(),
-      };
-      reset(data);
-      setTieneRubroPadre(true);
+      setSelectedParentId(rubro.getIdRubroPadre());
     }
-  }, [rubro, rubroPadrePreseleccionado, reset]);
+  }, [rubro, reset]);
 
-  // Actualizar estado cuando cambia el checkbox
+  // Cargar lista de rubros para el selector
   useEffect(() => {
-    setTieneRubroPadre(watchTieneRubroPadre);
-    if (!watchTieneRubroPadre) {
-      setValue("idRubroInsumoPadre", null);
+    fetchRubrosLista();
+  }, [fetchRubrosLista]);
+
+  // Efecto para manejar el estado automático basado en el rubro padre
+  useEffect(() => {
+    const parentId = watchIdRubroInsumoPadre;
+    setSelectedParentId(parentId);
+
+    // Si no estamos editando un rubro existente
+    if (!rubro) {
+      if (isParentInactive(parentId)) {
+        setValue("dadoDeAlta", false);
+        NotificationService.info(
+          "El rubro se ha marcado como inactivo automáticamente porque el rubro padre seleccionado está inactivo.",
+          "Estado automático",
+        );
+      } else {
+        setValue("dadoDeAlta", true);
+      }
     }
-  }, [watchTieneRubroPadre, setValue]);
+  }, [watchIdRubroInsumoPadre, rubro, setValue, rubros]);
 
-  // Obtener todos los rubros disponibles como padre (recursivamente)
-  const obtenerTodosLosRubros = (rubrosLista: RubroInsumoDto[]): RubroInsumoDto[] => {
-    const todosLosRubros: RubroInsumoDto[] = [];
-
-    const procesarRubros = (rubros: RubroInsumoDto[]) => {
-      rubros.forEach((rubro) => {
-        todosLosRubros.push(rubro);
-        if (rubro.getSubrubros().length > 0) {
-          procesarRubros(rubro.getSubrubros());
-        }
-      });
-    };
-
-    procesarRubros(rubrosLista);
-    return todosLosRubros;
-  };
-
-  const todosLosRubros = obtenerTodosLosRubros(rubros);
-
-  // Filtrar rubros disponibles como padre
-  const rubrosDisponibles = todosLosRubros.filter((r) => {
-    if (rubro) {
-      // No puede ser padre de sí mismo
-      if (r.getIdRubroInsumo() === rubro.getIdRubroInsumo()) return false;
-      // No puede ser padre de su propio padre
-      if (r.getIdRubroInsumoPadre() === rubro.getIdRubroInsumo()) return false;
-    }
-    return true;
-  });
-
-  const onFormSubmit = async (data: RubroFormData) => {
+  const onFormSubmit = async (data: RubroInsumoFormData) => {
     try {
-      const nuevoRubro = new NuevoRubroInsumoDto(
-        data.nombre,
-        data.dadoDeBaja,
-        data.tieneRubroPadre ? data.idRubroInsumoPadre : null,
-      );
+      const nuevoRubro = new NuevoRubroInsumoDto(data.nombre, data.dadoDeAlta, data.idRubroInsumoPadre);
 
       await onSubmit(nuevoRubro);
     } catch (error) {
       console.error("Error en formulario:", error);
+      NotificationService.error(error instanceof Error ? error.message : "Error al guardar el rubro");
     }
   };
 
   const isEditing = !!rubro;
-  const title = isEditing ? "Editar Rubro" : rubroPadrePreseleccionado ? "Nuevo Subrubro" : "Nuevo Rubro";
+  const title = isEditing ? "Editar Rubro" : "Nuevo Rubro";
 
   return (
     <div className="fixed inset-0 bg-black/30 backdrop-blur-sm overflow-y-auto h-full w-full z-50">
@@ -134,11 +144,7 @@ export const RubroForm = ({
           <div>
             <h3 className="text-2xl font-bold text-gray-900">{title}</h3>
             <p className="text-sm text-gray-600 mt-1">
-              {isEditing
-                ? "Modifica los datos del rubro"
-                : rubroPadrePreseleccionado
-                ? `Crear subrubro de "${rubroPadrePreseleccionado.getNombre()}"`
-                : "Completa la información para crear un nuevo rubro"}
+              {isEditing ? "Modifica los datos del rubro" : "Completa la información para crear un nuevo rubro"}
             </p>
           </div>
           <button
@@ -185,7 +191,7 @@ export const RubroForm = ({
                 className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition-colors text-gray-900 bg-white ${
                   errors.nombre ? "border-red-500 bg-red-50" : "border-gray-300"
                 }`}
-                placeholder="Ej: Carnes, Verduras, Lácteos..."
+                placeholder="Ej: Lácteos, Carnes, Verduras..."
                 disabled={loading}
               />
               {errors.nombre && (
@@ -205,94 +211,83 @@ export const RubroForm = ({
               )}
             </div>
 
-            {/* Estado */}
+            {/* Rubro Padre - Selector Jerárquico */}
             <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Rubro Padre</label>
+              <select
+                {...register("idRubroInsumoPadre", {
+                  setValueAs: (value) => {
+                    if (value === "" || value === "null" || value === null) {
+                      return null;
+                    }
+                    return Number(value);
+                  },
+                })}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition-colors text-gray-900 bg-white"
+                disabled={loading}>
+                <option
+                  value=""
+                  className="text-gray-900">
+                  (Rubro principal)
+                </option>
+                {rubroTree.map(({ rubro: rubroItem, level }) => {
+                  const isInactive = !rubroItem.isDadoDeAlta();
+                  return (
+                    <option
+                      key={rubroItem.getIdRubroInsumo()}
+                      value={rubroItem.getIdRubroInsumo()}
+                      className={`text-gray-900 ${isInactive ? "text-gray-500" : ""}`}
+                      style={{ paddingLeft: `${level * 20}px` }}>
+                      {"  ".repeat(level)}
+                      {level > 0 && "└─ "}
+                      {rubroItem.getNombre()}
+                      {level === 0 && " (Principal)"}
+                      {level === 1 && " (Subrubro)"}
+                      {level >= 2 && ` (Nivel ${level + 1})`}
+                      {isInactive && " [INACTIVO]"}
+                    </option>
+                  );
+                })}
+              </select>
+              <div className="mt-2 text-xs text-gray-500 space-y-1">
+                <p>• Deja vacío para crear un rubro principal</p>
+                <p>• Puedes crear hasta 4 niveles de jerarquía</p>
+                <p>• Puedes seleccionar rubros activos o inactivos como padre</p>
+                {rubro && <p className="text-blue-600">ℹ️ No puedes seleccionar el rubro actual como padre</p>}
+                {selectedParentId && isParentInactive(selectedParentId) && !rubro && (
+                  <p className="text-amber-600">
+                    ⚠️ El rubro padre seleccionado está inactivo. El nuevo rubro se marcará como inactivo
+                    automáticamente.
+                  </p>
+                )}
+                {rubroTree.length === 0 && (
+                  <p className="text-amber-600">⚠️ No hay rubros disponibles. Este será un rubro principal.</p>
+                )}
+              </div>
+            </div>
+
+            {/* Estado */}
+            <div>
               <label className="flex items-center p-3 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer">
                 <input
                   type="checkbox"
-                  {...register("dadoDeBaja")}
-                  className="h-5 w-5 text-red-600 focus:ring-red-500 border-gray-300 rounded"
-                  disabled={loading}
+                  {...register("dadoDeAlta")}
+                  className="h-5 w-5 text-orange-600 focus:ring-orange-500 border-gray-300 rounded"
+                  disabled={loading || (!rubro && isParentInactive(selectedParentId))}
                 />
                 <div className="ml-3">
-                  <span className="text-sm font-medium text-gray-700">Rubro inactivo</span>
-                  <p className="text-xs text-gray-500">Los rubros inactivos no serán visibles en el sistema</p>
+                  <span className="text-sm font-medium text-gray-700">Rubro activo</span>
+                  <p className="text-xs text-gray-500">
+                    Los rubros inactivos no estarán disponibles para asignar a nuevos insumos
+                  </p>
+                  {!rubro && isParentInactive(selectedParentId) && (
+                    <p className="text-xs text-amber-600 mt-1">
+                      Estado automático: inactivo porque el rubro padre está inactivo
+                    </p>
+                  )}
                 </div>
               </label>
             </div>
-
-            {/* Checkbox: ¿Tiene rubro padre? */}
-            {!rubroPadrePreseleccionado && (
-              <div className="mb-4">
-                <label className="flex items-center p-3 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer">
-                  <input
-                    type="checkbox"
-                    {...register("tieneRubroPadre")}
-                    className="h-5 w-5 text-orange-600 focus:ring-orange-500 border-gray-300 rounded"
-                    disabled={loading}
-                  />
-                  <div className="ml-3">
-                    <span className="text-sm font-medium text-gray-700">¿Tiene rubro padre?</span>
-                    <p className="text-xs text-gray-500">Marca esta opción si este rubro es un subrubro de otro</p>
-                  </div>
-                </label>
-              </div>
-            )}
-
-            {/* Select de rubro padre */}
-            {(tieneRubroPadre || rubroPadrePreseleccionado) && (
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Rubro Padre *</label>
-                <select
-                  {...register("idRubroInsumoPadre", {
-                    required: tieneRubroPadre ? "Debe seleccionar un rubro padre" : false,
-                    setValueAs: (value) => {
-                      if (value === "" || value === "null" || value === null) {
-                        return null;
-                      }
-                      return Number(value);
-                    },
-                  })}
-                  className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition-colors text-gray-900 bg-white ${
-                    errors.idRubroInsumoPadre ? "border-red-500 bg-red-50" : "border-gray-300"
-                  }`}
-                  disabled={loading || !!rubroPadrePreseleccionado}>
-                  <option
-                    value=""
-                    className="text-gray-900">
-                    Seleccionar rubro padre...
-                  </option>
-                  {rubrosDisponibles.map((r) => (
-                    <option
-                      key={r.getIdRubroInsumo()}
-                      value={r.getIdRubroInsumo()}
-                      className="text-gray-900">
-                      {r.getNombre()}
-                    </option>
-                  ))}
-                </select>
-                {errors.idRubroInsumoPadre && (
-                  <p className="text-red-500 text-sm mt-1 flex items-center">
-                    <svg
-                      className="w-4 h-4 mr-1"
-                      fill="currentColor"
-                      viewBox="0 0 20 20">
-                      <path
-                        fillRule="evenodd"
-                        d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                    {errors.idRubroInsumoPadre.message}
-                  </p>
-                )}
-                {rubroPadrePreseleccionado && (
-                  <p className="text-xs text-blue-600 mt-1">
-                    Rubro padre preseleccionado: {rubroPadrePreseleccionado.getNombre()}
-                  </p>
-                )}
-              </div>
-            )}
           </div>
 
           {/* Información adicional */}
@@ -308,35 +303,35 @@ export const RubroForm = ({
                   clipRule="evenodd"
                 />
               </svg>
-              Información sobre Rubros
+              Información sobre Rubros Jerárquicos
             </h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-blue-800">
               <ul className="space-y-2">
                 <li className="flex items-start">
                   <span className="text-blue-600 mr-2">•</span>
-                  Los rubros principales no tienen rubro padre
+                  Puedes crear hasta 4 niveles de jerarquía
                 </li>
                 <li className="flex items-start">
                   <span className="text-blue-600 mr-2">•</span>
-                  Los subrubros deben tener un rubro padre
+                  Los rubros organizan los insumos por categorías
                 </li>
                 <li className="flex items-start">
                   <span className="text-blue-600 mr-2">•</span>
-                  Los rubros pueden tener múltiples niveles de jerarquía
+                  Puedes seleccionar cualquier rubro como padre (activo o inactivo)
                 </li>
               </ul>
               <ul className="space-y-2">
                 <li className="flex items-start">
                   <span className="text-blue-600 mr-2">•</span>
-                  Los rubros inactivos no son visibles en el sistema
+                  Ejemplo: Lácteos → Quesos → Quesos Duros
                 </li>
                 <li className="flex items-start">
                   <span className="text-blue-600 mr-2">•</span>
-                  Se pueden crear subrubros de subrubros
+                  Los rubros inactivos no están disponibles para nuevos insumos
                 </li>
                 <li className="flex items-start">
                   <span className="text-blue-600 mr-2">•</span>
-                  Los rubros organizan los insumos del sistema
+                  Si el padre está inactivo, el nuevo rubro será inactivo automáticamente
                 </li>
               </ul>
             </div>

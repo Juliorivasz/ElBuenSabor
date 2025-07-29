@@ -4,55 +4,18 @@ import CloseIcon from "@mui/icons-material/Close";
 import FolderIcon from "@mui/icons-material/Folder";
 import InfoIcon from "@mui/icons-material/Info";
 import SubdirectoryArrowRightIcon from "@mui/icons-material/SubdirectoryArrowRight";
-import type { RubroInsumoDto } from "../../models/dto/RubroInsumoDto";
+import ListIcon from "@mui/icons-material/List";
+import type { RubroInsumoAbmDto } from "../../models/dto/RubroInsumoAbmDto";
 
-interface RubroDetailsModalProps {
-  rubro: RubroInsumoDto;
-  rubros: RubroInsumoDto[];
+interface RubroInsumoDetailsModalProps {
+  rubro: RubroInsumoAbmDto;
+  rubros: RubroInsumoAbmDto[];
   onClose: () => void;
 }
 
-export const RubroDetailsModal = ({ rubro, rubros, onClose }: RubroDetailsModalProps) => {
-  // Obtener todos los rubros de forma plana para buscar relaciones
-  const obtenerTodosLosRubros = (rubrosLista: RubroInsumoDto[]): RubroInsumoDto[] => {
-    const todosLosRubros: RubroInsumoDto[] = [];
-
-    const procesarRubros = (rubros: RubroInsumoDto[]) => {
-      rubros.forEach((rubro) => {
-        todosLosRubros.push(rubro);
-        if (rubro.getSubrubros().length > 0) {
-          procesarRubros(rubro.getSubrubros());
-        }
-      });
-    };
-
-    procesarRubros(rubrosLista);
-    return todosLosRubros;
-  };
-
-  const todosLosRubros = obtenerTodosLosRubros(rubros);
-
-  // Obtener subrubros directos
-  const subrubrosDirectos = todosLosRubros.filter((r) => r.getIdRubroInsumoPadre() === rubro.getIdRubroInsumo());
-
-  // Obtener rubro padre
-  const rubroPadre = rubro.esRubroPadre()
-    ? null
-    : todosLosRubros.find((r) => r.getIdRubroInsumo() === rubro.getIdRubroInsumoPadre());
-
-  // Función recursiva para contar todos los subrubros
-  const contarSubrubrosRecursivo = (rubroId: number): number => {
-    const subrubros = todosLosRubros.filter((r) => r.getIdRubroInsumoPadre() === rubroId);
-    let count = subrubros.length;
-
-    subrubros.forEach((subrubro) => {
-      count += contarSubrubrosRecursivo(subrubro.getIdRubroInsumo());
-    });
-
-    return count;
-  };
-
-  const totalSubrubros = contarSubrubrosRecursivo(rubro.getIdRubroInsumo());
+export const RubroInsumoDetailsModal = ({ rubro, rubros, onClose }: RubroInsumoDetailsModalProps) => {
+  const subrubros = rubros.filter((r) => r.getIdRubroPadre() === rubro.getIdRubroInsumo());
+  const rubroPadre = rubro.esRubroPadre() ? null : rubros.find((r) => r.getIdRubroInsumo() === rubro.getIdRubroPadre());
 
   return (
     <div className="fixed inset-0 bg-black/30 backdrop-blur-sm overflow-y-auto h-full w-full z-50">
@@ -62,11 +25,7 @@ export const RubroDetailsModal = ({ rubro, rubros, onClose }: RubroDetailsModalP
           <div className="flex items-center space-x-4">
             <div className="flex-shrink-0">
               <div className="h-16 w-16 rounded-full bg-orange-100 flex items-center justify-center border-2 border-orange-200">
-                {rubro.esRubroPadre() ? (
-                  <FolderIcon className="h-8 w-8 text-orange-600" />
-                ) : (
-                  <SubdirectoryArrowRightIcon className="h-8 w-8 text-orange-600" />
-                )}
+                <FolderIcon className="h-8 w-8 text-orange-600" />
               </div>
             </div>
             <div>
@@ -74,13 +33,15 @@ export const RubroDetailsModal = ({ rubro, rubros, onClose }: RubroDetailsModalP
               <div className="flex items-center mt-2 space-x-4">
                 <span
                   className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                    rubro.isActivo()
+                    rubro.isDadoDeAlta()
                       ? "bg-green-100 text-green-800 border border-green-200"
                       : "bg-red-100 text-red-800 border border-red-200"
                   }`}>
                   <span
-                    className={`w-2 h-2 rounded-full mr-2 ${rubro.isActivo() ? "bg-green-400" : "bg-red-400"}`}></span>
-                  {rubro.isActivo() ? "Activo" : "Inactivo"}
+                    className={`w-2 h-2 rounded-full mr-2 ${
+                      rubro.isDadoDeAlta() ? "bg-green-400" : "bg-red-400"
+                    }`}></span>
+                  {rubro.isDadoDeAlta() ? "Activo" : "Inactivo"}
                 </span>
                 <span className="text-sm text-gray-500">ID: {rubro.getIdRubroInsumo()}</span>
               </div>
@@ -131,9 +92,7 @@ export const RubroDetailsModal = ({ rubro, rubros, onClose }: RubroDetailsModalP
                     <label className="block text-sm font-medium text-gray-700 mb-1">Rubro Padre</label>
                     <div className="bg-white p-3 rounded border">
                       <div className="flex items-center space-x-3">
-                        <div className="h-8 w-8 rounded-full bg-orange-100 flex items-center justify-center">
-                          <FolderIcon className="h-4 w-4 text-orange-600" />
-                        </div>
+                        <FolderIcon className="h-8 w-8 text-orange-600" />
                         <span className="text-sm text-gray-900 font-medium">{rubroPadre.getNombre()}</span>
                       </div>
                     </div>
@@ -144,9 +103,19 @@ export const RubroDetailsModal = ({ rubro, rubros, onClose }: RubroDetailsModalP
                   <label className="block text-sm font-medium text-gray-700 mb-1">Estado</label>
                   <div className="bg-white p-3 rounded border">
                     <span className="text-sm text-gray-900">
-                      {rubro.isActivo()
-                        ? "Rubro activo y visible en el sistema"
-                        : "Rubro inactivo, no visible en el sistema"}
+                      {rubro.isDadoDeAlta()
+                        ? "Rubro activo y disponible para asignar a insumos"
+                        : "Rubro inactivo, no disponible para nuevas asignaciones"}
+                    </span>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Cantidad de Insumos</label>
+                  <div className="bg-white p-3 rounded border">
+                    <span className="text-sm text-gray-900 font-medium">
+                      {rubro.getCantInsumos()} insumo{rubro.getCantInsumos() !== 1 ? "s" : ""} asignado
+                      {rubro.getCantInsumos() !== 1 ? "s" : ""}
                     </span>
                   </div>
                 </div>
@@ -154,71 +123,81 @@ export const RubroDetailsModal = ({ rubro, rubros, onClose }: RubroDetailsModalP
             </div>
           </div>
 
-          {/* Jerarquía y subrubros */}
+          {/* Insumos y subrubros */}
           <div className="space-y-6">
+            {/* Insumos */}
             <div className="bg-gray-50 p-6 rounded-lg">
               <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                <FolderIcon className="h-5 w-5 mr-2 text-green-600" />
-                Jerarquía y Subrubros
+                <ListIcon className="h-5 w-5 mr-2 text-green-600" />
+                Insumos Asignados ({rubro.getCantInsumos()})
               </h4>
 
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Subrubros Directos</label>
-                  <div className="bg-white p-3 rounded border">
-                    <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 border border-blue-200">
-                      {subrubrosDirectos.length} subrubro{subrubrosDirectos.length !== 1 ? "s" : ""} directo
-                      {subrubrosDirectos.length !== 1 ? "s" : ""}
-                    </span>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Total de Subrubros (Recursivo)</label>
-                  <div className="bg-white p-3 rounded border">
-                    <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-orange-100 text-orange-800 border border-orange-200">
-                      {totalSubrubros} subrubro{totalSubrubros !== 1 ? "s" : ""} en total
-                    </span>
-                  </div>
-                </div>
-
-                {subrubrosDirectos.length > 0 && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-3">Lista de Subrubros Directos</label>
-                    <div className="bg-white rounded-lg border max-h-48 overflow-y-auto">
-                      <div className="divide-y divide-gray-200">
-                        {subrubrosDirectos.map((subrubro) => (
-                          <div
-                            key={subrubro.getIdRubroInsumo()}
-                            className="p-3 hover:bg-gray-50 transition-colors">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center space-x-3">
-                                <div className="h-6 w-6 rounded-full bg-gray-100 flex items-center justify-center">
-                                  <SubdirectoryArrowRightIcon className="h-3 w-3 text-gray-600" />
-                                </div>
-                                <span className="text-sm font-medium text-gray-900">{subrubro.getNombre()}</span>
-                              </div>
-                              <div className="flex items-center space-x-2">
-                                <span
-                                  className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-                                    subrubro.isActivo() ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
-                                  }`}>
-                                  {subrubro.isActivo() ? "Activo" : "Inactivo"}
-                                </span>
-                                <span className="text-xs text-gray-500">ID: {subrubro.getIdRubroInsumo()}</span>
-                              </div>
-                            </div>
+              <div className="bg-white rounded-lg border">
+                {rubro.getInsumos().length > 0 ? (
+                  <div className="divide-y divide-gray-200">
+                    {rubro.getInsumos().map((insumo, index) => (
+                      <div
+                        key={index}
+                        className="p-4 hover:bg-gray-50 transition-colors">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                            <span className="text-xs font-medium text-green-800">{index + 1}</span>
                           </div>
-                        ))}
+                          <span className="text-sm font-medium text-gray-900">{insumo}</span>
+                        </div>
                       </div>
-                    </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="p-8 text-center text-gray-500">
+                    <ListIcon className="h-12 w-12 mx-auto mb-3 text-gray-300" />
+                    <p className="text-sm">Este rubro no tiene insumos asignados</p>
                   </div>
                 )}
+              </div>
+            </div>
 
-                {subrubrosDirectos.length === 0 && (
-                  <div className="bg-white p-6 rounded-lg border border-dashed border-gray-300 text-center">
+            {/* Subrubros */}
+            <div className="bg-gray-50 p-6 rounded-lg">
+              <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <FolderIcon className="h-5 w-5 mr-2 text-orange-600" />
+                Subrubros ({subrubros.length})
+              </h4>
+
+              <div className="bg-white rounded-lg border">
+                {subrubros.length > 0 ? (
+                  <div className="divide-y divide-gray-200">
+                    {subrubros.map((subrubro) => (
+                      <div
+                        key={subrubro.getIdRubroInsumo()}
+                        className="p-4 hover:bg-gray-50 transition-colors">
+                        <div className="flex items-center space-x-3">
+                          <FolderIcon className="h-8 w-8 text-orange-600" />
+                          <div className="flex-1">
+                            <div className="flex items-center justify-between">
+                              <span className="text-sm font-medium text-gray-900">{subrubro.getNombre()}</span>
+                              <span
+                                className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                                  subrubro.isDadoDeAlta() ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
+                                }`}>
+                                {subrubro.isDadoDeAlta() ? "Activo" : "Inactivo"}
+                              </span>
+                            </div>
+                            <div className="flex items-center mt-1 space-x-4">
+                              <span className="text-xs text-gray-500">ID: {subrubro.getIdRubroInsumo()}</span>
+                              <span className="text-xs text-gray-500">
+                                {subrubro.getCantInsumos()} insumo{subrubro.getCantInsumos() !== 1 ? "s" : ""}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="p-8 text-center text-gray-500">
                     <SubdirectoryArrowRightIcon className="h-12 w-12 mx-auto mb-3 text-gray-300" />
-                    <p className="text-sm text-gray-500">Este rubro no tiene subrubros directos</p>
+                    <p className="text-sm">Este rubro no tiene subrubros</p>
                   </div>
                 )}
               </div>
@@ -226,7 +205,7 @@ export const RubroDetailsModal = ({ rubro, rubros, onClose }: RubroDetailsModalP
           </div>
         </div>
 
-        {/* Estadísticas adicionales */}
+        {/* Información adicional */}
         <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-6">
           <h4 className="text-sm font-medium text-blue-900 mb-3 flex items-center">
             <InfoIcon className="h-4 w-4 mr-2" />
@@ -237,20 +216,23 @@ export const RubroDetailsModal = ({ rubro, rubros, onClose }: RubroDetailsModalP
               <div className="font-medium">Jerarquía</div>
               <div className="text-xs mt-1">
                 {rubro.esRubroPadre()
-                  ? `Rubro principal con ${totalSubrubros} subrubro${totalSubrubros !== 1 ? "s" : ""}`
+                  ? `Rubro principal con ${subrubros.length} subrubro${subrubros.length !== 1 ? "s" : ""}`
                   : `Subrubro de "${rubroPadre?.getNombre() || "Desconocido"}"`}
               </div>
             </div>
             <div className="bg-white bg-opacity-50 p-3 rounded">
-              <div className="font-medium">Organización</div>
-              <div className="text-xs mt-1">Los rubros organizan y categorizan los insumos del sistema</div>
+              <div className="font-medium">Insumos</div>
+              <div className="text-xs mt-1">
+                {rubro.getCantInsumos()} insumo{rubro.getCantInsumos() !== 1 ? "s" : ""} asignado
+                {rubro.getCantInsumos() !== 1 ? "s" : ""} a este rubro
+              </div>
             </div>
             <div className="bg-white bg-opacity-50 p-3 rounded">
-              <div className="font-medium">Visibilidad</div>
+              <div className="font-medium">Estado</div>
               <div className="text-xs mt-1">
-                {rubro.isActivo()
-                  ? "Visible en el sistema para organizar insumos"
-                  : "Oculto en el sistema, solo visible en administración"}
+                {rubro.isDadoDeAlta()
+                  ? "Disponible para asignar a nuevos insumos"
+                  : "No disponible para nuevas asignaciones"}
               </div>
             </div>
           </div>

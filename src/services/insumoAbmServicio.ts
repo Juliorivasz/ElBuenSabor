@@ -78,10 +78,6 @@ const parseUnidadDeMedidaDto = (data: any): UnidadDeMedidaDto => {
   return new UnidadDeMedidaDto(data.idUnidadDeMedida, data.nombre)
 }
 
-const parseRubroInsumoAbmDto = (data: any): RubroInsumoAbmDto => {
-  return new RubroInsumoAbmDto(data.idRubroInsumo, data.nombre)
-}
-
 const parseInsumoDto = (data: any): InsumoDTO => {
   return new InsumoDTO(data.idArticuloInsumo, data.unidadDeMedida, data.nombre, data.costo)
 }
@@ -115,8 +111,21 @@ export const fetchUnidadesDeMedida = async (): Promise<UnidadDeMedidaDto[]> => {
 
 export const fetchRubrosInsumo = async (): Promise<RubroInsumoAbmDto[]> => {
   const response = await interceptorsApiClient.get("/rubroInsumo/lista")
-  const data: RubroInsumoApiResponse = response.data
-  return data.arregloRubros.map(parseRubroInsumoAbmDto)
+  const data: Array<{ idRubroInsumo: number; nombre: string }> = response.data
+
+  // Convertir el formato simple a RubroInsumoAbmDto
+  return data.map(
+    (item) =>
+      new RubroInsumoAbmDto(
+        item.idRubroInsumo,
+        item.nombre,
+        true, // dadoDeAlta - asumimos que están activos en la lista
+        null, // idRubroPadre - no viene en la respuesta
+        null, // rubroPadre - no viene en la respuesta
+        0, // cantInsumos - no viene en la respuesta
+        [], // insumos - no viene en la respuesta
+      ),
+  )
 }
 
 export const fetchInsumosLista = async (): Promise<InsumoDTO[]> => {
@@ -161,4 +170,3 @@ export const modificarInsumo = async (idArticuloInsumo: number, insumo: Modifica
 export const recargarStock = async (request: RecargarStockRequest): Promise<void> => {
   await interceptorsApiClient.put("/insumo/recargaStock", request)
 }
-  
