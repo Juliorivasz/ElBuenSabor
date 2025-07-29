@@ -39,8 +39,28 @@ export const OrderSummary = ({ deliveryType, paymentMethod, selectedAddress, onC
 
     // Si es Mercado Pago, solo confirmar y mostrar botón de pago
     if (paymentMethod === "mercado_pago") {
-      onConfirmOrder();
-      setIsOrderConfirmed(true);
+      try {
+        const nuevoPedido: NuevoPedidoRequest = {
+          tipoEnvio: deliveryType === "delivery" ? TipoEnvio.DELIVERY : TipoEnvio.RETIRO_EN_LOCAL,
+          metodoDePago: MetodoDePago.MERCADO_PAGO,
+          idDireccion: deliveryType === "delivery" && selectedAddress ? selectedAddress.idDireccion : null,
+          detalles: items.map((item) => ({
+            idArticulo: item.articulo.getIdArticulo(),
+            cantidad: item.quantity,
+          })),
+        };
+
+        await pedidoServicio.crearNuevoPedido(nuevoPedido);
+
+        // Limpiar carrito y confirmar pedido
+        onConfirmOrder();
+        setIsOrderConfirmed(true);
+      } catch (error) {
+        console.error("Error al crear el pedido:", error);
+        alert("Hubo un error al procesar tu pedido. Por favor, intenta nuevamente.");
+      } finally {
+        setIsProcessing(false);
+      }
       return;
     }
 
