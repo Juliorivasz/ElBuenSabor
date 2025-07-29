@@ -9,6 +9,7 @@ export class Promocion {
   private url: string
   private idArticulo: number
   private nombreArticulo: string
+  private articuloActivo: boolean
 
   constructor(
     idPromocion: number,
@@ -21,6 +22,7 @@ export class Promocion {
     url: string,
     idArticulo: number,
     nombreArticulo: string,
+    articuloActivo = true,
   ) {
     this.idPromocion = idPromocion
     this.titulo = titulo
@@ -32,6 +34,7 @@ export class Promocion {
     this.url = url
     this.idArticulo = idArticulo
     this.nombreArticulo = nombreArticulo
+    this.articuloActivo = articuloActivo
   }
 
   // Getters
@@ -75,6 +78,10 @@ export class Promocion {
     return this.nombreArticulo
   }
 
+  getArticuloActivo(): boolean {
+    return this.articuloActivo
+  }
+
   // Setters
   setIdPromocion(idPromocion: number): void {
     this.idPromocion = idPromocion
@@ -114,5 +121,14 @@ export class Promocion {
 
   setNombreArticulo(nombreArticulo: string): void {
     this.nombreArticulo = nombreArticulo
+  }
+
+  setArticuloActivo(articuloActivo: boolean): void {
+    this.articuloActivo = articuloActivo
+  }
+
+  // Método para verificar si la promoción puede ser activada
+  puedeSerActivada(): boolean {
+    return this.articuloActivo
   }
 }
