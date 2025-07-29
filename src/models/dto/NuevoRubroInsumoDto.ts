@@ -1,19 +1,35 @@
 export class NuevoRubroInsumoDto {
-  nombre: string
-  dadoDeBaja: boolean
-  idRubroInsumoPadre: number | null
+  private nombre: string
+  private dadoDeAlta: boolean
+  private idRubroInsumoPadre: number | null
 
-  constructor(nombre: string, dadoDeBaja = false, idRubroInsumoPadre: number | null = null) {
+  constructor(nombre: string, dadoDeAlta: boolean, idRubroInsumoPadre: number | null) {
     this.nombre = nombre
-    this.dadoDeBaja = dadoDeBaja
+    this.dadoDeAlta = dadoDeAlta
     this.idRubroInsumoPadre = idRubroInsumoPadre
   }
 
-  toJSON() {
-    return {
-      nombre: this.nombre,
-      dadoDeBaja: this.dadoDeBaja,
-      idRubroInsumoPadre: this.idRubroInsumoPadre || 0,
-    }
+  public getNombre(): string {
+    return this.nombre
+  }
+
+  public setNombre(nombre: string): void {
+    this.nombre = nombre
+  }
+
+  public isDadoDeAlta(): boolean {
+    return this.dadoDeAlta
+  }
+
+  public setDadoDeAlta(dadoDeAlta: boolean): void {
+    this.dadoDeAlta = dadoDeAlta
+  }
+
+  public getIdRubroInsumoPadre(): number | null {
+    return this.idRubroInsumoPadre
+  }
+
+  public setIdRubroInsumoPadre(idRubroInsumoPadre: number | null): void {
+    this.idRubroInsumoPadre = idRubroInsumoPadre
   }
 }

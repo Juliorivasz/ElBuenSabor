@@ -60,12 +60,6 @@ export const adminRoutes = [
     allowedRoles: ["administrador"],
   },
   {
-    path: "/admin/rubros",
-    element: lazy(() => import("../pages/admin/rubros/Rubros").then((module) => ({ default: module.Rubros }))),
-    allowedRoles: ["administrador", "cocinero"],
-    title: "Gestión de Rubros",
-  },
-  {
     path: "/admin/promociones",
     element: lazy(() =>
       import("../pages/admin/promociones/Promociones").then((module) => ({ default: module.Promociones })),
@@ -74,12 +68,20 @@ export const adminRoutes = [
     title: "Gestión de Promociones",
   },
   {
-    path: "/admin/insumos",   
+    path: "/admin/insumos",
     element: lazy(() =>
       import("../pages/admin/insumos/Insumos").then((module) => ({ default: module.Insumos })),
-    ), 
+    ),
     title: "Insumos",
     requiresAuth: true,
     allowedRoles: ["administrador", "cocinero"],
-  }
+  },
+  {
+    path: "/admin/rubros",
+    element: lazy(() =>
+      import("../pages/admin/rubrosInsumo/RubrosInsumo").then((module) => ({ default: module.RubrosInsumo })),
+    ),
+    allowedRoles: ["administrador"],
+    title: "Gestión de Rubros",
+  },
 ];
