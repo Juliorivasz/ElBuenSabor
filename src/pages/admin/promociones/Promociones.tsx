@@ -50,7 +50,13 @@ export const Promociones: React.FC = () => {
       await cargarPromociones()
     } catch (error) {
       console.error("Error al cambiar estado:", error)
-      NotificationService.error("Error al cambiar el estado de la promoción")
+
+      // Verificar si es el error específico del artículo dado de baja
+      if (error instanceof Error && error.message.includes("artículo correspondiente se encuentra dado de baja")) {
+        NotificationService.error(error.message)
+      } else {
+        NotificationService.error("El artículo correspondiente a esta promoción se encuentra dado de baja")
+      }
     }
   }
 
@@ -120,7 +126,7 @@ export const Promociones: React.FC = () => {
                   onEdit={handleEditarPromocion}
                   onToggleStatus={handleCambiarEstado}
                 />
-              ))}              
+              ))}
             </>
           )}
         </div>

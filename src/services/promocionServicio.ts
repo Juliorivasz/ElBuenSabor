@@ -37,6 +37,7 @@ class PromocionServicio {
             promo.url,
             promo.idArticulo,
             promo.nombreArticulo,
+            promo.articuloActivo || true, // Nuevo campo para estado del artículo
           ),
       )
     } catch (error) {
@@ -101,7 +102,85 @@ class PromocionServicio {
       await axios.put(`${this.baseURL}/altaBaja/${idPromocion}`)
     } catch (error) {
       console.error("Error al cambiar estado de promoción:", error)
+
+      // Capturar excepción específica del artículo dado de baja
+      if (error.response?.status === 400 || error.response?.status === 409) {
+        const errorMessage = error.response?.data?.message || error.response?.data || ""
+
+        // Verificar si el error es por artículo dado de baja
+        if (
+          errorMessage.toLowerCase().includes("artículo") &&
+          (errorMessage.toLowerCase().includes("baja") ||
+            errorMessage.toLowerCase().includes("inactivo") ||
+            errorMessage.toLowerCase().includes("desactivado"))
+        ) {
+          throw new Error(
+            "No se puede activar la promoción porque el artículo correspondiente se encuentra dado de baja",
+          )
+        }
+      }
+
       throw error
+    }
+  }
+
+  async obtenerPromocionPorArticulo(idArticulo: number): Promise<Promocion | null> {
+    try {
+      const response = await axios.get(`${this.baseURL}/articulo/${idArticulo}`)
+      if (response.data) {
+        return new Promocion(
+          response.data.idPromocion,
+          response.data.titulo,
+          response.data.descripcion,
+          response.data.descuento,
+          response.data.horarioInicio,
+          response.data.horarioFin,
+          response.data.activo,
+          response.data.url,
+          response.data.idArticulo,
+          response.data.nombreArticulo,
+          response.data.articuloActivo || true,
+        )
+      }
+      return null
+    } catch (error) {
+      // Si no hay promoción o hay error, retornamos null
+      return null
+    }
+  }
+
+  async obtenerPromocionesActivas(): Promise<Promocion[]> {
+    try {
+      const response = await axios.get(`${this.baseURL}/activas`)
+      return response.data.map(
+        (promo: any) =>
+          new Promocion(
+            promo.idPromocion,
+            promo.titulo,
+            promo.descripcion,
+            promo.descuento,
+            promo.horarioInicio,
+            promo.horarioFin,
+            promo.activo,
+            promo.url,
+            promo.idArticulo,
+            promo.nombreArticulo,
+            promo.articuloActivo || true,
+          ),
+      )
+    } catch (error) {
+      console.error("Error al obtener promociones activas:", error)
+      return []
+    }
+  }
+
+  async verificarEstadoArticulo(idArticulo: number): Promise<boolean> {
+    try {
+      const response = await axios.get(`${this.articuloURL}/${idArticulo}/estado`)
+      return response.data.activo || false
+    } catch (error) {
+      console.error("Error al verificar estado del artículo:", error)
+      return false
     }
   }
 }
