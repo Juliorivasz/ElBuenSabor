@@ -25,7 +25,8 @@ import {
   AdminPanelSettings as AdminIcon,
   BarChart as ChartIcon,
   LocalOffer as PromoIcon,
-  Inventory2 as InsumoIcon  
+  Inventory2 as InsumoIcon,
+  Group as ClientesIcon
 } from "@mui/icons-material";
 
 interface SidebarItem {
@@ -70,6 +71,12 @@ const sidebarItems: SidebarItem[] = [
     name: "Estadisticas",
     path: "/admin/estadisticas",
     icon: ChartIcon,
+    allowedRoles: ["administrador"],
+  },
+  {
+    name: "Clientes",
+    path: "/admin/clientes",
+    icon: ClientesIcon,
     allowedRoles: ["administrador"],
   },
   {

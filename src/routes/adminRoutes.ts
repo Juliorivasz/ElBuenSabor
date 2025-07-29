@@ -84,4 +84,12 @@ export const adminRoutes = [
     allowedRoles: ["administrador"],
     title: "Gestión de Rubros",
   },
+  {
+    path: "/admin/clientes",
+    element: lazy(() =>
+      import("../pages/admin/clientes/Clientes").then((module) => ({ default: module.Clientes })),
+    ),
+    allowedRoles: ["administrador"],
+    title: "Gestión de Clientes",
+  },
 ];

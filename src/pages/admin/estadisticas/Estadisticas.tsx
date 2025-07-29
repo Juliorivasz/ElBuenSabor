@@ -11,7 +11,7 @@ export const Estadisticas = () => {
 
         {/* Contenedor del título arriba */}
         <div className="flex items-center mb-6">
-          <BarChart   className="text-black mr-3" fontSize="large" />
+          <BarChart className="text-black mr-3" fontSize="large" />
           <div>
             <h1 className="text-3xl font-bold text-gray-800">Estadísticas del negocio</h1>
             <p className="text-gray-600 mt-1">Gestiona tus finanzas de manera eficiente</p>
