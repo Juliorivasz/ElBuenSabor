@@ -1,43 +1,47 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useCartStore } from "../../store/cart/useCartStore"
-import { pagoServicio, type ItemDTO } from "../../services/pagoServicio"
+import { useState } from "react";
+import { useCartStore } from "../../store/cart/useCartStore";
+import { pagoServicio, type ItemDTO } from "../../services/pagoServicio";
 
-export const MercadoPagoButton = () => {
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const { items } = useCartStore()
+interface MercadoPagoButtonProps {
+  costoEnvio: number;
+}
+
+export const MercadoPagoButton = ({ costoEnvio }: MercadoPagoButtonProps) => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const { items } = useCartStore();
 
   const handleMercadoPagoCheckout = async () => {
     if (items.length === 0) {
-      setError("No hay productos en el carrito")
-      return
+      setError("No hay productos en el carrito");
+      return;
     }
 
-    setIsLoading(true)
-    setError(null)
+    setIsLoading(true);
+    setError(null);
 
     try {
       // Convertir los items del carrito al formato esperado por el backend
       const mercadoPagoItems: ItemDTO[] = items.map((item) => ({
         title: item.articulo.getDescripcion(),
         quantity: item.quantity,
-        unitPrice: item.articulo.getPrecioVenta(),
-      }))
+        unitPrice: item.articulo.getPrecioVenta() * (item.promocionalDiscount ?? 1),
+      }));
 
       // Llamar al servicio para crear la preferencia de pago
-      const response = await pagoServicio.crearPreferencia(mercadoPagoItems)
+      const response = await pagoServicio.crearPreferencia(mercadoPagoItems, costoEnvio);
 
       // Redirigir al usuario al checkout de Mercado Pago
-      window.location.href = response.init_point
+      window.location.href = response.init_point;
     } catch (err) {
-      setError("Error al procesar el pago. Por favor, intente nuevamente.")
-      console.error("Error en checkout de Mercado Pago:", err)
+      setError("Error al procesar el pago. Por favor, intente nuevamente.");
+      console.error("Error en checkout de Mercado Pago:", err);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <div className="w-full">
@@ -48,16 +52,14 @@ export const MercadoPagoButton = () => {
       <button
         onClick={handleMercadoPagoCheckout}
         disabled={isLoading || items.length === 0}
-        className="w-full flex items-center justify-center bg-blue-500 hover:bg-blue-600 text-white font-medium py-3 px-4 rounded-lg transition-colors mb-3 disabled:bg-gray-300 disabled:cursor-not-allowed"
-      >
+        className="w-full flex items-center justify-center bg-blue-500 hover:bg-blue-600 text-white font-medium py-3 px-4 rounded-lg transition-colors mb-3 disabled:bg-gray-300 disabled:cursor-not-allowed">
         {/* Ícono simple de tarjeta de crédito */}
         <svg
           xmlns="http://www.w3.org/2000/svg"
           className="h-5 w-5 mr-2"
           fill="none"
           viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
+          stroke="currentColor">
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -69,5 +71,5 @@ export const MercadoPagoButton = () => {
         {isLoading ? "Procesando..." : "Pagar con Mercado Pago"}
       </button>
     </div>
-  )
-}
+  );
+};

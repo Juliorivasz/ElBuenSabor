@@ -6,6 +6,11 @@ export interface ItemDTO {
   unitPrice: number;
 }
 
+export interface PreferenciaPagoDto {
+  items: ItemDTO[];
+  costoEnvio: number;
+}
+
 export interface PreferenciaResponse {
   init_point: string;
 }
@@ -22,9 +27,11 @@ class PagoServicio {
    * @param items Lista de items para el pago
    * @returns Respuesta con el init_point para redirigir al checkout
    */
-  async crearPreferencia(items: ItemDTO[]): Promise<PreferenciaResponse> {
+  async crearPreferencia(items: ItemDTO[], costoEnvio: number): Promise<PreferenciaResponse> {
+    const preferenciaDto: PreferenciaPagoDto = { items, costoEnvio };
+
     try {
-      const response = await axios.post<PreferenciaResponse>(`${this.baseUrl}/preferencia`, items);
+      const response = await axios.post<PreferenciaResponse>(`${this.baseUrl}/preferencia`, preferenciaDto);
       return response.data;
     } catch (error) {
       console.error("Error al crear preferencia de pago:", error);

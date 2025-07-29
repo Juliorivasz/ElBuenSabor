@@ -1,27 +1,28 @@
-import type { ArticuloDTO } from "../../../models/dto/ArticuloDTO"
+import type { ArticuloDTO } from "../../../models/dto/ArticuloDTO";
 
 export interface CartItem {
-  articulo: ArticuloDTO
-  quantity: number
-  imagenUrl?: string
-  promocionalDiscount: number // Add promotional discount field
+  articulo: ArticuloDTO;
+  quantity: number;
+  imagenUrl?: string;
+  promocionalDiscount: number; // Add promotional discount field
 }
 
 export interface CartState {
-  items: CartItem[]
+  items: CartItem[];
 }
 
 export interface CartActions {
-  addItem: (articulo: ArticuloDTO, imagenUrl?: string, promocionalDiscount?: number) => void
-  removeItem: (articuloId: number) => void
-  increaseQuantity: (articuloId: number) => void
-  decreaseQuantity: (articuloId: number) => void
-  clearCart: () => void
+  addItem: (articulo: ArticuloDTO, imagenUrl?: string, promocionalDiscount?: number) => void;
+  removeItem: (articuloId: number) => void;
+  increaseQuantity: (articuloId: number) => void;
+  decreaseQuantity: (articuloId: number) => void;
+  clearCart: () => void;
 }
 
 export interface CartSelectors {
-  getTotalItems: () => number
-  getTotalPrice: () => number
+  getTotalItems: () => number;
+  getTotalPrice: () => number;
+  isPromocionalDiscount: () => boolean;
 }
 
-export type CartStore = CartState & CartActions & CartSelectors
+export type CartStore = CartState & CartActions & CartSelectors;
