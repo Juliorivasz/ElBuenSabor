@@ -30,6 +30,8 @@ class PagoServicio {
   async crearPreferencia(items: ItemDTO[], costoEnvio: number): Promise<PreferenciaResponse> {
     const preferenciaDto: PreferenciaPagoDto = { items, costoEnvio };
 
+    console.log(preferenciaDto);
+
     try {
       const response = await axios.post<PreferenciaResponse>(`${this.baseUrl}/preferencia`, preferenciaDto);
       return response.data;

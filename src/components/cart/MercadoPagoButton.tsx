@@ -27,7 +27,7 @@ export const MercadoPagoButton = ({ costoEnvio }: MercadoPagoButtonProps) => {
       const mercadoPagoItems: ItemDTO[] = items.map((item) => ({
         title: item.articulo.getDescripcion(),
         quantity: item.quantity,
-        unitPrice: item.articulo.getPrecioVenta() * (item.promocionalDiscount ?? 1),
+        unitPrice: item.articulo.getPrecioVenta() * (1 - (item.promocionalDiscount ?? 0)),
       }));
 
       // Llamar al servicio para crear la preferencia de pago

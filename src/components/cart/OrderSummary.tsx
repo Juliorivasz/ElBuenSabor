@@ -81,7 +81,7 @@ export const OrderSummary = ({ deliveryType, paymentMethod, selectedAddress, onC
       {/* Lista de productos con subtotales */}
       <div className="space-y-3 mb-6">
         {items.map((item) => {
-          const itemSubtotal = item.articulo.getPrecioVenta() * item.quantity * (item.promocionalDiscount ?? 1);
+          const itemSubtotal = item.articulo.getPrecioVenta() * item.quantity * (1 - (item.promocionalDiscount ?? 0));
           return (
             <div
               key={item.articulo.getIdArticulo()}
