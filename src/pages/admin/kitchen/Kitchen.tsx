@@ -1,16 +1,16 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { RefreshOutlined, RestaurantMenuOutlined, CheckCircleOutlined } from "@mui/icons-material";
+import { CheckCircleOutlined, RefreshOutlined, RestaurantMenuOutlined } from "@mui/icons-material";
+import type { IMessage } from "@stomp/stompjs";
+import { useCallback, useEffect, useState } from "react";
+import Swal from "sweetalert2";
+import { FixedChat } from "../../../components/chat/FixedChat";
+import { KitchenOrderCard } from "../../../components/kitchen/KitchenOrderCard";
+import { useWebSocket } from "../../../hooks/useWebSocket";
 import type { PedidoCocineroDTO } from "../../../models/dto/PedidoCocineroDTO";
+import type { PedidoStatusUpdateDto } from "../../../models/dto/PedidoDTO";
 import { EstadoPedido } from "../../../models/enum/EstadoPedido";
 import { cocineroServicio } from "../../../services/cocineroServicio";
-import { KitchenOrderCard } from "../../../components/kitchen/KitchenOrderCard";
-import Swal from "sweetalert2";
-import { useWebSocket } from "../../../hooks/useWebSocket";
-import type { IMessage } from "@stomp/stompjs";
-import type { PedidoStatusUpdateDto } from "../../../models/dto/PedidoDTO";
-import { FixedChat } from "../../../components/chat/FixedChat";
 
 export const Kitchen = () => {
   const { isConnected, subscribe } = useWebSocket();
@@ -105,8 +105,8 @@ export const Kitchen = () => {
     }
   }, [isConnected, subscribe, cargarPedidos]);
 
-  const pedidosEnPreparacion = pedidos.filter((pedido) => pedido.estadoPedido === EstadoPedido.EN_PREPARACION);
-  const pedidosListos = pedidos.filter((pedido) => pedido.estadoPedido === EstadoPedido.LISTO);
+  const pedidosEnPreparacion = pedidos?.filter((pedido) => pedido.estadoPedido === EstadoPedido.EN_PREPARACION);
+  const pedidosListos = pedidos?.filter((pedido) => pedido.estadoPedido === EstadoPedido.LISTO);
 
   if (loading) {
     return (
@@ -156,13 +156,13 @@ export const Kitchen = () => {
               />
               Pedidos en Preparación
             </h2>
-            {pedidosEnPreparacion.length === 0 ? (
+            {pedidosEnPreparacion?.length === 0 ? (
               <div className="text-center py-8">
                 <p className="text-yellow-700">No hay pedidos en preparación en este momento</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {pedidosEnPreparacion.map((pedido) => (
+                {pedidosEnPreparacion?.map((pedido) => (
                   <KitchenOrderCard
                     key={pedido.idPedido}
                     pedido={pedido}
@@ -184,13 +184,13 @@ export const Kitchen = () => {
               />
               Pedidos Listos
             </h2>
-            {pedidosListos.length === 0 ? (
+            {pedidosListos?.length === 0 ? (
               <div className="text-center py-8">
                 <p className="text-green-700">No hay pedidos listos en este momento</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {pedidosListos.map((pedido) => (
+                {pedidosListos?.map((pedido) => (
                   <KitchenOrderCard
                     key={pedido.idPedido}
                     pedido={pedido}

@@ -16,6 +16,12 @@ interface RubrosInsumoTableProps {
   onViewDetails: (rubro: RubroInsumoAbmDto) => void
   onToggleStatus: (rubro: RubroInsumoAbmDto) => void
   onNuevoRubro: () => void
+  paginationInfo?: {
+    currentPage: number
+    itemsPerPage: number
+    totalItems: number
+    totalPages: number
+  }
 }
 
 interface RubroWithLevel {
@@ -30,6 +36,7 @@ export const RubrosInsumoTable = ({
   onViewDetails,
   onToggleStatus,
   onNuevoRubro,
+  paginationInfo,
 }: RubrosInsumoTableProps) => {
   const [expandedRubros, setExpandedRubros] = useState<Set<number>>(new Set())
 
@@ -92,7 +99,6 @@ export const RubrosInsumoTable = ({
     return names[Math.min(level, names.length - 1)]
   }
 
-  // Obtener solo rubros principales para la vista principal
   const rubrosprincipales = rubros.filter((r) => r.esRubroPadre())
 
   if (loading) {
@@ -145,8 +151,19 @@ export const RubrosInsumoTable = ({
           <div>
             <h3 className="text-lg font-semibold text-gray-900">Gestión de Rubros de Insumo</h3>
             <p className="text-sm text-gray-600 mt-1">
-              {rubros.length} rubro{rubros.length !== 1 ? "s" : ""} registrado{rubros.length !== 1 ? "s" : ""} (vista
-              jerárquica expandible)
+              {paginationInfo ? (
+                <>
+                  Mostrando {(paginationInfo.currentPage - 1) * paginationInfo.itemsPerPage + 1} -{" "}
+                  {Math.min(paginationInfo.currentPage * paginationInfo.itemsPerPage, paginationInfo.totalItems)} de{" "}
+                  {paginationInfo.totalItems} rubro{paginationInfo.totalItems !== 1 ? "s" : ""} (vista jerárquica
+                  expandible)
+                </>
+              ) : (
+                <>
+                  {rubros.length} rubro{rubros.length !== 1 ? "s" : ""} registrado{rubros.length !== 1 ? "s" : ""}{" "}
+                  (vista jerárquica expandible)
+                </>
+              )}
             </p>
           </div>
           <button
@@ -247,7 +264,7 @@ export const RubrosInsumoTable = ({
                     </td>
 
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                        {rubro.getCantInsumos()} insumo{rubro.getCantInsumos() !== 1 ? "s" : ""}
+                      {rubro.getCantInsumos()} insumo{rubro.getCantInsumos() !== 1 ? "s" : ""}
                     </td>
 
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -347,8 +364,8 @@ export const RubrosInsumoTable = ({
                             </span>
                           </td>
 
-                          <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-500">                            
-                              {subrubro.getCantInsumos()} insumo{subrubro.getCantInsumos() !== 1 ? "s" : ""}
+                          <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-500">
+                            {subrubro.getCantInsumos()} insumo{subrubro.getCantInsumos() !== 1 ? "s" : ""}
                           </td>
 
                           <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-500">
