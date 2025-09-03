@@ -1,16 +1,16 @@
 "use client"
 
-import { type FC, useEffect, useState, useCallback } from "react"
-import { useProductsStore, type ProductType } from "../../store/admin/useProductsStore"
+import { Fastfood as ProductIcon } from "@mui/icons-material"
+import { Plus, RefreshCw } from "lucide-react"
+import { useCallback, useEffect, useState, type FC } from "react"
 import { ProductsTable } from "../../components/Admin/products/ProductsTable"
-import { UniversalProductForm } from "../../components/Admin/products/UniversalProductForm"
-import { UniversalProductDetailsModal } from "../../components/Admin/products/UniversalProductDetailsModal"
 import { RecargarStockModal } from "../../components/Admin/products/RecargarStockModal"
+import { UniversalProductDetailsModal } from "../../components/Admin/products/UniversalProductDetailsModal"
+import { UniversalProductForm } from "../../components/Admin/products/UniversalProductForm"
+import { PageHeader } from "../../components/shared/PageHeader"
 import type { InformacionArticuloManufacturadoDto } from "../../models/dto/InformacionArticuloManufacturadoDto"
 import type { InformacionArticuloNoElaboradoDto } from "../../models/dto/InformacionArticuloNoElaboradoDto"
-import { Fastfood as ProductIcon } from "@mui/icons-material"
-import { PageHeader } from "../../components/shared/PageHeader"
-import { Plus, RefreshCw } from "lucide-react"
+import { useProductsStore, type ProductType } from "../../store/admin/useProductsStore"
 
 // Tipo union para los productos
 type ProductUnion = InformacionArticuloManufacturadoDto | InformacionArticuloNoElaboradoDto

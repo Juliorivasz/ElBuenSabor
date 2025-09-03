@@ -1,4 +1,8 @@
 import { create } from "zustand";
+import type { CategoriaDTO } from "../../models/dto/CategoriaDTO";
+import type { InformacionArticuloManufacturadoDto } from "../../models/dto/InformacionArticuloManufacturadoDto";
+import type { InformacionArticuloNoElaboradoDto } from "../../models/dto/InformacionArticuloNoElaboradoDto";
+import type { InsumoDTO } from "../../models/dto/InsumoDTO";
 import {
   actualizarArticuloManufacturado,
   crearArticuloManufacturado,
@@ -9,16 +13,12 @@ import {
   crearArticuloNoElaborado,
   fetchArticulosNoElaboradosAbm,
 } from "../../services/articuloNoElaboradoServicio";
-import type { InformacionArticuloManufacturadoDto } from "../../models/dto/InformacionArticuloManufacturadoDto";
-import type { InformacionArticuloNoElaboradoDto } from "../../models/dto/InformacionArticuloNoElaboradoDto";
-import { fetchCategoriasAbm } from "../../services/categoriaServicio";
-import type { CategoriaDTO } from "../../models/dto/CategoriaDTO";
-import { fetchInsumoAbm } from "../../services/articulosInsumosServicio";
-import type { InsumoDTO } from "../../models/dto/InsumoDTO";
-import { mapperInformacionArticuloManufacturadoDtoToNuevoArticuloManufacturadoDto } from "../../utils/mapper/articulosManufacturadosMapper";
-import { mapperInformacionArticuloNoElaboradoDtoToNuevoArticuloNoElaboradoDto } from "../../utils/mapper/articuloNoElaboradoMapper";
-import { useAuth0Store } from "../auth/useAuth0Store";
 import { altaBajaArticulo } from "../../services/articuloServicio";
+import { fetchInsumoAbm } from "../../services/articulosInsumosServicio";
+import { fetchCategoriasAbm } from "../../services/categoriaServicio";
+import { mapperInformacionArticuloNoElaboradoDtoToNuevoArticuloNoElaboradoDto } from "../../utils/mapper/articuloNoElaboradoMapper";
+import { mapperInformacionArticuloManufacturadoDtoToNuevoArticuloManufacturadoDto } from "../../utils/mapper/articulosManufacturadosMapper";
+import { useAuth0Store } from "../auth/useAuth0Store";
 
 export type ProductType = "manufacturados" | "noManufacturados";
 
