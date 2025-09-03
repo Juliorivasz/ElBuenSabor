@@ -1,8 +1,8 @@
 "use client"
 
 import { Fastfood as ProductIcon } from "@mui/icons-material"
-import { type FC, useCallback, useEffect, useState } from "react"
-import { ProductsFilters } from "../../components/Admin/products/ProductsFilters"
+import { Plus, RefreshCw } from "lucide-react"
+import { useCallback, useEffect, useState, type FC } from "react"
 import { ProductsTable } from "../../components/Admin/products/ProductsTable"
 import { RecargarStockModal } from "../../components/Admin/products/RecargarStockModal"
 import { UniversalProductDetailsModal } from "../../components/Admin/products/UniversalProductDetailsModal"
@@ -10,20 +10,19 @@ import { UniversalProductForm } from "../../components/Admin/products/UniversalP
 import { PageHeader } from "../../components/shared/PageHeader"
 import type { InformacionArticuloManufacturadoDto } from "../../models/dto/InformacionArticuloManufacturadoDto"
 import type { InformacionArticuloNoElaboradoDto } from "../../models/dto/InformacionArticuloNoElaboradoDto"
-import { type ProductType, useProductsStore } from "../../store/admin/useProductsStore"
+import { useProductsStore, type ProductType } from "../../store/admin/useProductsStore"
 
-// Define ProductUnion as a union of the two product DTOs
+// Tipo union para los productos
 type ProductUnion = InformacionArticuloManufacturadoDto | InformacionArticuloNoElaboradoDto
 
-// Import or define selectors for categories, ingredients, and products
-// Adjust the import path and hook names as needed for your project structure
 export const Products: FC = () => {
   const {
-    error,
-    categories,
-    ingredients,
+    // Estados
     manufacturados,
     noElaborados,
+    categories,
+    ingredients,
+    error,
 
     // Getters
     getPaginationByType,
@@ -49,11 +48,6 @@ export const Products: FC = () => {
     setError,
   } = useProductsStore()
 
-  const validCategories = categories || []
-  const validIngredients = ingredients || []
-  const validManufacturados = manufacturados || []
-  const validNoElaborados = noElaborados || []
-
   const [activeTab, setActiveTab] = useState<ProductType>("manufacturados")
   const [showForm, setShowForm] = useState(false)
   const [showRecargarStockModal, setShowRecargarStockModal] = useState(false)
@@ -65,15 +59,13 @@ export const Products: FC = () => {
   // Estado para forzar re-render
   const [refreshKey, setRefreshKey] = useState(0)
 
-  // Estado para productos filtrados
-  const [productosFiltrados, setProductosFiltrados] = useState<ProductUnion[]>([])
+  // Validar que los datos sean arrays válidos
+  const validManufacturados = Array.isArray(manufacturados) ? manufacturados : []
+  const validNoElaborados = Array.isArray(noElaborados) ? noElaborados : []
+  const validCategories = Array.isArray(categories) ? categories : []
+  const validIngredients = Array.isArray(ingredients) ? ingredients : []
 
-  const [busqueda, setBusqueda] = useState("")
-  const [filtroActual, setFiltroActual] = useState<"todas" | "activas" | "inactivas" | "padre" | "subcategorias">(
-    "todas",
-  )
-
-  // Cargar productos al montar el componente
+  // Cargar datos iniciales
   useEffect(() => {
     if (validCategories.length === 0) {
       fetchCategories()
@@ -90,7 +82,7 @@ export const Products: FC = () => {
     if (activeTab === "manufacturados") {
       fetchManufacturadosPaginated(pagination.currentPage, pagination.itemsPerPage)
     } else {
-      fetchNoElaboradosPaginated(pagination.currentPage, pagination.itemsPerPage) // Fixed "noManufacturados" to "noElaborados"
+      fetchNoElaboradosPaginated(pagination.currentPage, pagination.itemsPerPage)
     }
   }, [activeTab, refreshKey]) // Agregar refreshKey como dependencia
 
@@ -107,7 +99,7 @@ export const Products: FC = () => {
         fetchManufacturadosPaginated(page, getPaginationByType("manufacturados").itemsPerPage)
       } else {
         setNoElaboradosPagination({ currentPage: page })
-        fetchNoElaboradosPaginated(page, getPaginationByType("noElaborados").itemsPerPage) // Fixed "noManufacturados" to "noElaborados"
+        fetchNoElaboradosPaginated(page, getPaginationByType("noManufacturados").itemsPerPage)
       }
     },
     [
@@ -140,6 +132,15 @@ export const Products: FC = () => {
   )
 
   // Handlers para acciones
+  const handleCreateNew = useCallback(() => {
+    setEditingManufacturado(undefined)
+    setEditingNoElaborado(undefined)
+    setShowForm(true)
+  }, [])
+
+  const handleRecargarStock = useCallback(() => {
+    setShowRecargarStockModal(true)
+  }, [])
 
   const handleEditManufacturado = useCallback((product: InformacionArticuloManufacturadoDto) => {
     setEditingManufacturado(product)
@@ -164,7 +165,7 @@ export const Products: FC = () => {
   const handleToggleStatusManufacturado = useCallback(
     async (product: InformacionArticuloManufacturadoDto) => {
       try {
-        await toggleManufacturadoStatus(product.idArticulo) // Using direct property access instead of getter method
+        await toggleManufacturadoStatus(product.getidArticulo())
       } catch (error) {
         console.error("Error al cambiar estado del producto manufacturado:", error)
       }
@@ -175,7 +176,7 @@ export const Products: FC = () => {
   const handleToggleStatusNoElaborado = useCallback(
     async (product: InformacionArticuloNoElaboradoDto) => {
       try {
-        await toggleNoElaboradoStatus(product.idArticulo) // Using direct property access instead of getter method
+        await toggleNoElaboradoStatus(product.getIdArticulo())
       } catch (error) {
         console.error("Error al cambiar estado del producto no elaborado:", error)
       }
@@ -183,60 +184,65 @@ export const Products: FC = () => {
     [toggleNoElaboradoStatus],
   )
 
-  const handleFormSubmit = useCallback(
-    async (productData: ProductUnion, file?: File) => {
+  // Updated handlers to include file parameter
+  const handleFormSubmitManufacturado = useCallback(
+    async (productData: InformacionArticuloManufacturadoDto, file?: File) => {
       try {
-        if (activeTab === "manufacturados") {
-          const manufacturadoData = productData as InformacionArticuloManufacturadoDto
-          if (editingManufacturado) {
-            const id = editingManufacturado.idArticulo // Using direct property access
-            if (id !== undefined) {
-              await updateManufacturado(id, manufacturadoData, file)
-            } else {
-              throw new Error("El ID del producto a editar es undefined.")
-            }
+        if (editingManufacturado) {
+          const id = editingManufacturado.getidArticulo()
+          if (id !== undefined) {
+            await updateManufacturado(id, productData, file)
           } else {
-            await createManufacturado(manufacturadoData, file)
+            throw new Error("El ID del producto a editar es undefined.")
           }
-          setEditingManufacturado(undefined)
         } else {
-          const noElaboradoData = productData as InformacionArticuloNoElaboradoDto
-          if (editingNoElaborado) {
-            const id = editingNoElaborado.idArticulo // Using direct property access
-            if (id !== undefined) {
-              await updateNoElaborado(id, noElaboradoData, file)
-            } else {
-              throw new Error("El ID del producto a editar es undefined.")
-            }
-          } else {
-            await createNoElaborado(noElaboradoData, file)
-          }
-          setEditingNoElaborado(undefined)
+          await createManufacturado(productData, file)
         }
         setShowForm(false)
+        setEditingManufacturado(undefined)
+        // Forzar actualización de la UI
         forceUpdate()
       } catch (error) {
-        console.error("Error al guardar producto:", error)
+        console.error("Error al guardar producto manufacturado:", error)
       }
     },
-    [
-      activeTab,
-      editingManufacturado,
-      editingNoElaborado,
-      updateManufacturado,
-      createManufacturado,
-      updateNoElaborado,
-      createNoElaborado,
-      forceUpdate,
-    ],
+    [editingManufacturado, updateManufacturado, createManufacturado, forceUpdate],
+  )
+
+  const handleFormSubmitNoElaborado = useCallback(
+    async (productData: InformacionArticuloNoElaboradoDto, file?: File) => {
+      try {
+        if (editingNoElaborado) {
+          const id = editingNoElaborado.getIdArticulo()
+          if (id !== undefined) {
+            await updateNoElaborado(id, productData, file)
+          } else {
+            throw new Error("El ID del producto a editar es undefined.")
+          }
+        } else {
+          await createNoElaborado(productData, file)
+        }
+        setShowForm(false)
+        setEditingNoElaborado(undefined)
+        // Forzar actualización de la UI
+        forceUpdate()
+      } catch (error) {
+        console.error("Error al guardar producto no elaborado:", error)
+      }
+    },
+    [editingNoElaborado, updateNoElaborado, createNoElaborado, forceUpdate],
   )
 
   // Updated universal form submit handler to include file parameter
   const handleUniversalFormSubmit = useCallback(
     async (productData: ProductUnion, file?: File) => {
-      await handleFormSubmit(productData, file) // Using unified handler
+      if (activeTab === "manufacturados") {
+        await handleFormSubmitManufacturado(productData as InformacionArticuloManufacturadoDto, file)
+      } else {
+        await handleFormSubmitNoElaborado(productData as InformacionArticuloNoElaboradoDto, file)
+      }
     },
-    [handleFormSubmit],
+    [activeTab, handleFormSubmitManufacturado, handleFormSubmitNoElaborado],
   )
 
   const handleFormCancel = useCallback(() => {
@@ -254,53 +260,90 @@ export const Products: FC = () => {
     setError(null)
   }, [setError])
 
-  const handleBusquedaChange = useCallback((nuevaBusqueda: string) => {
-    setBusqueda(nuevaBusqueda)
+  const handleTabChange = useCallback((tab: ProductType) => {
+    setActiveTab(tab)
+    // Resetear estados de edición y visualización
+    setEditingManufacturado(undefined)
+    setEditingNoElaborado(undefined)
+    setViewingManufacturado(undefined)
+    setViewingNoElaborado(undefined)
+    setShowForm(false)
   }, [])
 
-  const handleFiltroChange = useCallback(
-    (nuevoFiltro: "todas" | "activas" | "inactivas" | "padre" | "subcategorias") => {
-      setFiltroActual(nuevoFiltro)
-    },
-    [],
-  )
+  // Obtener datos según la pestaña activa
+  const currentPagination = getPaginationByType(activeTab)
+  const currentLoading = getLoadingByType(activeTab)
 
-  // Filter handler
-  const handleFiltrar = useCallback((productos: ProductUnion[]) => {
-    setProductosFiltrados(productos)
-  }, [])
-
-  const currentProducts = activeTab === "manufacturados" ? validManufacturados : validNoElaborados
-  const totalProductos = currentProducts.length
-  const productosActivos = currentProducts.filter((p) => p.isDadoDeAlta()).length
-  const productosInactivos = totalProductos - productosActivos
-  const productosPadre = 0 // This would need to be calculated based on your business logic
+  // Obtener el producto que se está editando según la pestaña activa
+  const currentEditingProduct = activeTab === "manufacturados" ? editingManufacturado : editingNoElaborado
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+        {/* Header */}
         <PageHeader
-          title="Panel de Productos"
+          title="Productos"
           subtitle="Gestiona los productos del restaurante"
           showBackButton={true}
-          backTo="/admin/dashboard"
+          backTo="admin/dashboard"
           icon={<ProductIcon className="text-black mr-3" fontSize="large" />}
           breadcrumbs={[{ label: "Dashboard", href: "/admin/dashboard" }, { label: "Productos" }]}
         />
+        <div className="flex justify-end items-center space-x-3">
+          {/* Botón Recargar Stock - Solo visible en la pestaña de No Elaborados */}
+          {activeTab === "noManufacturados" && (
+            <button
+              onClick={handleRecargarStock}
+              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200 flex items-center space-x-2"
+            >
+              <RefreshCw className="h-4 w-4 mr-2" />
+              <span>Recargar Stock</span>
+            </button>
+          )}
+          <button
+            onClick={handleCreateNew}
+            className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200 flex items-center space-x-2"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            <span>Nuevo Producto</span>
+          </button>
+        </div>
 
-        {/* Filtros */}
-        <ProductsFilters
-          subproductos={currentProducts}
-          onFiltrar={handleFiltrar}
-          totalProductos={totalProductos}
-          productosActivos={productosActivos}
-          productosInactivos={productosInactivos}
-          productosPadre={productosPadre}
-          filtroActual={filtroActual}
-          onFiltroChange={handleFiltroChange}
-          busqueda={busqueda}
-          onBusquedaChange={handleBusquedaChange}
-        />
+        {/* Tabs */}
+        <div className="mb-6 border-b border-gray-200">
+          <nav className="-mb-px flex space-x-8">
+            <button
+              onClick={() => handleTabChange("manufacturados")}
+              className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${
+                activeTab === "manufacturados"
+                  ? "border-orange-500 text-orange-600"
+                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+              }`}
+            >
+              Productos Manufacturados
+              {validManufacturados.length > 0 && (
+                <span className="ml-2 bg-gray-100 text-gray-900 py-0.5 px-2.5 rounded-full text-xs">
+                  {validManufacturados.length}
+                </span>
+              )}
+            </button>
+            <button
+              onClick={() => handleTabChange("noManufacturados")}
+              className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${
+                activeTab === "noManufacturados"
+                  ? "border-orange-500 text-orange-600"
+                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+              }`}
+            >
+              Productos No Elaborados
+              {validNoElaborados.length > 0 && (
+                <span className="ml-2 bg-gray-100 text-gray-900 py-0.5 px-2.5 rounded-full text-xs">
+                  {validNoElaborados.length}
+                </span>
+              )}
+            </button>
+          </nav>
+        </div>
 
         {/* Error */}
         {error && (
@@ -330,10 +373,10 @@ export const Products: FC = () => {
         {/* Tabla Universal de Productos */}
         {activeTab === "manufacturados" ? (
           <ProductsTable
-            key={`manufacturados-${refreshKey}`}
-            products={productosFiltrados as InformacionArticuloManufacturadoDto[]}
-            loading={getLoadingByType("manufacturados")}
-            pagination={getPaginationByType("manufacturados")}
+            key={`manufacturados-${refreshKey}`} // Key para forzar re-render
+            products={validManufacturados}
+            loading={currentLoading}
+            pagination={currentPagination}
             onPageChange={handlePageChange}
             onItemsPerPageChange={handleItemsPerPageChange}
             onEdit={handleEditManufacturado}
@@ -346,10 +389,10 @@ export const Products: FC = () => {
           />
         ) : (
           <ProductsTable
-            key={`noElaborados-${refreshKey}`}
-            products={productosFiltrados as InformacionArticuloNoElaboradoDto[]}
-            loading={getLoadingByType("noElaborados")}
-            pagination={getPaginationByType("noElaborados")}
+            key={`noElaborados-${refreshKey}`} // Key para forzar re-render
+            products={validNoElaborados}
+            loading={currentLoading}
+            pagination={currentPagination}
             onPageChange={handlePageChange}
             onItemsPerPageChange={handleItemsPerPageChange}
             onEdit={handleEditNoElaborado}
@@ -365,12 +408,12 @@ export const Products: FC = () => {
         {/* Formulario Universal */}
         {showForm && (
           <UniversalProductForm
-            product={activeTab === "manufacturados" ? editingManufacturado : editingNoElaborado}
+            product={currentEditingProduct}
             categories={validCategories}
             ingredients={validIngredients}
             onSubmit={handleUniversalFormSubmit}
             onCancel={handleFormCancel}
-            loading={getLoadingByType(activeTab)}
+            loading={currentLoading}
             type={activeTab === "manufacturados" ? "manufacturado" : "noElaborado"}
           />
         )}
