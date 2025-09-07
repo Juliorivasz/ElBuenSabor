@@ -1,0 +1,166 @@
+[
+  {
+    "idCategoria": 1,
+    "nombre": "Hamburguesas",
+    "imagen": "/icons/burger.svg",
+    "margenGanancia": 25,
+    "fechaBaja": null,
+    "listaManufacturados": [],
+    "categoriaPadre": null
+  },
+  {
+    "idCategoria": 2,
+    "nombre": "Veganas",
+    "margenGanancia": 22,
+    "fechaBaja": null,
+    "listaManufacturados": [],
+    "imagen": null,
+    "categoriaPadre": {
+      "idCategoria": 1,
+      "nombre": "Hamburguesas",
+      "imagen": "/icons/burger.svg",
+      "margenGanancia": 25,
+      "fechaBaja": null,
+      "listaManufacturados": [],
+      "categoriaPadre": null
+    }
+  },
+  {
+    "idCategoria": 8,
+    "nombre": "mixtas",
+    "margenGanancia": 22,
+    "fechaBaja": null,
+    "listaManufacturados": [],
+    "imagen": null,
+    "categoriaPadre": {
+      "idCategoria": 1,
+      "nombre": "Hamburguesas",
+      "imagen": "/icons/burger.svg",
+      "margenGanancia": 25,
+      "fechaBaja": null,
+      "listaManufacturados": [],
+      "categoriaPadre": null
+    }
+  },
+  {
+    "idCategoria": 3,
+    "nombre": "Carne",
+    "margenGanancia": 23,
+    "fechaBaja": null,
+    "listaManufacturados": [],
+    "imagen": null,
+    "categoriaPadre": {
+      "idCategoria": 1,
+      "nombre": "Hamburguesas",
+      "imagen": "/icons/burger.svg",
+      "margenGanancia": 25,
+      "fechaBaja": null,
+      "listaManufacturados": [],
+      "categoriaPadre": null
+    }
+  },
+  {
+    "idCategoria": 4,
+    "nombre": "Pollo",
+    "margenGanancia": 23,
+    "fechaBaja": null,
+    "listaManufacturados": [],
+    "imagen": null,
+    "categoriaPadre": {
+      "idCategoria": 1,
+      "nombre": "Hamburguesas",
+      "imagen": "/icons/burger.svg",
+      "margenGanancia": 25,
+      "fechaBaja": null,
+      "listaManufacturados": [],
+      "categoriaPadre": null
+    }
+  },
+  {
+    "idCategoria": 5,
+    "nombre": "Bebidas",
+    "imagen": "/icons/bebida.svg",
+    "margenGanancia": 20,
+    "fechaBaja": null,
+    "listaManufacturados": [],
+    "categoriaPadre": null
+  },
+  {
+    "idCategoria": 6,
+    "nombre": "Ensaladas",
+    "imagen": "/icons/ensalada.svg",
+    "margenGanancia": 25,
+    "fechaBaja": null,
+    "listaManufacturados": [],
+    "categoriaPadre": null
+  },
+  {
+    "idCategoria": 7,
+    "nombre": "Pollo",
+    "imagen": "/icons/burger.svg",
+    "margenGanancia": 23,
+    "fechaBaja": null,
+    "listaManufacturados": [],
+    "categoriaPadre": {
+      "idCategoria": 6,
+      "nombre": "Ensaladas",
+      "imagen": "/icons/ensalada.svg",
+      "margenGanancia": 25,
+      "fechaBaja": null,
+      "listaManufacturados": [],
+      "categoriaPadre": null
+    }
+  },
+  {
+    "idCategoria": 9,
+    "nombre": "Plato",
+    "imagen": "/icons/cubiertos.svg",
+    "margenGanancia": 25,
+    "fechaBaja": null,
+    "listaManufacturados": [],
+    "categoriaPadre": null
+  },
+  {
+    "idCategoria": 10,
+    "nombre": "Pollo",
+    "margenGanancia": 23,
+    "fechaBaja": null,
+    "listaManufacturados": [],
+    "categoriaPadre": {
+      "idCategoria": 9,
+      "nombre": "Plato",
+      "imagen": "/icons/cubiertos.svg",
+      "margenGanancia": 25,
+      "fechaBaja": null,
+      "listaManufacturados": [],
+      "categoriaPadre": null
+    },
+    "imagen": null
+  },
+  {
+    "idCategoria": 11,
+    "nombre": "Carne",
+    "margenGanancia": 23,
+    "fechaBaja": null,
+    "listaManufacturados": [],
+    "categoriaPadre": {
+      "idCategoria": 9,
+      "nombre": "Plato",
+      "imagen": "/icons/cubiertos.svg",
+      "margenGanancia": 25,
+      "fechaBaja": null,
+      "listaManufacturados": [],
+      "categoriaPadre": null
+    },
+    "imagen": null
+  },
+  {
+    "idCategoria": 12,
+    "nombre": "Vegetariana",
+    "imagen": "/icons/vegetariano.svg",
+    "margenGanancia": 25,
+    "fechaBaja": null,
+    "listaManufacturados": [],
+    "categoriaPadre": null
+  }
+]

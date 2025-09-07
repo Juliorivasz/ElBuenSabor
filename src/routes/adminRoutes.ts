@@ -1,0 +1,95 @@
+import { lazy } from "react";
+
+export const adminRoutes = [
+  {
+    path: "/admin/dashboard",
+    element: lazy(() => import("../pages/admin/dashboard/Dashboard").then((module) => ({ default: module.Dashboard }))),
+    allowedRoles: ["administrador"],
+  },
+  {
+    path: "/admin/empleados",
+    element: lazy(() => import("../pages/admin/employees/Employees").then((module) => ({ default: module.Employees }))),
+    allowedRoles: ["administrador"],
+  },
+  {
+    path: "/admin/articulo",
+    element: lazy(() => import("../pages/admin/abm/AbmGeneric").then((module) => ({ default: module.AbmGeneric }))),
+    allowedRoles: ["administrador"],
+  },
+  {
+    path: "/admin/empleados/nuevo",
+    element: lazy(() =>
+      import("../pages/admin/employees/NuevoEmpleado").then((module) => ({ default: module.NuevoEmpleado })),
+    ),
+    allowedRoles: ["administrador"],
+  },
+  {
+    path: "/admin/empleados/editar/:id",
+    element: lazy(() =>
+      import("../pages/admin/employees/EditarEmpleado").then((module) => ({ default: module.EditarEmpleado })),
+    ),
+    allowedRoles: ["administrador"],
+  },
+  {
+    path: "/admin/cocina",
+    element: lazy(() => import("../pages/admin/kitchen/Kitchen").then((module) => ({ default: module.Kitchen }))),
+    allowedRoles: ["administrador", "cocinero"],
+  },
+  {
+    path: "/admin/repartidor",
+    element: lazy(() => import("../pages/admin/delivery/Delivery").then((module) => ({ default: module.Delivery }))),
+    allowedRoles: ["repartidor", "administrador"],
+  },
+  {
+    path: "empleado/caja",
+    element: lazy(() => import("../pages/admin/pedidos/Pedidos").then((module) => ({ default: module.Pedidos }))),
+    allowedRoles: ["cajero", "administrador"],
+  },
+  {
+    path: "/admin/categorias",
+    element: lazy(() => import("../pages/admin/categorias/Categorias").then((m) => ({ default: m.Categorias }))),
+    title: "Gestión de Categorías",
+    allowedRoles: ["administrador"],
+  },
+  {
+    path: "/admin/estadisticas",
+    element: lazy(() =>
+      import("../pages/admin/estadisticas/Estadisticas").then((module) => ({ default: module.Estadisticas })),
+    ),
+    title: "Estadísticas de Ventas",
+    allowedRoles: ["administrador"],
+  },
+  {
+    path: "/admin/promociones",
+    element: lazy(() =>
+      import("../pages/admin/promociones/Promociones").then((module) => ({ default: module.Promociones })),
+    ),
+    allowedRoles: ["administrador"],
+    title: "Gestión de Promociones",
+  },
+  {
+    path: "/admin/insumos",
+    element: lazy(() =>
+      import("../pages/admin/insumos/Insumos").then((module) => ({ default: module.Insumos })),
+    ),
+    title: "Insumos",
+    requiresAuth: true,
+    allowedRoles: ["administrador", "cocinero"],
+  },
+  {
+    path: "/admin/rubros",
+    element: lazy(() =>
+      import("../pages/admin/rubrosInsumo/RubrosInsumo").then((module) => ({ default: module.RubrosInsumo })),
+    ),
+    allowedRoles: ["administrador"],
+    title: "Gestión de Rubros",
+  },
+  {
+    path: "/admin/clientes",
+    element: lazy(() =>
+      import("../pages/admin/clientes/Clientes").then((module) => ({ default: module.Clientes })),
+    ),
+    allowedRoles: ["administrador"],
+    title: "Gestión de Clientes",
+  },
+];
