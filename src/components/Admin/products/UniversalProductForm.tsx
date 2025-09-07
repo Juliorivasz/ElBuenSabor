@@ -2,12 +2,12 @@
 
 import type React from "react";
 
-import { useState, useEffect, type FC } from "react";
+import { useEffect, useState, type FC } from "react";
+import type { CategoriaDTO } from "../../../models/dto/CategoriaDTO";
 import { InformacionArticuloManufacturadoDto } from "../../../models/dto/InformacionArticuloManufacturadoDto";
 import { InformacionArticuloNoElaboradoDto } from "../../../models/dto/InformacionArticuloNoElaboradoDto";
-import type { CategoriaDTO } from "../../../models/dto/CategoriaDTO";
-import type { InsumoDTO } from "../../../models/dto/InsumoDTO";
 import { InformacionDetalleDto } from "../../../models/dto/InformacionDetalleDto";
+import type { InsumoDTO } from "../../../models/dto/InsumoDTO";
 
 type ProductUnion = InformacionArticuloManufacturadoDto | InformacionArticuloNoElaboradoDto;
 

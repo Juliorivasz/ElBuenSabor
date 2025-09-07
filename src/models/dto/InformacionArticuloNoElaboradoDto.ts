@@ -11,6 +11,7 @@ export class InformacionArticuloNoElaboradoDto {
   private nombreCategoria: string
   private imagenUrl: string | null
   private stock: number
+  private eliminarImagen: boolean
 
   constructor(
     idArticulo: number,
@@ -23,6 +24,7 @@ export class InformacionArticuloNoElaboradoDto {
     nombreCategoria: string,
     imagenUrl: string | null,
     stock: number,
+    eliminarImagen: boolean = false,
   ) {
     this.idArticulo = idArticulo
     this.nombre = nombre
@@ -34,10 +36,11 @@ export class InformacionArticuloNoElaboradoDto {
     this.nombreCategoria = nombreCategoria
     this.imagenUrl = imagenUrl
     this.stock = stock
+    this.eliminarImagen = eliminarImagen
   }
 
   // 👉 implementación corregida
-public getIdArticulo(): number {
+  public getIdArticulo(): number {
   return this.idArticulo
 }
 
@@ -48,6 +51,14 @@ public getIdArticulo(): number {
 
   public setNombre(value: string): void {
     this.nombre = value
+  }
+
+  public getEliminarImagen(): boolean {
+    return this.eliminarImagen
+  }
+
+  public setEliminarImagen(value: boolean): void {
+    this.eliminarImagen = value
   }
 
   public getDescripcion(): string {
@@ -126,6 +137,7 @@ public getIdArticulo(): number {
       nombreCategoria: this.nombreCategoria,
       imagenUrl: this.imagenUrl || null,
       stock: this.stock,
+      eliminarImagen: this.eliminarImagen,
     }
   }
 
@@ -141,6 +153,7 @@ public getIdArticulo(): number {
       json.nombreCategoria,
       json.imagenUrl,
       json.stock,
+      json.eliminarImagen
     )
   }
 }
