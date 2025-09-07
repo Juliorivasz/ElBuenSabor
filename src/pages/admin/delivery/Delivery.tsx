@@ -100,8 +100,9 @@ export const Delivery: React.FC = () => {
     }
   }, [isConnected, subscribe, cargarPedidos]);
 
-  const pedidosListos = pedidos.filter((p) => p.estadoPedido === "LISTO");
-  const pedidosEnCamino = pedidos.filter((p) => p.estadoPedido === "EN_CAMINO");
+  const pedidosListos = (pedidos ?? []).filter((p) => p.estadoPedido === EstadoPedido.LISTO);
+  const pedidosEnCamino = (pedidos ?? []).filter((p) => p.estadoPedido === EstadoPedido.EN_CAMINO);
+
 
   if (loading) {
     return (

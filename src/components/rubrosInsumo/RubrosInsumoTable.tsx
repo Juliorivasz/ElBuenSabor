@@ -8,10 +8,21 @@ import VisibilityIcon from "@mui/icons-material/Visibility"
 import { Plus } from "lucide-react"
 import { useState } from "react"
 import type { RubroInsumoAbmDto } from "../../models/dto/RubroInsumoAbmDto"
+import { Pagination } from "../Admin/products/Pagination"
+
+interface PaginationState {
+  currentPage: number
+  itemsPerPage: number
+  totalItems: number
+  totalPages: number
+}
 
 interface RubrosInsumoTableProps {
   rubros: RubroInsumoAbmDto[]
   loading: boolean
+  pagination: PaginationState
+  onPageChange: (page: number) => void
+  onItemsPerPageChange: (itemsPerPage: number) => void
   onEdit: (rubro: RubroInsumoAbmDto) => void
   onViewDetails: (rubro: RubroInsumoAbmDto) => void
   onToggleStatus: (rubro: RubroInsumoAbmDto) => void
@@ -26,6 +37,9 @@ interface RubroWithLevel {
 export const RubrosInsumoTable = ({
   rubros,
   loading,
+  pagination,
+  onPageChange,
+  onItemsPerPageChange,
   onEdit,
   onViewDetails,
   onToggleStatus,
@@ -145,8 +159,8 @@ export const RubrosInsumoTable = ({
           <div>
             <h3 className="text-lg font-semibold text-gray-900">Gestión de Rubros de Insumo</h3>
             <p className="text-sm text-gray-600 mt-1">
-              {rubros.length} rubro{rubros.length !== 1 ? "s" : ""} registrado{rubros.length !== 1 ? "s" : ""} (vista
-              jerárquica expandible)
+              {pagination.totalItems} rubro{pagination.totalItems !== 1 ? "s" : ""} registrado
+              {pagination.totalItems !== 1 ? "s" : ""} (vista jerárquica expandible)
             </p>
           </div>
           <button
@@ -247,7 +261,7 @@ export const RubrosInsumoTable = ({
                     </td>
 
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                        {rubro.getCantInsumos()} insumo{rubro.getCantInsumos() !== 1 ? "s" : ""}
+                      {rubro.getCantInsumos()} insumo{rubro.getCantInsumos() !== 1 ? "s" : ""}
                     </td>
 
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -347,8 +361,8 @@ export const RubrosInsumoTable = ({
                             </span>
                           </td>
 
-                          <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-500">                            
-                              {subrubro.getCantInsumos()} insumo{subrubro.getCantInsumos() !== 1 ? "s" : ""}
+                          <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-500">
+                            {subrubro.getCantInsumos()} insumo{subrubro.getCantInsumos() !== 1 ? "s" : ""}
                           </td>
 
                           <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-500">
@@ -410,6 +424,17 @@ export const RubrosInsumoTable = ({
             })}
           </tbody>
         </table>
+      </div>
+
+      <div className="px-6 py-4 border-t border-gray-200 bg-gray-50">
+        <Pagination
+          currentPage={pagination.currentPage}
+          totalPages={pagination.totalPages}
+          itemsPerPage={pagination.itemsPerPage}
+          totalItems={pagination.totalItems}
+          onPageChange={onPageChange}
+          onItemsPerPageChange={onItemsPerPageChange}
+        />
       </div>
     </div>
   )
