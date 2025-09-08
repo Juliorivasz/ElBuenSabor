@@ -105,8 +105,9 @@ export const Kitchen = () => {
     }
   }, [isConnected, subscribe, cargarPedidos]);
 
-  const pedidosEnPreparacion = pedidos?.filter((pedido) => pedido.estadoPedido === EstadoPedido.EN_PREPARACION);
-  const pedidosListos = pedidos?.filter((pedido) => pedido.estadoPedido === EstadoPedido.LISTO);
+  const pedidosEnPreparacion = (pedidos ?? []).filter((pedido) => pedido.estadoPedido === EstadoPedido.EN_PREPARACION);
+  const pedidosListos = (pedidos ?? []).filter((pedido) => pedido.estadoPedido === EstadoPedido.LISTO);
+
 
   if (loading) {
     return (

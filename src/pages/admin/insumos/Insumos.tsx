@@ -1,19 +1,20 @@
-"use client";
+"use client"
 
-import { useEffect, useState, useMemo } from "react";
-import { useInsumosStore } from "../../../store/insumos/useInsumosStore";
-import { InsumosFilters } from "../../../components/insumos/InsumosFilters";
-import { InsumosTable } from "../../../components/insumos/InsumosTable";
-import { InsumoDetailsModal } from "../../../components/insumos/InsumoDetailsModal";
-import { InsumoForm } from "../../../components/insumos/InsumoForm";
-import { RecargarStockModal } from "../../../components/insumos/RecargarStockModal";
-import type { InsumoAbmDto } from "../../../models/dto/InsumoAbmDto";
-import type { NuevoInsumoDto } from "../../../models/dto/NuevoInsumoDto";
-import type { ModificarInsumoDto } from "../../../models/dto/ModificarInsumoDto";
-import { NotificationService } from "../../../utils/notifications";
-import { Plus, RefreshCw } from "lucide-react";
-import { PageHeader } from "../../../components/shared/PageHeader";
-import { Inventory2 as InsumoIcon } from "@mui/icons-material";
+import { useEffect, useState, useMemo } from "react"
+import { useInsumosStore } from "../../../store/insumos/useInsumosStore"
+import { InsumosFilters } from "../../../components/insumos/InsumosFilters"
+import { InsumosTable } from "../../../components/insumos/InsumosTable"
+import { InsumoDetailsModal } from "../../../components/insumos/InsumoDetailsModal"
+import { InsumoForm } from "../../../components/insumos/InsumoForm"
+import { RecargarStockModal } from "../../../components/insumos/RecargarStockModal"
+import type { InsumoAbmDto } from "../../../models/dto/InsumoAbmDto"
+import type { NuevoInsumoDto } from "../../../models/dto/NuevoInsumoDto"
+import type { ModificarInsumoDto } from "../../../models/dto/ModificarInsumoDto"
+import { NotificationService } from "../../../utils/notifications"
+import { exportarInsumosAExcel } from "../../../utils/exportUtils"
+import { Plus, RefreshCw, Download } from "lucide-react"
+import { PageHeader } from "../../../components/shared/PageHeader"
+import { Inventory2 as InsumoIcon } from "@mui/icons-material"
 
 export const Insumos = () => {
   const {
@@ -34,132 +35,151 @@ export const Insumos = () => {
     setSearchTerm,
     setRubroFilter,
     setEstadoFilter,
-  } = useInsumosStore();
+  } = useInsumosStore()
 
-  const [selectedInsumo, setSelectedInsumo] = useState<InsumoAbmDto | null>(null);
-  const [showDetailsModal, setShowDetailsModal] = useState(false);
-  const [showFormModal, setShowFormModal] = useState(false);
-  const [showRecargarStockModal, setShowRecargarStockModal] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
+  const [selectedInsumo, setSelectedInsumo] = useState<InsumoAbmDto | null>(null)
+  const [showDetailsModal, setShowDetailsModal] = useState(false)
+  const [showFormModal, setShowFormModal] = useState(false)
+  const [showRecargarStockModal, setShowRecargarStockModal] = useState(false)
+  const [isEditing, setIsEditing] = useState(false)
+  const [exportando, setExportando] = useState(false)
 
-  // Cargar datos iniciales
   useEffect(() => {
-    fetchInsumos();
-    fetchUnidadesDeMedida();
-    fetchRubrosInsumo();
-  }, []);
+    fetchInsumos()
+    fetchUnidadesDeMedida()
+    fetchRubrosInsumo()
+  }, [])
 
-  // Filtrar insumos localmente
   const filteredInsumos = useMemo(() => {
-    let filtered = [...insumos];
+    let filtered = [...insumos]
 
-    // Filtrar por término de búsqueda
     if (filters.searchTerm) {
-      const searchLower = filters.searchTerm.toLowerCase();
+      const searchLower = filters.searchTerm.toLowerCase()
       filtered = filtered.filter(
         (insumo) =>
           insumo.getNombre().toLowerCase().includes(searchLower) ||
           insumo.getNombreRubro().toLowerCase().includes(searchLower),
-      );
+      )
     }
 
-    // Filtrar por rubro
     if (filters.rubroFilter !== 0) {
-      filtered = filtered.filter((insumo) => insumo.getIdRubro() === filters.rubroFilter);
+      filtered = filtered.filter((insumo) => insumo.getIdRubro() === filters.rubroFilter)
     }
 
-    // Filtrar por estado
     if (filters.estadoFilter === "activos") {
-      filtered = filtered.filter((insumo) => insumo.isDadoDeAlta());
+      filtered = filtered.filter((insumo) => insumo.isDadoDeAlta())
     } else if (filters.estadoFilter === "inactivos") {
-      filtered = filtered.filter((insumo) => !insumo.isDadoDeAlta());
+      filtered = filtered.filter((insumo) => !insumo.isDadoDeAlta())
     }
 
-    return filtered;
-  }, [insumos, filters]);
+    return filtered
+  }, [insumos, filters])
 
-  // Calcular estadísticas para los filtros
   const stats = useMemo(() => {
-    const total = filteredInsumos.length;
-    const activos = filteredInsumos.filter((insumo) => insumo.isDadoDeAlta()).length;
-    const inactivos = total - activos;
+    const total = filteredInsumos.length
+    const activos = filteredInsumos.filter((insumo) => insumo.isDadoDeAlta()).length
+    const inactivos = total - activos
 
-    return { total, activos, inactivos };
-  }, [filteredInsumos]);
+    return { total, activos, inactivos }
+  }, [filteredInsumos])
 
   const handlePageChange = (page: number) => {
-    setPagination({ currentPage: page });
-    fetchInsumos(page, pagination.itemsPerPage);
-  };
+    setPagination({ currentPage: page })
+    fetchInsumos(page, pagination.itemsPerPage)
+  }
 
   const handleItemsPerPageChange = (itemsPerPage: number) => {
-    setPagination({ currentPage: 1, itemsPerPage });
-    fetchInsumos(1, itemsPerPage);
-  };
+    setPagination({ currentPage: 1, itemsPerPage })
+    fetchInsumos(1, itemsPerPage)
+  }
 
   const handleViewDetails = (insumo: InsumoAbmDto) => {
-    setSelectedInsumo(insumo);
-    setShowDetailsModal(true);
-  };
+    setSelectedInsumo(insumo)
+    setShowDetailsModal(true)
+  }
 
   const handleEdit = (insumo: InsumoAbmDto) => {
-    setSelectedInsumo(insumo);
-    setIsEditing(true);
-    setShowFormModal(true);
-  };
+    setSelectedInsumo(insumo)
+    setIsEditing(true)
+    setShowFormModal(true)
+  }
 
   const handleNewInsumo = () => {
-    setSelectedInsumo(null);
-    setIsEditing(false);
-    setShowFormModal(true);
-  };
+    setSelectedInsumo(null)
+    setIsEditing(false)
+    setShowFormModal(true)
+  }
 
   const handleRecargarStock = () => {
-    setShowRecargarStockModal(true);
-  };
+    setShowRecargarStockModal(true)
+  }
+
+  const exportarInsumos = async () => {
+    try {
+      setExportando(true)
+
+      const insumosAExportar = filteredInsumos.length < insumos.length ? filteredInsumos : insumos
+
+      if (insumosAExportar.length === 0) {
+        await NotificationService.warning("Sin datos", "No hay insumos para exportar")
+        return
+      }
+
+      const nombreArchivo = exportarInsumosAExcel(insumosAExportar)
+      await NotificationService.success(
+        "¡Exportación exitosa!",
+        `El archivo ${nombreArchivo} se ha descargado correctamente.`,
+      )
+    } catch (error) {
+      console.error("Error al exportar insumos:", error)
+      await NotificationService.error("Error", "No se pudo exportar el archivo")
+    } finally {
+      setExportando(false)
+    }
+  }
 
   const handleToggleStatus = async (insumo: InsumoAbmDto) => {
     try {
-      await toggleInsumoStatus(insumo.getIdArticuloInsumo());
-      const action = insumo.isDadoDeAlta() ? "desactivado" : "activado";
-      NotificationService.success(`Insumo ${action} correctamente`);
+      await toggleInsumoStatus(insumo.getIdArticuloInsumo())
+      const action = insumo.isDadoDeAlta() ? "desactivado" : "activado"
+      NotificationService.success(`Insumo ${action} correctamente`)
     } catch (error) {
-      console.log(error);
-      NotificationService.error("Error al cambiar el estado del insumo");
+      console.log(error)
+      NotificationService.error("Error al cambiar el estado del insumo")
     }
-  };
+  }
 
   const handleFormSubmit = async (insumoData: NuevoInsumoDto | ModificarInsumoDto) => {
     try {
       if (isEditing && selectedInsumo) {
-        await updateInsumo(selectedInsumo.getIdArticuloInsumo(), insumoData as ModificarInsumoDto);
-        NotificationService.success("Insumo actualizado correctamente");
+        await updateInsumo(selectedInsumo.getIdArticuloInsumo(), insumoData as ModificarInsumoDto)
+        NotificationService.success("Insumo actualizado correctamente")
       } else {
-        await createInsumo(insumoData as NuevoInsumoDto);
-        NotificationService.success("Insumo creado correctamente");
+        await createInsumo(insumoData as NuevoInsumoDto)
+        NotificationService.success("Insumo creado correctamente")
       }
-      setShowFormModal(false);
-      setSelectedInsumo(null);
+      setShowFormModal(false)
+      setSelectedInsumo(null)
     } catch (error) {
-      console.log(error);
-      const action = isEditing ? "actualizar" : "crear";
-      NotificationService.error(`Error al ${action} el insumo`);
+      console.log(error)
+      const action = isEditing ? "actualizar" : "crear"
+      NotificationService.error(`Error al ${action} el insumo`)
     }
-  };
+  }
 
   const handleRecargarStockSuccess = () => {
-    setShowRecargarStockModal(false);
-    fetchInsumos(); // Recargar la lista de insumos
-    NotificationService.success("Stock recargado correctamente");
-  };
+    setShowRecargarStockModal(false)
+    fetchInsumos()
+    NotificationService.success("Stock recargado correctamente")
+  }
 
   const handleCloseModal = () => {
-    setShowDetailsModal(false);
-    setShowFormModal(false);
-    setShowRecargarStockModal(false);
-    setSelectedInsumo(null);
-    setIsEditing(false);
-  };
+    setShowDetailsModal(false)
+    setShowFormModal(false)
+    setShowRecargarStockModal(false)
+    setSelectedInsumo(null)
+    setIsEditing(false)
+  }
 
   if (error) {
     return (
@@ -175,43 +195,60 @@ export const Insumos = () => {
           </div>
         </div>
       </div>
-    );
+    )
   }
 
   return (
     <div className="p-6 space-y-6">
-      {/* Header */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
         <PageHeader
           title="Gestión de Insumos"
           subtitle="Gestiona los Insumos de productos"
           showBackButton={true}
           backTo="/admin/dashboard"
-          icon={
-            <InsumoIcon
-              className="text-black mr-3"
-              fontSize="large"
-            />
-          }
+          icon={<InsumoIcon className="text-black mr-3" fontSize="large" />}
           breadcrumbs={[{ label: "Dashboard", href: "/admin/dashboard" }, { label: "Insumos" }]}
         />
-        <div className="flex space-x-3 justify-end">
-          <button
-            onClick={handleRecargarStock}
-            className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200 flex items-center space-x-2">
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Recargar Stock
-          </button>
-          <button
-            onClick={handleNewInsumo}
-            className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200 flex items-center space-x-2">
-            <Plus className="h-4 w-4 mr-2" />
-            Nuevo Insumo
-          </button>
+        <div className="flex flex-col sm:flex-row gap-3 sm:justify-between sm:items-center">
+          <div className="order-2 sm:order-1 flex space-x-3">
+            <button
+              onClick={handleRecargarStock}
+              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200 flex items-center space-x-2"
+            >
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Recargar Stock
+            </button>
+            <button
+              onClick={handleNewInsumo}
+              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200 flex items-center space-x-2"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Nuevo Insumo
+            </button>
+          </div>
+
+          <div className="order-1 sm:order-2">
+            <button
+              onClick={exportarInsumos}
+              disabled={exportando || insumos.length === 0}
+              className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              {exportando ? (
+                <>
+                  <div className="animate-spin h-4 w-4 border-2 border-gray-600 border-t-transparent rounded-full mr-2" />
+                  Exportando...
+                </>
+              ) : (
+                <>
+                  <Download className="h-4 w-4 mr-2" />
+                  Exportar ({filteredInsumos.length})
+                </>
+              )}
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Filtros */}
       <InsumosFilters
         totalInsumos={stats.total}
         insumosActivos={stats.activos}
@@ -225,7 +262,6 @@ export const Insumos = () => {
         onBusquedaChange={setSearchTerm}
       />
 
-      {/* Tabla */}
       <InsumosTable
         insumos={filteredInsumos}
         loading={loading}
@@ -238,15 +274,8 @@ export const Insumos = () => {
         onRefresh={() => fetchInsumos()}
       />
 
-      {/* Modal de detalles */}
-      {showDetailsModal && selectedInsumo && (
-        <InsumoDetailsModal
-          insumo={selectedInsumo}
-          onClose={handleCloseModal}
-        />
-      )}
+      {showDetailsModal && selectedInsumo && <InsumoDetailsModal insumo={selectedInsumo} onClose={handleCloseModal} />}
 
-      {/* Modal de formulario */}
       {showFormModal && (
         <InsumoForm
           insumo={selectedInsumo || undefined}
@@ -259,13 +288,9 @@ export const Insumos = () => {
         />
       )}
 
-      {/* Modal de recargar stock */}
       {showRecargarStockModal && (
-        <RecargarStockModal
-          onClose={handleCloseModal}
-          onSuccess={handleRecargarStockSuccess}
-        />
+        <RecargarStockModal onClose={handleCloseModal} onSuccess={handleRecargarStockSuccess} />
       )}
     </div>
-  );
-};
+  )
+}

@@ -18,6 +18,35 @@ Este repositorio corresponde al **frontend** del sistema.
 
 ---
 
+## 🧩 Módulos del frontend implementados
+
+### 👥 Usuario
+
+- Landing page
+- Catálogo de productos
+- Carrito de compras
+- Proceso de compra con integración a Mercado Pago
+- Gestión del perfil del cliente (datos personales y direcciones)
+- Visualización de historial de pedidos
+
+### 🛠️ Administrador
+
+- Gestión de artículos manufacturados e insumos
+- Gestión de empleados
+- Gestión de pedidos (panel general)
+
+---
+
+## ⏳ Módulos pendientes por desarrollar (frontend)
+
+### 🛠️ Administrador
+
+- Panel de cocina (gestión de pedidos en preparación)
+- Panel de delivery (gestión de pedidos listos para entrega)
+- Módulo de estadísticas (resúmenes de ventas, consumos, métricas)
+
+---
+
 ## 📦 Clonación e instalación del proyecto
 
 ### 1. Clonar el repositorio
@@ -70,3 +99,19 @@ Luego, crea un Pull Request (PR) hacia develop desde el github (recomendado).
 - Realiza pull de develop antes de iniciar nuevas ramas.
 
 - Usa componentes reutilizables y mantén el código tipado.
+
+---
+
+## 👨‍🏫 Integrantes del grupo:
+
+👤 Rivas, Julio
+
+👤 Giannoni, Giovanni
+
+👤 Nuñez, Maximiliano
+
+👤 Vicari, David
+
+👤 Torresi, Luca
+
+👤 Gómez Garcia, Ignacio

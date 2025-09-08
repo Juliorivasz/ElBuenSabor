@@ -1,36 +1,27 @@
+"use client"
+
 import ClearIcon from "@mui/icons-material/Clear"
 import SearchIcon from "@mui/icons-material/Search"
 import { useEffect, useState } from "react"
-import type { InformacionArticuloManufacturadoDto } from "../../../models/dto/InformacionArticuloManufacturadoDto"
-import type { InformacionArticuloNoElaboradoDto } from "../../../models/dto/InformacionArticuloNoElaboradoDto"
-
-// If ProductUnion does not exist, you can define it as follows:
-type ProductUnion = InformacionArticuloManufacturadoDto | InformacionArticuloNoElaboradoDto
 
 interface ProductsFiltersProps {
   totalProductos: number
   productosActivos: number
   productosInactivos: number
-  productosPadre: number
-  subproductos: (InformacionArticuloManufacturadoDto | InformacionArticuloNoElaboradoDto)[]
-  filtroActual: "todas" | "activas" | "inactivas" | "padre" | "subcategorias"
-  onFiltroChange: (filtro: "todas" | "activas" | "inactivas" | "padre" | "subcategorias") => void
+  filtroActual: "todos" | "activos" | "inactivos"
+  onFiltroChange: (filtro: "todos" | "activos" | "inactivos") => void
   busqueda: string
   onBusquedaChange: (busqueda: string) => void
-  onFiltrar: (productos: (InformacionArticuloManufacturadoDto | InformacionArticuloNoElaboradoDto)[]) => void
 }
 
 export const ProductsFilters = ({
   totalProductos,
   productosActivos,
   productosInactivos,
-  productosPadre,
-  subproductos,
   filtroActual,
   onFiltroChange,
   busqueda,
   onBusquedaChange,
-  onFiltrar,
 }: ProductsFiltersProps) => {
   const [searchTerm, setSearchTerm] = useState(busqueda)
 
@@ -43,35 +34,6 @@ export const ProductsFilters = ({
     return () => clearTimeout(timeoutId)
   }, [searchTerm, onBusquedaChange])
 
-  useEffect(() => {
-    let productosFiltrados = [...subproductos]
-
-    // Apply search filter
-    if (searchTerm.trim()) {
-      productosFiltrados = productosFiltrados.filter(
-        (producto) =>
-          producto.getNombre().toLowerCase().includes(searchTerm.toLowerCase()) ||
-          producto.getDescripcion().toLowerCase().includes(searchTerm.toLowerCase()),
-      )
-    }
-
-    // Apply status filter
-    switch (filtroActual) {
-      case "activas":
-        productosFiltrados = productosFiltrados.filter((p) => p.isDadoDeAlta())
-        break
-      case "inactivas":
-        productosFiltrados = productosFiltrados.filter((p) => !p.isDadoDeAlta())
-        break
-      case "todas":
-      default:
-        // No additional filtering needed
-        break
-    }
-
-    onFiltrar(productosFiltrados)
-  }, [subproductos, searchTerm, filtroActual, onFiltrar])
-
   const handleClearSearch = () => {
     setSearchTerm("")
     onBusquedaChange("")
@@ -79,22 +41,22 @@ export const ProductsFilters = ({
 
   const tabs = [
     {
-      key: "todas" as const,
-      label: "Todas",
+      key: "todos" as const,
+      label: "Todos",
       count: totalProductos,
       color: "bg-blue-100 text-blue-800 border-blue-200",
       description: "Todos los productos",
     },
     {
-      key: "activas" as const,
-      label: "Activas",
+      key: "activos" as const,
+      label: "Activos",
       count: productosActivos,
       color: "bg-green-100 text-green-800 border-green-200",
       description: "Solo productos activos",
     },
     {
-      key: "inactivas" as const,
-      label: "Inactivas",
+      key: "inactivos" as const,
+      label: "Inactivos",
       count: productosInactivos,
       color: "bg-red-100 text-red-800 border-red-200",
       description: "Solo productos inactivos",
@@ -153,19 +115,19 @@ export const ProductsFilters = ({
       </div>
 
       {/* Información adicional */}
-      {(searchTerm || filtroActual !== "todas") && (
+      {(searchTerm || filtroActual !== "todos") && (
         <div className="mt-4 pt-4 border-t border-gray-200">
           <div className="flex items-center justify-between text-sm text-gray-600">
             <span>
               {searchTerm && `Resultados para "${searchTerm}"`}
-              {searchTerm && filtroActual !== "todas" && " • "}
-              {filtroActual !== "todas" && `Filtro: ${tabs.find((t) => t.key === filtroActual)?.label}`}
+              {searchTerm && filtroActual !== "todos" && " • "}
+              {filtroActual !== "todos" && `Filtro: ${tabs.find((t) => t.key === filtroActual)?.label}`}
             </span>
             <button
               onClick={() => {
                 setSearchTerm("")
                 onBusquedaChange("")
-                onFiltroChange("todas")
+                onFiltroChange("todos")
               }}
               className="text-orange-600 hover:text-orange-800 font-medium"
             >

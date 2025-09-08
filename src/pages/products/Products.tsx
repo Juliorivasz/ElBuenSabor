@@ -4,13 +4,21 @@ import { Fastfood as ProductIcon } from "@mui/icons-material"
 import { Plus, RefreshCw } from "lucide-react"
 import { useCallback, useEffect, useState, type FC } from "react"
 import { ProductsTable } from "../../components/Admin/products/ProductsTable"
+import { ProductsFilters } from "../../components/Admin/products/ProductsFilters"
+import { UniversalProductForm } from "../../components/Admin/products/UniversalProductForm"
+import { UniversalProductDetailsModal } from "../../components/Admin/products/UniversalProductDetailsModal"
 import { RecargarStockModal } from "../../components/Admin/products/RecargarStockModal"
 import { UniversalProductDetailsModal } from "../../components/Admin/products/UniversalProductDetailsModal"
 import { UniversalProductForm } from "../../components/Admin/products/UniversalProductForm"
 import { PageHeader } from "../../components/shared/PageHeader"
 import type { InformacionArticuloManufacturadoDto } from "../../models/dto/InformacionArticuloManufacturadoDto"
 import type { InformacionArticuloNoElaboradoDto } from "../../models/dto/InformacionArticuloNoElaboradoDto"
-import { useProductsStore, type ProductType } from "../../store/admin/useProductsStore"
+import { Fastfood as ProductIcon } from "@mui/icons-material"
+import { PageHeader } from "../../components/shared/PageHeader"
+import { Plus, RefreshCw, Download } from "lucide-react"
+import { exportarProductosAExcel } from "../../utils/exportUtils"
+//import { exportarProductosAExcel } from "../../utils/exportUtils"
+import { NotificationService } from "../../utils/notifications"
 
 // Tipo union para los productos
 type ProductUnion = InformacionArticuloManufacturadoDto | InformacionArticuloNoElaboradoDto
@@ -59,11 +67,51 @@ export const Products: FC = () => {
   // Estado para forzar re-render
   const [refreshKey, setRefreshKey] = useState(0)
 
+  const [filtroActual, setFiltroActual] = useState<"todos" | "activos" | "inactivos">("todos")
+  const [busqueda, setBusqueda] = useState("")
+  const [exportando, setExportando] = useState(false)
+
   // Validar que los datos sean arrays válidos
   const validManufacturados = Array.isArray(manufacturados) ? manufacturados : []
   const validNoElaborados = Array.isArray(noElaborados) ? noElaborados : []
   const validCategories = Array.isArray(categories) ? categories : []
   const validIngredients = Array.isArray(ingredients) ? ingredients : []
+
+  const getFilteredProducts = useCallback(
+    (products: any[]) => {
+      let filtered = products
+
+      // Filtrar por búsqueda
+      if (busqueda.trim()) {
+        filtered = filtered.filter(
+          (product) =>
+            product.getNombre().toLowerCase().includes(busqueda.toLowerCase()) ||
+            (product.getDescripcion?.() && product.getDescripcion().toLowerCase().includes(busqueda.toLowerCase())),
+        )
+      }
+
+      // Filtrar por estado
+      if (filtroActual === "activos") {
+        filtered = filtered.filter((product) => product.isDadoDeAlta())
+      } else if (filtroActual === "inactivos") {
+        filtered = filtered.filter((product) => !product.isDadoDeAlta())
+      }
+
+      return filtered
+    },
+    [busqueda, filtroActual],
+  )
+
+  const getProductStats = useCallback((products: any[]) => {
+    const total = products.length
+    const activos = products.filter((p) => p.isDadoDeAlta()).length
+    const inactivos = total - activos
+    return { total, activos, inactivos }
+  }, [])
+
+  const currentProducts = activeTab === "manufacturados" ? validManufacturados : validNoElaborados
+  const filteredProducts = getFilteredProducts(currentProducts)
+  const currentStats = getProductStats(currentProducts)
 
   // Cargar datos iniciales
   useEffect(() => {
@@ -270,12 +318,31 @@ export const Products: FC = () => {
     setShowForm(false)
   }, [])
 
-  // Obtener datos según la pestaña activa
-  const currentPagination = getPaginationByType(activeTab)
-  const currentLoading = getLoadingByType(activeTab)
+  const exportarProductos = async () => {
+    try {
+      setExportando(true)
 
-  // Obtener el producto que se está editando según la pestaña activa
-  const currentEditingProduct = activeTab === "manufacturados" ? editingManufacturado : editingNoElaborado
+      const productosAExportar = filteredProducts.length < currentProducts.length ? filteredProducts : currentProducts
+
+      if (productosAExportar.length === 0) {
+        await NotificationService.warning("Sin datos", "No hay productos para exportar")
+        return
+      }
+
+      const tipoExport = activeTab === "manufacturados" ? "manufacturados" : "noElaborados"
+      const nombreArchivo = exportarProductosAExcel(productosAExportar, tipoExport)
+
+      await NotificationService.success(
+        "¡Exportación exitosa!",
+        `El archivo ${nombreArchivo} se ha descargado correctamente.`,
+      )
+    } catch (error) {
+      console.error("Error al exportar productos:", error)
+      await NotificationService.error("Error", "No se pudo exportar el archivo")
+    } finally {
+      setExportando(false)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
@@ -289,24 +356,47 @@ export const Products: FC = () => {
           icon={<ProductIcon className="text-black mr-3" fontSize="large" />}
           breadcrumbs={[{ label: "Dashboard", href: "/admin/dashboard" }, { label: "Productos" }]}
         />
-        <div className="flex justify-end items-center space-x-3">
-          {/* Botón Recargar Stock - Solo visible en la pestaña de No Elaborados */}
-          {activeTab === "noManufacturados" && (
+
+        <div className="flex flex-col sm:flex-row gap-3 sm:justify-between sm:items-center">
+          <div className="flex flex-col sm:flex-row gap-3">
+            {/* Botón Recargar Stock - Solo visible en la pestaña de No Elaborados */}
+            {activeTab === "noManufacturados" && (
+              <button
+                onClick={handleRecargarStock}
+                className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200 flex items-center space-x-2"
+              >
+                <RefreshCw className="h-4 w-4 mr-2" />
+                <span>Recargar Stock</span>
+              </button>
+            )}
             <button
-              onClick={handleRecargarStock}
+              onClick={handleCreateNew}
               className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200 flex items-center space-x-2"
             >
-              <RefreshCw className="h-4 w-4 mr-2" />
-              <span>Recargar Stock</span>
+              <Plus className="h-4 w-4 mr-2" />
+              <span>Nuevo Producto</span>
             </button>
-          )}
-          <button
-            onClick={handleCreateNew}
-            className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200 flex items-center space-x-2"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            <span>Nuevo Producto</span>
-          </button>
+          </div>
+
+          <div>
+            <button
+              onClick={exportarProductos}
+              disabled={exportando || currentProducts.length === 0}
+              className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              {exportando ? (
+                <>
+                  <div className="animate-spin h-4 w-4 border-2 border-gray-600 border-t-transparent rounded-full mr-2" />
+                  Exportando...
+                </>
+              ) : (
+                <>
+                  <Download className="h-4 w-4 mr-2" />
+                  Exportar ({filteredProducts.length})
+                </>
+              )}
+            </button>
+          </div>
         </div>
 
         {/* Tabs */}
@@ -345,6 +435,16 @@ export const Products: FC = () => {
           </nav>
         </div>
 
+        <ProductsFilters
+          totalProductos={currentStats.total}
+          productosActivos={currentStats.activos}
+          productosInactivos={currentStats.inactivos}
+          filtroActual={filtroActual}
+          onFiltroChange={setFiltroActual}
+          busqueda={busqueda}
+          onBusquedaChange={setBusqueda}
+        />
+
         {/* Error */}
         {error && (
           <div className="mb-6 bg-red-50 border border-red-200 rounded-md p-4">
@@ -352,7 +452,7 @@ export const Products: FC = () => {
               <svg className="h-5 w-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
                 <path
                   fillRule="evenodd"
-                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 00-1.414-1.414L8.707 7.293z"
                   clipRule="evenodd"
                 />
               </svg>
@@ -374,9 +474,9 @@ export const Products: FC = () => {
         {activeTab === "manufacturados" ? (
           <ProductsTable
             key={`manufacturados-${refreshKey}`} // Key para forzar re-render
-            products={validManufacturados}
-            loading={currentLoading}
-            pagination={currentPagination}
+            products={filteredProducts}
+            loading={getLoadingByType(activeTab)}
+            pagination={getPaginationByType(activeTab)}
             onPageChange={handlePageChange}
             onItemsPerPageChange={handleItemsPerPageChange}
             onEdit={handleEditManufacturado}
@@ -390,9 +490,9 @@ export const Products: FC = () => {
         ) : (
           <ProductsTable
             key={`noElaborados-${refreshKey}`} // Key para forzar re-render
-            products={validNoElaborados}
-            loading={currentLoading}
-            pagination={currentPagination}
+            products={filteredProducts}
+            loading={getLoadingByType(activeTab)}
+            pagination={getPaginationByType(activeTab)}
             onPageChange={handlePageChange}
             onItemsPerPageChange={handleItemsPerPageChange}
             onEdit={handleEditNoElaborado}
@@ -408,13 +508,14 @@ export const Products: FC = () => {
         {/* Formulario Universal */}
         {showForm && (
           <UniversalProductForm
-            product={currentEditingProduct}
+            product={activeTab === "manufacturados" ? editingManufacturado : editingNoElaborado}
             categories={validCategories}
             ingredients={validIngredients}
             onSubmit={handleUniversalFormSubmit}
             onCancel={handleFormCancel}
-            loading={currentLoading}
+            loading={getLoadingByType(activeTab)}
             type={activeTab === "manufacturados" ? "manufacturado" : "noElaborado"}
+            //type={activeTab}
           />
         )}
 
