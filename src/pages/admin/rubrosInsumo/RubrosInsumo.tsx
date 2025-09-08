@@ -1,19 +1,18 @@
 "use client"
 
+import { GetApp as ExcelIcon, Tapas as RubroIcon } from "@mui/icons-material"
 import { useEffect, useState } from "react"
-import { exportarRubrosAExcel } from "../../../utils/exportUtils"
+import { RubrosFilters } from "../../../components/rubros/RubrosFilters"
 import { RubroInsumoDetailsModal } from "../../../components/rubrosInsumo/RubroInsumoDetailsModal"
 import { RubroInsumoForm } from "../../../components/rubrosInsumo/RubroInsumoForm"
 import { RubrosInsumoTable } from "../../../components/rubrosInsumo/RubrosInsumoTable"
-import { RubrosFilters } from "../../../components/rubros/RubrosFilters"
-import type { RubroInsumoAbmDto } from "../../../models/dto/RubroInsumoAbmDto"
+import { PageHeader } from "../../../components/shared/PageHeader"
 import type { NuevoRubroInsumoDto } from "../../../models/dto/NuevoRubroInsumoDto"
+import type { RubroInsumoAbmDto } from "../../../models/dto/RubroInsumoAbmDto"
 import { rubroInsumoAbmServicio } from "../../../services/rubroInsumoAbmServicio"
 import { useRubrosInsumoStore } from "../../../store/rubrosInsumo/useRubrosInsumoStore"
+import { exportarRubrosAExcel } from "../../../utils/exportUtils"
 import { NotificationService } from "../../../utils/notifications"
-import { PageHeader } from "../../../components/shared/PageHeader"
-import { Tapas as RubroIcon } from "@mui/icons-material"
-import { GetApp as ExcelIcon } from "@mui/icons-material"
 
 export const RubrosInsumo = () => {
   const {
@@ -63,7 +62,6 @@ export const RubrosInsumo = () => {
       const childDescendants = getAllDescendants(child.getIdRubroInsumo(), allRubros)
       allDescendants = [...allDescendants, ...childDescendants]
     }
-  })
 
     return allDescendants
   }
@@ -162,9 +160,9 @@ export const RubrosInsumo = () => {
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <PageHeader
-          title="Panel de Rubros"
-          subtitle="Gestiona los rubros de productos"
-          showBackButton
+          title="Gestión de Rubros"
+          subtitle="Gestiona los Rubros de productos"
+          showBackButton={true}
           backTo="/admin/dashboard"
           icon={<RubroIcon className="text-black mr-3" fontSize="large" />}
           breadcrumbs={[{ label: "Dashboard", href: "/admin/dashboard" }, { label: "Rubros" }]}
@@ -209,21 +207,7 @@ export const RubrosInsumo = () => {
           onViewDetails={handleViewDetails}
           onToggleStatus={handleToggleStatus}
           onNuevoRubro={handleNuevoRubro}
-          paginationInfo={getPaginationInfo()}
         />
-
-        {(showCreateModal || showEditModal) && (
-          <RubroInsumoForm
-            rubro={showEditModal && selectedRubro ? selectedRubro : undefined}
-            onSubmit={handleFormSubmit}
-            onCancel={closeModals}
-            loading={formLoading}
-          />
-        )}
-
-        {showDetailsModal && selectedRubro && (
-          <RubroInsumoDetailsModal rubro={selectedRubro} rubros={rubros} onClose={closeModals} />
-        )}
       </div>
 
       {showDetailsModal && selectedRubro && (

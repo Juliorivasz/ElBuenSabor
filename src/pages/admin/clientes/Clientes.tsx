@@ -1,11 +1,12 @@
 import { Group } from "@mui/icons-material"
 import { Download } from "lucide-react"
+import React from "react"
+import { ClientesFilters } from "../../../components/Admin/clientes/ClientesFilters"
 import { ClientesTable } from "../../../components/Admin/clientes/ClientesTable"
+import type { ClienteGestion } from "../../../models/ClienteGestion"
+import type { PageResponse } from "../../../models/PageResponse"
 import { ClienteGestionServicio } from "../../../services/clienteGestionServicio"
 import { exportarClientesAExcel } from "../../../utils/exportUtils"
-import { ClientesFilters } from "../../../components/Admin/clientes/ClientesFilters"
-import type { PageResponse } from "../../../models/PageResponse"
-import type { ClienteGestion } from "../../../models/ClienteGestion"
 
 export function Clientes() {
   const [clientesData, setClientesData] = React.useState<PageResponse<ClienteGestion> | null>(null)
@@ -15,7 +16,6 @@ export function Clientes() {
   const [pageSize, setPageSize] = React.useState(10)
   const [loading, setLoading] = React.useState(true)
   const [error, setError] = React.useState<string | null>(null)
-  const [clientesFiltrados, setClientesFiltrados] = React.useState<ClienteGestion[]>([])
 
   React.useEffect(() => {
     const fetchClientes = async () => {
@@ -46,9 +46,7 @@ export function Clientes() {
     }
   }
 
-  const handleFiltrar = (clientesFiltradosNuevos: ClienteGestion[]) => {
-    setClientesFiltrados(clientesFiltradosNuevos)
-  }
+  // Eliminado: declaración duplicada de handleFiltrar
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page)

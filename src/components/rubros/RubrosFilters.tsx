@@ -10,8 +10,8 @@ interface RubrosFiltersProps {
   rubrosInactivos: number
   rubrosPadre: number
   subrubros: number
-  filtroActual: "todas" | "activas" | "inactivas" | "padre" | "subcategorias"
-  onFiltroChange: (filtro: "todas" | "activas" | "inactivas" | "padre" | "subcategorias") => void
+  filtroActual: "todos" | "activos" | "inactivos" | "padre" | "subrubros"
+  onFiltroChange: (filtro: "todos" | "activos" | "inactivos" | "padre" | "subrubros") => void
   busqueda: string
   onBusquedaChange: (busqueda: string) => void
 }
@@ -45,22 +45,22 @@ export const RubrosFilters = ({
 
   const tabs = [
     {
-      key: "todas" as const,
-      label: "Todas",
+      key: "todos" as const,
+      label: "Todos",
       count: totalRubros,
       color: "bg-blue-100 text-blue-800 border-blue-200",
       description: "Vista jerárquica con subrubros desplegables",
     },
     {
-      key: "activas" as const,
-      label: "Activas",
+      key: "activos" as const,
+      label: "Activos",
       count: rubrosActivos,
       color: "bg-green-100 text-green-800 border-green-200",
       description: "Solo rubros activos",
     },
     {
-      key: "inactivas" as const,
-      label: "Inactivas",
+      key: "inactivos" as const,
+      label: "Inactivos",
       count: rubrosInactivos,
       color: "bg-red-100 text-red-800 border-red-200",
       description: "Solo rubros inactivos",
@@ -73,11 +73,11 @@ export const RubrosFilters = ({
       description: "Solo rubros principales",
     },
     {
-      key: "subcategorias" as const,
-      label: "Subcategorías",
+      key: "subrubros" as const,
+      label: "Subrubros",
       count: subrubros,
       color: "bg-orange-100 text-orange-800 border-orange-200",
-      description: "Solo subcategorías",
+      description: "Solo subrubros",
     },
   ]
 
@@ -133,19 +133,19 @@ export const RubrosFilters = ({
       </div>
 
       {/* Información adicional */}
-      {(searchTerm || filtroActual !== "todas") && (
+      {(searchTerm || filtroActual !== "todos") && (
         <div className="mt-4 pt-4 border-t border-gray-200">
           <div className="flex items-center justify-between text-sm text-gray-600">
             <span>
               {searchTerm && `Resultados para "${searchTerm}"`}
-              {searchTerm && filtroActual !== "todas" && " • "}
-              {filtroActual !== "todas" && `Filtro: ${tabs.find((t) => t.key === filtroActual)?.label}`}
+              {searchTerm && filtroActual !== "todos" && " • "}
+              {filtroActual !== "todos" && `Filtro: ${tabs.find((t) => t.key === filtroActual)?.label}`}
             </span>
             <button
               onClick={() => {
                 setSearchTerm("")
                 onBusquedaChange("")
-                onFiltroChange("todas")
+                onFiltroChange("todos")
               }}
               className="text-orange-600 hover:text-orange-800 font-medium"
             >
@@ -156,7 +156,7 @@ export const RubrosFilters = ({
       )}
 
       {/* Información sobre el modo de vista */}
-      {filtroActual === "todas" && (
+      {filtroActual === "todos" && (
         <div className="mt-4 pt-4 border-t border-gray-200">
           <div className="flex items-center text-sm text-blue-600">
             <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">

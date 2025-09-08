@@ -1,11 +1,10 @@
 import { create } from "zustand"
-import { persist } from "zustand/middleware"
-import { RubroInsumoAbmDto } from "../../models/dto/RubroInsumoAbmDto"
+import type { RubroInsumoAbmDto } from "../../models/dto/RubroInsumoAbmDto"
 import { rubroInsumoAbmServicio } from "../../services/rubroInsumoAbmServicio"
 
 interface RubrosInsumoState {
   rubros: RubroInsumoAbmDto[]
-  rubrosLista: RubroInsumoAbmDto[]
+  rubrosLista: Array<{ idRubroInsumo: number; nombre: string }>
   loading: boolean
   error: string | null
 
@@ -42,13 +41,11 @@ interface RubrosInsumoState {
   }
 }
 
-export const useRubrosInsumoStore = create<RubrosInsumoState>()(
-  persist(
-    (set, get) => ({
-      rubros: [],
-      rubrosLista: [],
-      loading: false,
-      error: null,
+export const useRubrosInsumoStore = create<RubrosInsumoState>((set, get) => ({
+  rubros: [],
+  rubrosLista: [],
+  loading: false,
+  error: null,
 
   filtroActual: "todos",
   busqueda: "",
@@ -68,28 +65,30 @@ export const useRubrosInsumoStore = create<RubrosInsumoState>()(
     }
   },
 
-      fetchRubrosLista: async () => {
-        try {
-          const rubrosListaData = await rubroInsumoAbmServicio.obtenerRubrosLista()
-          // Convertir los objetos planos en instancias
-          const rubrosLista = rubrosListaData.map(RubroInsumoAbmDto.fromPlainObject)
-          set({ rubrosLista })
-        } catch (error) {
-          console.error("Error al cargar lista de rubros:", error)
-        }
-      },
+  fetchRubrosLista: async () => {
+    try {
+      const rubrosListaDto = await rubroInsumoAbmServicio.obtenerRubrosLista()
+      const rubrosLista = rubrosListaDto.map((rubro: RubroInsumoAbmDto) => ({
+        idRubroInsumo: rubro.getIdRubroInsumo(),
+        nombre: rubro.getNombre(),
+      }))
+      set({ rubrosLista })
+    } catch (error) {
+      console.error("Error al cargar lista de rubros:", error)
+    }
+  },
 
-      altaBajaRubro: async (idRubroInsumo: number) => {
-        try {
-          await rubroInsumoAbmServicio.altaBajaRubro(idRubroInsumo)
-          // Refrescar la lista después del cambio
-          await get().fetchRubros()
-        } catch (error) {
-          set({
-            error: error instanceof Error ? error.message : "Error al cambiar estado del rubro",
-          })
-        }
-      },
+  altaBajaRubro: async (idRubroInsumo: number) => {
+    try {
+      await rubroInsumoAbmServicio.altaBajaRubro(idRubroInsumo)
+      // Refrescar la lista después del cambio
+      await get().fetchRubros()
+    } catch (error) {
+      set({
+        error: error instanceof Error ? error.message : "Error al cambiar estado del rubro",
+      })
+    }
+  },
 
   clearError: () => set({ error: null }),
 
