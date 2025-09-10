@@ -1,9 +1,6 @@
-import axios from "axios"
-import { API_URL } from "."
-import { useAuth0Store } from "../auth/Auth0Bridge"
 import type { DetallePromocionDto } from "../models/dto/DetallePromocionDTO"
-import type { NuevaPromocionDto } from "../models/dto/NuevaPromocionDTO"
 import { Promocion } from "../models/Promocion"
+import { interceptorsApiClient } from "./interceptors/axios.interceptors"
 
 export interface ArticuloListado {
   idArticulo: number
@@ -15,28 +12,14 @@ export interface ArticuloListado {
 }
 
 class PromocionServicio {
-  private baseURL = `${API_URL}/promocion`
-  private articuloURL = `${API_URL}/articulo`
-
-  private async getAuthHeaders() {
-    const user = useAuth0Store.getState().user
-    if (!user?.token) throw new Error("No hay token disponible")
-    return { Authorization: `Bearer ${user.token}` }
-  }
-
-  private buildFormData(data: NuevaPromocionDto & { file?: File; url?: string }): FormData {
-    const formData = new FormData()
-    formData.append("promocion", new Blob([JSON.stringify(data)], { type: "application/json" }))
-    if (data.file) formData.append("file", data.file)
-    if (data.url) formData.append("url", data.url)
-    return formData
-  }
+  private baseURL = "/promocion"
+  private articuloURL = "/articulo"
 
   async obtenerArticulos(): Promise<ArticuloListado[]> {
     try {
-      const response = await axios.get<ArticuloListado[]>(`${this.articuloURL}/listado-promociones`, {
-        headers: await this.getAuthHeaders(),
-      })
+      const response = await interceptorsApiClient.get<ArticuloListado[]>(
+        `${this.articuloURL}/listado-promociones`,
+      )
       return response.data
     } catch (error) {
       console.error("Error al obtener artículos para promociones:", error)
@@ -45,12 +28,7 @@ class PromocionServicio {
   }
 
   async obtenerArticulosConDisponibilidad(): Promise<ArticuloListado[]> {
-    try {
-      return await this.obtenerArticulos()
-    } catch (error) {
-      console.error("Error al obtener artículos con disponibilidad:", error)
-      throw error
-    }
+    return this.obtenerArticulos()
   }
 
   private formatTime(time: string | [number, number]): string {
@@ -69,10 +47,7 @@ class PromocionServicio {
 
   async obtenerPromociones(): Promise<Promocion[]> {
     try {
-      const response = await axios.get<any[]>(`${this.baseURL}/abm`, {
-        headers: await this.getAuthHeaders(),
-      })
-
+      const response = await interceptorsApiClient.get<any[]>(`${this.baseURL}/abm`)
       const articulos = await this.obtenerArticulos()
 
       return response.data.map((item) => {
@@ -105,14 +80,11 @@ class PromocionServicio {
     }
   }
 
-  // ⚡ Actualizado: ahora recibe FormData
+  // ⚡ Crear promoción con FormData
   async crearPromocion(formData: FormData): Promise<void> {
     try {
-      await axios.post(`${this.baseURL}/nueva`, formData, {
-        headers: {
-          ...(await this.getAuthHeaders()),
-          "Content-Type": "multipart/form-data",
-        },
+      await interceptorsApiClient.post(`${this.baseURL}/nueva`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
       })
     } catch (error) {
       console.error("Error al crear promoción:", error)
@@ -120,14 +92,11 @@ class PromocionServicio {
     }
   }
 
-  // ⚡ Actualizado: ahora recibe FormData
+  // ⚡ Actualizar promoción con FormData
   async actualizarPromocion(id: number, formData: FormData): Promise<void> {
     try {
-      await axios.put(`${this.baseURL}/modificar/${id}`, formData, {
-        headers: {
-          ...(await this.getAuthHeaders()),
-          "Content-Type": "multipart/form-data",
-        },
+      await interceptorsApiClient.put(`${this.baseURL}/modificar/${id}`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
       })
     } catch (error) {
       console.error("Error al actualizar promoción:", error)
@@ -137,13 +106,7 @@ class PromocionServicio {
 
   async cambiarEstadoPromocion(id: number): Promise<void> {
     try {
-      await axios.put(
-        `${this.baseURL}/altaBaja/${id}`,
-        {},
-        {
-          headers: await this.getAuthHeaders(),
-        },
-      )
+      await interceptorsApiClient.put(`${this.baseURL}/altaBaja/${id}`)
     } catch (error) {
       console.error("Error al cambiar estado de promoción:", error)
       throw error
@@ -152,9 +115,10 @@ class PromocionServicio {
 
   async obtenerPrecioSugerido(detalles: DetallePromocionDto[]): Promise<number> {
     try {
-      const response = await axios.post<number>(`${this.baseURL}/precio-sugerido`, detalles, {
-        headers: await this.getAuthHeaders(),
-      })
+      const response = await interceptorsApiClient.post<number>(
+        `${this.baseURL}/precio-sugerido`,
+        detalles,
+      )
       return response.data
     } catch (error) {
       console.error("Error al obtener precio sugerido:", error)
@@ -166,9 +130,9 @@ class PromocionServicio {
     idPromocion: number,
   ): Promise<{ precioBase: number; precioPromocional: number; ahorro: number }> {
     try {
-      const response = await axios.get(`${this.baseURL}/resumen/${idPromocion}`, {
-        headers: await this.getAuthHeaders(),
-      })
+      const response = await interceptorsApiClient.get(
+        `${this.baseURL}/resumen/${idPromocion}`,
+      )
       return response.data
     } catch (error) {
       console.error("Error al obtener resumen de promoción:", error)

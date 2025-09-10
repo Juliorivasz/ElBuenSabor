@@ -12,7 +12,7 @@ import { PageHeader } from "../../components/shared/PageHeader"
 import type { InformacionArticuloManufacturadoDto } from "../../models/dto/InformacionArticuloManufacturadoDto"
 import type { InformacionArticuloNoElaboradoDto } from "../../models/dto/InformacionArticuloNoElaboradoDto"
 import { useProductsStore, type ProductType } from "../../store/admin/useProductsStore"
-import { exportarProductosAExcel } from "../../utils/exportUtils"
+import { exportarDatosAExcel } from "../../utils/exportUtils"
 import { NotificationService } from "../../utils/notifications"
 
 // Tipo union para los productos
@@ -325,7 +325,7 @@ export const Products: FC = () => {
       }
 
       const tipoExport = activeTab === "manufacturados" ? "manufacturados" : "noElaborados"
-      const nombreArchivo = exportarProductosAExcel(productosAExportar, tipoExport)
+      const nombreArchivo = exportarDatosAExcel(productosAExportar, tipoExport)
 
       await NotificationService.success(
         "¡Exportación exitosa!",

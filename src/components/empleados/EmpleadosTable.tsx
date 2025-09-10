@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom"
 import type { EmpleadoResponseDto } from "../../models/dto/Empleado/EmpleadoResponseDto"
 import { empleadoServicio } from "../../services/empleadoServicio"
 import { NotificationService } from "../../utils/notifications"
+import { Pagination } from "../Admin/products/Pagination"
 
 interface IEmpleadosTableProps {
   empleados: EmpleadoResponseDto[]
@@ -16,13 +17,29 @@ interface IEmpleadosTableProps {
 export const EmpleadosTable: React.FC<IEmpleadosTableProps> = ({ empleados, onEmpleadoEditado }) => {
   const navigate = useNavigate()
   const [empleadoCargando, setEmpleadoCargando] = useState<number | null>(null)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [itemsPerPage, setItemsPerPage] = useState(10)
+
+  const totalItems = empleados.length
+  const totalPages = Math.ceil(totalItems / itemsPerPage)
+  const startIndex = (currentPage - 1) * itemsPerPage
+  const endIndex = startIndex + itemsPerPage
+  const empleadosPaginados = empleados.slice(startIndex, endIndex)
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page)
+  }
+
+  const handleItemsPerPageChange = (newItemsPerPage: number) => {
+    setItemsPerPage(newItemsPerPage)
+    setCurrentPage(1)
+  }
 
   const manejarToggleEstado = async (empleado: EmpleadoResponseDto) => {
     const estaActivo = esEmpleadoActivo(empleado)
     const nombreCompleto = `${empleado.getNombre()} ${empleado.getApellido()}`
 
     try {
-      // Mostrar confirmación
       const confirmacion = estaActivo
         ? await NotificationService.confirm(
             "¿Desactivar empleado?",
@@ -40,7 +57,6 @@ export const EmpleadosTable: React.FC<IEmpleadosTableProps> = ({ empleados, onEm
       setEmpleadoCargando(empleado.getIdUsuario())
       await empleadoServicio.toggleAltaBaja(empleado.getIdUsuario())
 
-      // Mostrar notificación de éxito
       if (estaActivo) {
         await NotificationService.success(
           "¡Empleado desactivado!",
@@ -50,7 +66,7 @@ export const EmpleadosTable: React.FC<IEmpleadosTableProps> = ({ empleados, onEm
         await NotificationService.success("¡Empleado activado!", `${nombreCompleto} ha sido activado en el sistema.`)
       }
 
-      onEmpleadoEditado() // Recargar la lista
+      onEmpleadoEditado()
     } catch (error) {
       console.error("Error al cambiar estado del empleado:", error)
       await NotificationService.error("Error", "No se pudo cambiar el estado del empleado")
@@ -105,19 +121,14 @@ export const EmpleadosTable: React.FC<IEmpleadosTableProps> = ({ empleados, onEm
 
   return (
     <div className="space-y-4">
-      {/* Vista móvil - Cards */}
       <div className="block lg:hidden space-y-4">
-        {empleados.map((empleado) => {
+        {empleadosPaginados.map((empleado) => {
           const estaActivo = esEmpleadoActivo(empleado)
           const estaCargando = empleadoCargando === empleado.getIdUsuario()
           const nombreCompleto = `${empleado.getNombre()} ${empleado.getApellido()}`
 
           return (
-            <div
-              key={`empleado-mobile-${empleado.getIdUsuario()}`}
-              className="bg-white rounded-lg shadow-sm border p-4 space-y-4"
-            >
-              {/* Header con imagen y nombre */}
+            <div key={empleado.getIdUsuario()} className="bg-white rounded-lg shadow-sm border p-4 space-y-4">
               <div className="flex items-center space-x-3">
                 <div className="flex-shrink-0">
                   <img
@@ -145,7 +156,6 @@ export const EmpleadosTable: React.FC<IEmpleadosTableProps> = ({ empleados, onEm
                 </div>
               </div>
 
-              {/* Información del empleado */}
               <div className="grid grid-cols-1 gap-3 text-sm">
                 <div>
                   <span className="font-medium text-gray-500">Email:</span>
@@ -167,7 +177,6 @@ export const EmpleadosTable: React.FC<IEmpleadosTableProps> = ({ empleados, onEm
                 </div>
               </div>
 
-              {/* Botones de acción */}
               <div className="flex justify-end space-x-2 pt-2 border-t border-gray-100">
                 <button
                   onClick={() => manejarEditar(empleado)}
@@ -201,7 +210,6 @@ export const EmpleadosTable: React.FC<IEmpleadosTableProps> = ({ empleados, onEm
         })}
       </div>
 
-      {/* Vista desktop - Tabla */}
       <div className="hidden lg:block bg-white shadow-sm rounded-lg overflow-hidden">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
@@ -226,13 +234,13 @@ export const EmpleadosTable: React.FC<IEmpleadosTableProps> = ({ empleados, onEm
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {empleados.map((empleado) => {
+              {empleadosPaginados.map((empleado) => {
                 const estaActivo = esEmpleadoActivo(empleado)
                 const estaCargando = empleadoCargando === empleado.getIdUsuario()
                 const nombreCompleto = `${empleado.getNombre()} ${empleado.getApellido()}`
 
                 return (
-                  <tr key={`empleado-desktop-${empleado.getIdUsuario()}`} className="hover:bg-gray-50">
+                  <tr key={empleado.getIdUsuario()} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <div className="flex-shrink-0 h-10 w-10">
@@ -312,6 +320,17 @@ export const EmpleadosTable: React.FC<IEmpleadosTableProps> = ({ empleados, onEm
             </tbody>
           </table>
         </div>
+        {totalItems > 0 && (
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={totalItems}
+            itemsPerPage={itemsPerPage}
+            onPageChange={handlePageChange}
+            onItemsPerPageChange={handleItemsPerPageChange}
+            itemsPerPageOptions={[5, 10, 25, 50]}
+          />
+        )}
       </div>
     </div>
   )
