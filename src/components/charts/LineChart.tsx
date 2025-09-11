@@ -1,11 +1,14 @@
-import { useState, useEffect } from "react";
-import { Chart } from "react-google-charts";
-import { interceptorsApiClient } from "../../services/interceptors/axios.interceptors";
+import { useAuth0 } from "@auth0/auth0-react"
+import { useEffect, useState } from "react"
+import { Chart } from "react-google-charts"
+import { interceptorsApiClient } from "../../services/interceptors/axios.interceptors"
 
 export const LineChart = () => {
-  const [data, setData] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [data, setData] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  const { isAuthenticated, isLoading: isAuth0Loading, getAccessTokenSilently } = useAuth0()
 
   const options = {
     title: "Total Recaudado Por Mes",
@@ -38,32 +41,38 @@ export const LineChart = () => {
         color: "#34a853",
       },
     },
-  };
+  }
 
   useEffect(() => {
     const fetchData = async () => {
-      try {
-        setLoading(true);
-        const response = await interceptorsApiClient.get("/estadisticas/recaudadoPorMes");
-        setData(response.data);
-        setError(null);
-      } catch (err) {
-        setError("Error al cargar los datos del gráfico");
-        console.error("Error fetching line chart data:", err);
-      } finally {
-        setLoading(false);
+      if (!isAuthenticated || isAuth0Loading) {
+        setLoading(false)
+        return
       }
-    };
 
-    fetchData();
-  }, []);
+      try {
+        setLoading(true)
+        await getAccessTokenSilently()
+        const response = await interceptorsApiClient.get("/estadisticas/recaudadoPorMes")
+        setData(response.data)
+        setError(null)
+      } catch (err) {
+        setError("Error al cargar los datos del gráfico")
+        console.error("Error fetching line chart data:", err)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [isAuthenticated, isAuth0Loading, getAccessTokenSilently])
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-gray-500">Loading...</div>
       </div>
-    );
+    )
   }
 
   if (error) {
@@ -71,18 +80,12 @@ export const LineChart = () => {
       <div className="flex items-center justify-center h-64">
         <div className="text-red-500">{error}</div>
       </div>
-    );
+    )
   }
 
   return (
     <div className="w-full">
-      <Chart
-        chartType="LineChart"
-        width="100%"
-        height="400px"
-        data={data}
-        options={options}
-      />
+      <Chart chartType="LineChart" width="100%" height="400px" data={data} options={options} />
     </div>
-  );
-};
+  )
+}

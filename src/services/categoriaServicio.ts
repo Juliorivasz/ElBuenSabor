@@ -11,7 +11,7 @@ type CategoriaAbmApi = {
 
 export const parseCategoriaAbm = (data: CategoriaAbmApi) => {
   const imagenDto = new ImagenDTO(data.imagenDto?.url);
-  return new CategoriaDTO(data.idCategoria, data.nombre, data.idCategoriaPadre, imagenDto);
+  return new CategoriaDTO(data.idCategoria, data.nombre, data.idCategoriaPadre);
 };
 
 export const fetchCategoriasAbm = async (): Promise<CategoriaDTO[]> => {

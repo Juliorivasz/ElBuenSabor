@@ -84,5 +84,28 @@ export class RubroInsumoAbmDto {
   public esRubroPadre(): boolean {
     return this.idRubroPadre === null || this.idRubroPadre === 0
   }
-}
 
+  public toJSON() {
+    return {
+      idRubroInsumo: this.idRubroInsumo,
+      nombre: this.nombre,
+      dadoDeAlta: this.dadoDeAlta,
+      idRubroPadre: this.idRubroPadre,
+      rubroPadre: this.rubroPadre,
+      cantInsumos: this.cantInsumos,
+      insumos: this.insumos,
+    }
+  }
+
+  public static fromPlainObject(obj: any): RubroInsumoAbmDto {
+    return new RubroInsumoAbmDto(
+      obj.idRubroInsumo,
+      obj.nombre,
+      obj.dadoDeAlta,
+      obj.idRubroPadre,
+      obj.rubroPadre,
+      obj.cantInsumos,
+      obj.insumos || [],
+    )
+  }
+}

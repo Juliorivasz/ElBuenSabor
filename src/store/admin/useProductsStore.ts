@@ -13,7 +13,7 @@ import {
   crearArticuloNoElaborado,
   fetchArticulosNoElaboradosAbm,
 } from "../../services/articuloNoElaboradoServicio";
-import { altaBajaArticulo } from "../../services/articuloServicio";
+import { articuloServicio } from "../../services/articuloServicio";
 import { fetchInsumoAbm } from "../../services/articulosInsumosServicio";
 import { fetchCategoriasAbm } from "../../services/categoriaServicio";
 import { mapperInformacionArticuloNoElaboradoDtoToNuevoArticuloNoElaboradoDto } from "../../utils/mapper/articuloNoElaboradoMapper";
@@ -197,7 +197,7 @@ export const useProductsStore = create<ProductsStore>((set, get) => ({
       }));
 
       // Realizar la operación en el backend
-      await altaBajaArticulo(id);
+      await articuloServicio.altaBajaArticulo(id);
     } catch (error) {
       console.error("Error en toggleManufacturadoStatus:", error);
       set({ error: (error as Error).message });
@@ -298,7 +298,7 @@ export const useProductsStore = create<ProductsStore>((set, get) => ({
         }),
       }));
 
-      await altaBajaArticulo(id);
+      await articuloServicio.altaBajaArticulo(id);
     } catch (error) {
       console.error("Error en toggleNoElaboradoStatus:", error);
       set({ error: (error as Error).message });

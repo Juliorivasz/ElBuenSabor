@@ -1,11 +1,11 @@
 import { useAuth0 } from "@auth0/auth0-react";
 import { type FC, type JSX, useEffect, useRef } from "react";
-import { useAuth0Store } from "../store/auth/useAuth0Store";
-import { setAccessTokenSilently } from "../services/interceptors/axios.interceptors";
-import { useNavigate, useLocation } from "react-router-dom";
-import type { IUser } from "../store/auth/types/user";
-import { fetchUserProfile } from "../services/clienteServicio";
+import { useLocation, useNavigate } from "react-router-dom";
 import { isEmployee } from "../constants/roles";
+import { fetchUserProfile } from "../services/clienteServicio";
+import { setAccessTokenSilently } from "../services/interceptors/axios.interceptors";
+import type { IUser } from "../store/auth/types/user";
+import { useAuth0Store } from "../store/auth/useAuth0Store";
 
 interface Auth0BridgeProps {
   children: JSX.Element;
@@ -137,3 +137,6 @@ export const Auth0Bridge: FC<Auth0BridgeProps> = ({ children }) => {
 
   return <>{children}</>;
 };
+
+export { useAuth0Store };
+

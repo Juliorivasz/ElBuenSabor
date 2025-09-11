@@ -84,7 +84,7 @@ export class CategoriaGestionServicio {
     try {
       console.log("Cambiando estado de categoría:", idCategoria);
 
-      await interceptorsApiClient.post(`/categoria/altaBaja/${idCategoria}`);
+      await interceptorsApiClient.post(`/categoria/altaBaja/${idCategoria}`, {});
     } catch (error) {
       console.error("Error al cambiar estado de categoría:", error);
       throw error;

@@ -1,18 +1,17 @@
 import { create } from "zustand"
 import type { InsumoAbmDto } from "../../models/dto/InsumoAbmDto"
-import type { UnidadDeMedidaDto } from "../../models/dto/UnidadDeMedidaDto"
 import type { RubroInsumoAbmDto } from "../../models/dto/RubroInsumoAbmDto"
 import type { NuevoInsumoDto } from "../../models/dto/NuevoInsumoDto"
 import type { ModificarInsumoDto } from "../../models/dto/ModificarInsumoDto"
 import {
   fetchInsumosAbm,
-  fetchUnidadesDeMedida,
   fetchRubrosInsumo,
   altaBajaInsumo,
   crearInsumo,
   modificarInsumo,
 } from "../../services/insumoAbmServicio"
 import { useAuth0Store } from "../auth/useAuth0Store"
+import { UnidadDeMedidaDto as UnidadMedida } from "../../models/dto/UnidadDeMedidaDto" // Using alias to avoid import conflict
 
 interface PaginationState {
   currentPage: number
@@ -45,7 +44,7 @@ const waitForToken = (): Promise<void> => {
 interface InsumosStore {
   // Estados principales
   insumos: InsumoAbmDto[]
-  unidadesDeMedida: UnidadDeMedidaDto[]
+  unidadesDeMedida: UnidadMedida[]
   rubrosInsumo: RubroInsumoAbmDto[]
   loading: boolean
   error: string | null
@@ -88,10 +87,18 @@ const initialFilters: FiltersState = {
   estadoFilter: "todos",
 }
 
+const UNIDADES_DE_MEDIDA_PREDEFINIDAS: UnidadMedida[] = [
+  new UnidadMedida(1, "Gramo (g)"),
+  new UnidadMedida(2, "Kilogramo (kg)"),
+  new UnidadMedida(3, "Mililitro (ml)"),
+  new UnidadMedida(4, "Litro (L)"),
+  new UnidadMedida(5, "Unidad (u)"),
+]
+
 export const useInsumosStore = create<InsumosStore>((set, get) => ({
   // Estados iniciales
   insumos: [],
-  unidadesDeMedida: [],
+  unidadesDeMedida: UNIDADES_DE_MEDIDA_PREDEFINIDAS,
   rubrosInsumo: [],
   loading: false,
   error: null,
@@ -126,11 +133,8 @@ export const useInsumosStore = create<InsumosStore>((set, get) => ({
   },
 
   fetchUnidadesDeMedida: async () => {
-    await waitForToken()
-
     try {
-      const unidades = await fetchUnidadesDeMedida()
-      set({ unidadesDeMedida: unidades })
+      set({ unidadesDeMedida: UNIDADES_DE_MEDIDA_PREDEFINIDAS })
     } catch (error) {
       console.error("Error al cargar unidades de medida:", error)
       set({ error: (error as Error).message })

@@ -9,4 +9,5 @@ export interface IInformacionArticuloNoElaboradoDtoJson {
   nombreCategoria: string;
   imagenUrl: string | null;
   stock: number;
+  eliminarImagen: boolean;
 }

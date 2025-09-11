@@ -1,5 +1,5 @@
-import { RubroInsumoAbmDto } from "../models/dto/RubroInsumoAbmDto"
 import type { NuevoRubroInsumoDto } from "../models/dto/NuevoRubroInsumoDto"
+import { RubroInsumoAbmDto } from "../models/dto/RubroInsumoAbmDto"
 import { interceptorsApiClient } from "./interceptors/axios.interceptors"
 
 type RubroInsumoAbmApiResponse = Array<{
@@ -18,15 +18,7 @@ type RubroInsumoListaApiResponse = Array<{
 }>
 
 const parseRubroInsumoAbmDto = (data: any): RubroInsumoAbmDto => {
-  return new RubroInsumoAbmDto(
-    data.idRubroInsumo,
-    data.nombre,
-    data.dadoDeAlta,
-    data.idRubroPadre,
-    data.rubroPadre,
-    data.cantInsumos,
-    data.insumos || [],
-  )
+  return RubroInsumoAbmDto.fromPlainObject(data)
 }
 
 export const rubroInsumoAbmServicio = {
@@ -41,11 +33,21 @@ export const rubroInsumoAbmServicio = {
     }
   },
 
-  obtenerRubrosLista: async (): Promise<Array<{ idRubroInsumo: number; nombre: string }>> => {
+  obtenerRubrosLista: async (): Promise<RubroInsumoAbmDto[]> => {
     try {
       const response = await interceptorsApiClient.get("/rubroInsumo/lista")
       const data: RubroInsumoListaApiResponse = response.data
-      return data
+      return data.map((item) =>
+        RubroInsumoAbmDto.fromPlainObject({
+          idRubroInsumo: item.idRubroInsumo,
+          nombre: item.nombre,
+          dadoDeAlta: true, // Lista endpoint assumes active items
+          idRubroPadre: null, // Not provided by lista endpoint
+          rubroPadre: null, // Not provided by lista endpoint
+          cantInsumos: 0, // Not provided by lista endpoint
+          insumos: [], // Not provided by lista endpoint
+        }),
+      )
     } catch (error) {
       console.error("Error al obtener lista de rubros:", error)
       throw error
@@ -63,12 +65,7 @@ export const rubroInsumoAbmServicio = {
 
   crearRubro: async (rubro: NuevoRubroInsumoDto): Promise<void> => {
     try {
-      const requestBody = {
-        nombre: rubro.getNombre(),
-        dadoDeAlta: rubro.isDadoDeAlta(),
-        idRubroInsumoPadre: rubro.getIdRubroInsumoPadre(),
-      }
-      await interceptorsApiClient.post("/rubroInsumo/nuevo", requestBody)
+      await interceptorsApiClient.post("/rubroInsumo/nuevo", rubro.toJSON())
     } catch (error) {
       console.error("Error al crear rubro:", error)
       throw error
@@ -77,12 +74,7 @@ export const rubroInsumoAbmServicio = {
 
   modificarRubro: async (idRubroInsumo: number, rubro: NuevoRubroInsumoDto): Promise<void> => {
     try {
-      const requestBody = {
-        nombre: rubro.getNombre(),
-        dadoDeAlta: rubro.isDadoDeAlta(),
-        idRubroInsumoPadre: rubro.getIdRubroInsumoPadre(),
-      }
-      await interceptorsApiClient.put(`/rubroInsumo/modificar/${idRubroInsumo}`, requestBody)
+      await interceptorsApiClient.put(`/rubroInsumo/modificar/${idRubroInsumo}`, rubro.toJSON())
     } catch (error) {
       console.error("Error al modificar rubro:", error)
       throw error

@@ -1,11 +1,9 @@
-"use client"
-
 import type React from "react"
 
-import { useState, useEffect } from "react"
 import { ChevronLeft, ChevronRight, ShoppingCart } from "@mui/icons-material"
-import { motion, AnimatePresence } from "framer-motion"
-import axios from "axios"
+import { AnimatePresence, motion } from "framer-motion"
+import { useEffect, useState } from "react"
+import { interceptorsApiClient } from "../../services/interceptors/axios.interceptors"
 
 interface Advertisement {
   id: string
@@ -38,7 +36,7 @@ export const AdvertisementCarousel: React.FC = () => {
   useEffect(() => {
     const fetchPromociones = async () => {
       try {
-        const response = await axios.get<PromocionCatalogo[]>("https://localhost:8080/promocion/catalogo")
+        const response = await interceptorsApiClient.get<PromocionCatalogo[]>("/promocion/catalogo")
 
         const promocionesFormateadas: Advertisement[] = response.data.map((promo) => ({
           id: promo.idPromocion.toString(),
@@ -107,24 +105,12 @@ export const AdvertisementCarousel: React.FC = () => {
 
     try {
       // Fetch article information
-      const response = await axios.get(`https://localhost:8080/articulo/informacion/${advertisement.idArticulo}`)
+      const response = await interceptorsApiClient.get(`/articulo/informacion/${advertisement.idArticulo}`)
       const articleData = response.data
 
       // Create ArticuloDTO with promotional discount
-      const articuloDTO = new (await import("../../models/dto/ArticuloDTO")).ArticuloDTO(
-        articleData.idArticulo,
-        articleData.nombre,
-        articleData.descripcion,
-        articleData.precioVenta,
-        articleData.tiempoDeCocina,
-        articleData.idCategoria,
-        articleData.url,
-        articleData.puedeElaborarse,
-      )
-
-      // Add to cart with promotional discount
       const { useCartStore } = await import("../../store/cart/useCartStore")
-      useCartStore.getState().addItem(articuloDTO, articleData.url, advertisement.descuento)
+      useCartStore.getState().addItem(articleData, advertisement.url, advertisement.descuento)
 
       console.log(
         `Artículo ${advertisement.idArticulo} añadido al carrito con descuento del ${Math.round(advertisement.descuento * 100)}%`,
@@ -208,7 +194,7 @@ export const AdvertisementCarousel: React.FC = () => {
                 </motion.p>
 
                 {/* Horario de la promoción */}
-                <motion.div          
+                <motion.div
                   className={`mb-3 mt-0 p-2 rounded-lg border-2 ${
                     isWithinPromotionHours(
                       advertisements[currentIndex].horarioInicio,
@@ -229,7 +215,7 @@ export const AdvertisementCarousel: React.FC = () => {
                 </motion.div>
 
                 {/* Botón más abajo */}
-                <motion.button                                    
+                <motion.button
                   onClick={() => handleAddToCart(advertisements[currentIndex])}
                   disabled={
                     !isWithinPromotionHours(

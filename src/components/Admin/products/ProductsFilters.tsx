@@ -4,29 +4,25 @@ import ClearIcon from "@mui/icons-material/Clear"
 import SearchIcon from "@mui/icons-material/Search"
 import { useEffect, useState } from "react"
 
-interface RubrosFiltersProps {
-  totalRubros: number
-  rubrosActivos: number
-  rubrosInactivos: number
-  rubrosPadre: number
-  subrubros: number
-  filtroActual: "todos" | "activos" | "inactivos" | "padre" | "subrubros"
-  onFiltroChange: (filtro: "todos" | "activos" | "inactivos" | "padre" | "subrubros") => void
+interface ProductsFiltersProps {
+  totalProductos: number
+  productosActivos: number
+  productosInactivos: number
+  filtroActual: "todos" | "activos" | "inactivos"
+  onFiltroChange: (filtro: "todos" | "activos" | "inactivos") => void
   busqueda: string
   onBusquedaChange: (busqueda: string) => void
 }
 
-export const RubrosFilters = ({
-  totalRubros,
-  rubrosActivos,
-  rubrosInactivos,
-  rubrosPadre,
-  subrubros,
+export const ProductsFilters = ({
+  totalProductos,
+  productosActivos,
+  productosInactivos,
   filtroActual,
   onFiltroChange,
   busqueda,
   onBusquedaChange,
-}: RubrosFiltersProps) => {
+}: ProductsFiltersProps) => {
   const [searchTerm, setSearchTerm] = useState(busqueda)
 
   // Búsqueda en tiempo real con debounce
@@ -47,37 +43,23 @@ export const RubrosFilters = ({
     {
       key: "todos" as const,
       label: "Todos",
-      count: totalRubros,
+      count: totalProductos,
       color: "bg-blue-100 text-blue-800 border-blue-200",
-      description: "Vista jerárquica con subrubros desplegables",
+      description: "Todos los productos",
     },
     {
       key: "activos" as const,
       label: "Activos",
-      count: rubrosActivos,
+      count: productosActivos,
       color: "bg-green-100 text-green-800 border-green-200",
-      description: "Solo rubros activos",
+      description: "Solo productos activos",
     },
     {
       key: "inactivos" as const,
       label: "Inactivos",
-      count: rubrosInactivos,
+      count: productosInactivos,
       color: "bg-red-100 text-red-800 border-red-200",
-      description: "Solo rubros inactivos",
-    },
-    {
-      key: "padre" as const,
-      label: "Principales",
-      count: rubrosPadre,
-      color: "bg-purple-100 text-purple-800 border-purple-200",
-      description: "Solo rubros principales",
-    },
-    {
-      key: "subrubros" as const,
-      label: "Subrubros",
-      count: subrubros,
-      color: "bg-orange-100 text-orange-800 border-orange-200",
-      description: "Solo subrubros",
+      description: "Solo productos inactivos",
     },
   ]
 
@@ -95,7 +77,7 @@ export const RubrosFilters = ({
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="block w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-400 text-gray-900 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-orange-500 focus:border-orange-500 sm:text-sm"
-              placeholder="Buscar rubros en tiempo real..."
+              placeholder="Buscar productos en tiempo real..."
             />
             {searchTerm && (
               <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
@@ -151,22 +133,6 @@ export const RubrosFilters = ({
             >
               Limpiar filtros
             </button>
-          </div>
-        </div>
-      )}
-
-      {/* Información sobre el modo de vista */}
-      {filtroActual === "todos" && (
-        <div className="mt-4 pt-4 border-t border-gray-200">
-          <div className="flex items-center text-sm text-blue-600">
-            <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
-              <path
-                fillRule="evenodd"
-                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-                clipRule="evenodd"
-              />
-            </svg>
-            <span>Vista jerárquica: Haz clic en los botones de expansión para ver los subrubros</span>
           </div>
         </div>
       )}

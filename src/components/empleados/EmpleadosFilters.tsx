@@ -1,105 +1,153 @@
-"use client";
+"use client"
 
-import type React from "react";
-import { useState, useEffect } from "react";
-import { Search, Filter, Users, UserCheck, UserX, X, ChevronDown, ChevronUp } from "lucide-react";
-import type { EmpleadoResponseDto } from "../../models/dto/Empleado/EmpleadoResponseDto";
+import { ChevronDown, ChevronUp, Download, Filter, Search, UserCheck, Users, UserX, X } from "lucide-react"
+import type React from "react"
+import { useEffect, useState } from "react"
+import type { EmpleadoResponseDto } from "../../models/dto/Empleado/EmpleadoResponseDto"
+import { exportarEstadisticasEmpleadosAExcel } from "../../utils/exportUtils"
+import { NotificationService } from "../../utils/notifications"
 
 interface IEmpleadosFiltersProps {
-  empleados: EmpleadoResponseDto[];
-  onFiltrar: (empleadosFiltrados: EmpleadoResponseDto[]) => void;
+  empleados: EmpleadoResponseDto[]
+  onFiltrar: (empleadosFiltrados: EmpleadoResponseDto[]) => void
 }
 
 export const EmpleadosFilters: React.FC<IEmpleadosFiltersProps> = ({ empleados, onFiltrar }) => {
-  const [busqueda, setBusqueda] = useState("");
-  const [rolSeleccionado, setRolSeleccionado] = useState("");
-  const [estadoSeleccionado, setEstadoSeleccionado] = useState("");
-  const [mostrarFiltros, setMostrarFiltros] = useState(false);
+  const [busqueda, setBusqueda] = useState("")
+  const [rolSeleccionado, setRolSeleccionado] = useState("")
+  const [estadoSeleccionado, setEstadoSeleccionado] = useState("")
+  const [mostrarFiltros, setMostrarFiltros] = useState(false)
+  const [exportandoEstadisticas, setExportandoEstadisticas] = useState(false)
 
   // Aplicar filtros cuando cambien los criterios
   useEffect(() => {
-    let empleadosFiltrados = [...empleados];
+    let empleadosFiltrados = [...empleados]
 
     // Filtro por búsqueda (nombre, apellido, email)
     if (busqueda.trim() !== "") {
-      const terminoBusqueda = busqueda.toLowerCase().trim();
+      const terminoBusqueda = busqueda.toLowerCase().trim()
       empleadosFiltrados = empleadosFiltrados.filter(
         (empleado) =>
           empleado.getNombre().toLowerCase().includes(terminoBusqueda) ||
           empleado.getApellido().toLowerCase().includes(terminoBusqueda) ||
           empleado.getEmail().toLowerCase().includes(terminoBusqueda),
-      );
+      )
     }
 
     // Filtro por rol
     if (rolSeleccionado !== "") {
-      empleadosFiltrados = empleadosFiltrados.filter((empleado) => empleado.getRol() === rolSeleccionado);
+      empleadosFiltrados = empleadosFiltrados.filter((empleado) => empleado.getRol() === rolSeleccionado)
     }
 
     // Filtro por estado
     if (estadoSeleccionado !== "") {
       empleadosFiltrados = empleadosFiltrados.filter((empleado) => {
-        const estaActivo = empleado.getFechaBaja() === null || new Date(empleado.getFechaBaja()).getTime() === 0;
-        return estadoSeleccionado === "activo" ? estaActivo : !estaActivo;
-      });
+        const estaActivo = empleado.getFechaBaja() === null || new Date(empleado.getFechaBaja()).getTime() === 0
+        return estadoSeleccionado === "activo" ? estaActivo : !estaActivo
+      })
     }
 
-    onFiltrar(empleadosFiltrados);
-  }, [busqueda, rolSeleccionado, estadoSeleccionado, empleados, onFiltrar]);
+    onFiltrar(empleadosFiltrados)
+  }, [busqueda, rolSeleccionado, estadoSeleccionado, empleados, onFiltrar])
 
   // Calcular estadísticas
-  const totalEmpleados = empleados.length;
+  const totalEmpleados = empleados.length
   const empleadosActivos = empleados.filter((emp) => {
-    const fechaBaja = emp.getFechaBaja();
-    return fechaBaja === null || new Date(fechaBaja).getTime() === 0;
-  }).length;
-  const empleadosInactivos = totalEmpleados - empleadosActivos;
+    const fechaBaja = emp.getFechaBaja()
+    return fechaBaja === null || new Date(fechaBaja).getTime() === 0
+  }).length
+  const empleadosInactivos = totalEmpleados - empleadosActivos
 
   // Obtener roles únicos de los empleados
-  const rolesUnicos = Array.from(new Set(empleados.map((emp) => emp.getRol()).filter(Boolean)));
+  const rolesUnicos = Array.from(new Set(empleados.map((emp) => emp.getRol()).filter(Boolean)))
 
   const limpiarFiltros = () => {
-    setBusqueda("");
-    setRolSeleccionado("");
-    setEstadoSeleccionado("");
-  };
+    setBusqueda("")
+    setRolSeleccionado("")
+    setEstadoSeleccionado("")
+  }
 
-  const hayFiltrosActivos = busqueda !== "" || rolSeleccionado !== "" || estadoSeleccionado !== "";
+  const hayFiltrosActivos = busqueda !== "" || rolSeleccionado !== "" || estadoSeleccionado !== ""
 
   const toggleFiltros = () => {
-    setMostrarFiltros(!mostrarFiltros);
-  };
+    setMostrarFiltros(!mostrarFiltros)
+  }
+
+  const exportarEstadisticas = async () => {
+    try {
+      setExportandoEstadisticas(true)
+
+      if (empleados.length === 0) {
+        await NotificationService.warning("Sin datos", "No hay empleados para generar estadísticas")
+        return
+      }
+
+      const nombreArchivo = exportarEstadisticasEmpleadosAExcel(empleados)
+      await NotificationService.success(
+        "¡Exportación exitosa!",
+        `El archivo de estadísticas ${nombreArchivo} se ha descargado correctamente.`,
+      )
+    } catch (error) {
+      console.error("Error al exportar estadísticas:", error)
+      await NotificationService.error("Error", "No se pudo exportar las estadísticas")
+    } finally {
+      setExportandoEstadisticas(false)
+    }
+  }
 
   return (
     <div className="space-y-4">
       {/* Estadísticas - Mobile First */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-white p-4 rounded-lg shadow-sm border">
-          <div className="flex items-center">
-            <Users className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600 flex-shrink-0" />
-            <div className="ml-3 min-w-0 flex-1">
-              <p className="text-xs sm:text-sm font-medium text-gray-500 truncate">Total</p>
-              <p className="text-lg sm:text-2xl font-bold text-gray-900">{totalEmpleados}</p>
-            </div>
-          </div>
+      <div className="space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <h2 className="text-lg font-semibold text-gray-900">Estadísticas de Empleados</h2>
+          <button
+            onClick={exportarEstadisticas}
+            disabled={exportandoEstadisticas || empleados.length === 0}
+            className="inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            {exportandoEstadisticas ? (
+              <>
+                <div className="animate-spin h-4 w-4 border-2 border-gray-600 border-t-transparent rounded-full mr-2" />
+                Exportando...
+              </>
+            ) : (
+              <>
+                <Download className="h-4 w-4 mr-2" />
+                Exportar Estadísticas
+              </>
+            )}
+          </button>
         </div>
 
-        <div className="bg-white p-4 rounded-lg shadow-sm border">
-          <div className="flex items-center">
-            <UserCheck className="h-6 w-6 sm:h-8 sm:w-8 text-green-600 flex-shrink-0" />
-            <div className="ml-3 min-w-0 flex-1">
-              <p className="text-xs sm:text-sm font-medium text-gray-500 truncate">Activos</p>
-              <p className="text-lg sm:text-2xl font-bold text-green-600">{empleadosActivos}</p>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="bg-white p-4 rounded-lg shadow-sm border">
+            <div className="flex items-center">
+              <Users className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600 flex-shrink-0" />
+              <div className="ml-3 min-w-0 flex-1">
+                <p className="text-xs sm:text-sm font-medium text-gray-500 truncate">Total</p>
+                <p className="text-lg sm:text-2xl font-bold text-gray-900">{totalEmpleados}</p>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="bg-white p-4 rounded-lg shadow-sm border">
-          <div className="flex items-center">
-            <UserX className="h-6 w-6 sm:h-8 sm:w-8 text-red-600 flex-shrink-0" />
-            <div className="ml-3 min-w-0 flex-1">
-              <p className="text-xs sm:text-sm font-medium text-gray-500 truncate">Inactivos</p>
-              <p className="text-lg sm:text-2xl font-bold text-red-600">{empleadosInactivos}</p>
+          <div className="bg-white p-4 rounded-lg shadow-sm border">
+            <div className="flex items-center">
+              <UserCheck className="h-6 w-6 sm:h-8 sm:w-8 text-green-600 flex-shrink-0" />
+              <div className="ml-3 min-w-0 flex-1">
+                <p className="text-xs sm:text-sm font-medium text-gray-500 truncate">Activos</p>
+                <p className="text-lg sm:text-2xl font-bold text-green-600">{empleadosActivos}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white p-4 rounded-lg shadow-sm border">
+            <div className="flex items-center">
+              <UserX className="h-6 w-6 sm:h-8 sm:w-8 text-red-600 flex-shrink-0" />
+              <div className="ml-3 min-w-0 flex-1">
+                <p className="text-xs sm:text-sm font-medium text-gray-500 truncate">Inactivos</p>
+                <p className="text-lg sm:text-2xl font-bold text-red-600">{empleadosInactivos}</p>
+              </div>
             </div>
           </div>
         </div>
@@ -131,13 +179,15 @@ export const EmpleadosFilters: React.FC<IEmpleadosFiltersProps> = ({ empleados, 
               {hayFiltrosActivos && (
                 <button
                   onClick={limpiarFiltros}
-                  className="text-sm text-blue-600 hover:text-blue-800 font-medium transition-colors">
+                  className="text-sm text-blue-600 hover:text-blue-800 font-medium transition-colors"
+                >
                   Limpiar
                 </button>
               )}
               <button
                 onClick={toggleFiltros}
-                className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-md transition-colors">
+                className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
+              >
                 {mostrarFiltros ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
               </button>
             </div>
@@ -148,13 +198,12 @@ export const EmpleadosFilters: React.FC<IEmpleadosFiltersProps> = ({ empleados, 
         <div
           className={`transition-all duration-300 ease-in-out overflow-hidden ${
             mostrarFiltros ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
-          }`}>
+          }`}
+        >
           <div className="p-4 space-y-4">
             {/* Búsqueda */}
             <div className="space-y-2">
-              <label
-                htmlFor="busqueda"
-                className="block text-sm font-medium text-gray-700">
+              <label htmlFor="busqueda" className="block text-sm font-medium text-gray-700">
                 Buscar empleado
               </label>
               <div className="relative">
@@ -170,7 +219,8 @@ export const EmpleadosFilters: React.FC<IEmpleadosFiltersProps> = ({ empleados, 
                 {busqueda && (
                   <button
                     onClick={() => setBusqueda("")}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  >
                     <X className="h-4 w-4" />
                   </button>
                 )}
@@ -181,21 +231,18 @@ export const EmpleadosFilters: React.FC<IEmpleadosFiltersProps> = ({ empleados, 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {/* Filtro por rol */}
               <div className="space-y-2">
-                <label
-                  htmlFor="rol"
-                  className="block text-sm font-medium text-gray-700">
+                <label htmlFor="rol" className="block text-sm font-medium text-gray-700">
                   Rol
                 </label>
                 <select
                   id="rol"
                   value={rolSeleccionado}
                   onChange={(e) => setRolSeleccionado(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900">
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+                >
                   <option value="">Todos los roles</option>
                   {rolesUnicos.map((rol) => (
-                    <option
-                      key={rol}
-                      value={rol}>
+                    <option key={rol} value={rol}>
                       {rol}
                     </option>
                   ))}
@@ -204,16 +251,15 @@ export const EmpleadosFilters: React.FC<IEmpleadosFiltersProps> = ({ empleados, 
 
               {/* Filtro por estado */}
               <div className="space-y-2">
-                <label
-                  htmlFor="estado"
-                  className="block text-sm font-medium text-gray-700">
+                <label htmlFor="estado" className="block text-sm font-medium text-gray-700">
                   Estado
                 </label>
                 <select
                   id="estado"
                   value={estadoSeleccionado}
                   onChange={(e) => setEstadoSeleccionado(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900">
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+                >
                   <option value="">Todos los estados</option>
                   <option value="activo">Activos</option>
                   <option value="inactivo">Inactivos</option>
@@ -228,9 +274,7 @@ export const EmpleadosFilters: React.FC<IEmpleadosFiltersProps> = ({ empleados, 
                   {busqueda && (
                     <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                       Búsqueda: "{busqueda}"
-                      <button
-                        onClick={() => setBusqueda("")}
-                        className="ml-1 text-blue-600 hover:text-blue-800">
+                      <button onClick={() => setBusqueda("")} className="ml-1 text-blue-600 hover:text-blue-800">
                         <X className="h-3 w-3" />
                       </button>
                     </span>
@@ -240,7 +284,8 @@ export const EmpleadosFilters: React.FC<IEmpleadosFiltersProps> = ({ empleados, 
                       Rol: {rolSeleccionado}
                       <button
                         onClick={() => setRolSeleccionado("")}
-                        className="ml-1 text-green-600 hover:text-green-800">
+                        className="ml-1 text-green-600 hover:text-green-800"
+                      >
                         <X className="h-3 w-3" />
                       </button>
                     </span>
@@ -250,7 +295,8 @@ export const EmpleadosFilters: React.FC<IEmpleadosFiltersProps> = ({ empleados, 
                       Estado: {estadoSeleccionado === "activo" ? "Activos" : "Inactivos"}
                       <button
                         onClick={() => setEstadoSeleccionado("")}
-                        className="ml-1 text-purple-600 hover:text-purple-800">
+                        className="ml-1 text-purple-600 hover:text-purple-800"
+                      >
                         <X className="h-3 w-3" />
                       </button>
                     </span>
@@ -262,5 +308,5 @@ export const EmpleadosFilters: React.FC<IEmpleadosFiltersProps> = ({ empleados, 
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
