@@ -1,9 +1,9 @@
 import { InsumoAbmDto } from "../models/dto/InsumoAbmDto"
-import { UnidadDeMedidaDto } from "../models/dto/UnidadDeMedidaDto"
-import { RubroInsumoAbmDto } from "../models/dto/RubroInsumoAbmDto"
 import { InsumoDTO } from "../models/dto/InsumoDTO"
-import type { NuevoInsumoDto } from "../models/dto/NuevoInsumoDto"
 import type { ModificarInsumoDto } from "../models/dto/ModificarInsumoDto"
+import type { NuevoInsumoDto } from "../models/dto/NuevoInsumoDto"
+import { RubroInsumoAbmDto } from "../models/dto/RubroInsumoAbmDto"
+import { UnidadDeMedidaDto } from "../models/dto/UnidadDeMedidaDto"
 import { interceptorsApiClient } from "./interceptors/axios.interceptors"
 
 type InsumoAbmApiResponse = {
@@ -113,18 +113,16 @@ export const fetchRubrosInsumo = async (): Promise<RubroInsumoAbmDto[]> => {
   const response = await interceptorsApiClient.get("/rubroInsumo/lista")
   const data: Array<{ idRubroInsumo: number; nombre: string }> = response.data
 
-  // Convertir el formato simple a RubroInsumoAbmDto
-  return data.map(
-    (item) =>
-      new RubroInsumoAbmDto(
-        item.idRubroInsumo,
-        item.nombre,
-        true, // dadoDeAlta - asumimos que están activos en la lista
-        null, // idRubroPadre - no viene en la respuesta
-        null, // rubroPadre - no viene en la respuesta
-        0, // cantInsumos - no viene en la respuesta
-        [], // insumos - no viene en la respuesta
-      ),
+  return data.map((item) =>
+    RubroInsumoAbmDto.fromPlainObject({
+      idRubroInsumo: item.idRubroInsumo,
+      nombre: item.nombre,
+      dadoDeAlta: true, // Lista endpoint assumes active items
+      idRubroPadre: null, // Not provided by lista endpoint
+      rubroPadre: null, // Not provided by lista endpoint
+      cantInsumos: 0, // Not provided by lista endpoint
+      insumos: [], // Not provided by lista endpoint
+    }),
   )
 }
 

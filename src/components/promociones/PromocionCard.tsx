@@ -1,12 +1,10 @@
-"use client"
-
-import type React from "react"
 import {
   Edit as EditIcon,
-  Schedule as ScheduleIcon,
   LocalOffer as OfferIcon,
+  Schedule as ScheduleIcon,
   Warning as WarningIcon,
 } from "@mui/icons-material"
+import type React from "react"
 import type { Promocion } from "../../models/Promocion"
 
 interface PromocionCardProps {
@@ -16,29 +14,52 @@ interface PromocionCardProps {
 }
 
 export const PromocionCard: React.FC<PromocionCardProps> = ({ promocion, onEdit, onToggleStatus }) => {
-  const formatTime = (time: string) => {
+  const formatTime = (time: Date | string | null | undefined) => {
     if (!time) return "No especificado"
-    return time
+    
+    if (typeof time === "string") {
+      // Si ya está en formato HH:MM, devolverlo tal como está
+      if (/^\d{2}:\d{2}$/.test(time)) {
+        return time
+      }
+      // Si es otra cadena, tratar de parsearla
+      const parsed = new Date(`1970-01-01T${time}`);
+      if (!isNaN(parsed.getTime())) {
+        return parsed.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+      }
+    }
+    
+    if (time instanceof Date && !isNaN(time.getTime())) {
+      return time.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+    }
+    
+    return "No especificado"
   }
 
-  const formatDiscount = (discount: number) => {
-    return `${(discount * 100).toFixed(0)}%`
+  const detalles = promocion.getDetalles() || []
+  const precioPromocion = promocion.getPrecioPromocion() ?? 0
+  
+  // Calcular precio total de los artículos individuales
+  const calcularPrecioTotal = () => {
+    return detalles.reduce((total, detalle) => {
+      // Si el detalle tiene precio, usarlo; sino, usar un precio por defecto o 0
+      const precio = detalle.precio || 0
+      return total + precio * detalle.cantidad
+    }, 0)
   }
 
-  const puedeActivarse = promocion.puedeSerActivada()
-  const estaInactiva = !promocion.getActivo()
-  const articuloInactivo = !promocion.getArticuloActivo()
+  const precioTotal = calcularPrecioTotal()
+  const descuento = precioTotal > 0 ? ((precioTotal - precioPromocion) / precioTotal) * 100 : 0
+  
+  // Verificar si hay artículos inactivos
+  const tieneArticulosInactivos = detalles.some(detalle => detalle.activo === false)
 
   const handleToggleClick = () => {
-    if (!puedeActivarse && estaInactiva) {
-      // No hacer nada si el artículo está inactivo y se intenta activar
-      return
-    }
     onToggleStatus(promocion.getIdPromocion())
   }
 
   return (
-    <div className="relative w-160 h-155 bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100">
+    <div className="relative w-160 h-auto bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100">
       {/* Imagen - Full width */}
       <div className="w-full h-100 object-cover">
         <img
@@ -59,11 +80,11 @@ export const PromocionCard: React.FC<PromocionCardProps> = ({ promocion, onEdit,
           </span>
 
           {/* Indicador de artículo inactivo */}
-          {articuloInactivo && (
+          {tieneArticulosInactivos && (
             <div className="relative group">
               <WarningIcon className="text-orange-500" fontSize="small" />
               <div className="absolute bottom-full right-0 mb-2 w-48 p-2 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                El artículo correspondiente está dado de baja
+                Uno o más artículos están dados de baja
               </div>
             </div>
           )}
@@ -73,16 +94,9 @@ export const PromocionCard: React.FC<PromocionCardProps> = ({ promocion, onEdit,
               type="checkbox"
               checked={promocion.getActivo()}
               onChange={handleToggleClick}
-              disabled={!puedeActivarse && estaInactiva}
-              className={`sr-only peer ${!puedeActivarse && estaInactiva ? "cursor-not-allowed" : "cursor-pointer"}`}
+              className="sr-only peer cursor-pointer"
             />
-            <div
-              className={`w-11 h-6 ${
-                !puedeActivarse && estaInactiva ? "bg-gray-300 cursor-not-allowed" : "bg-red-300 cursor-pointer"
-              } peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all ${
-                !puedeActivarse && estaInactiva ? "peer-checked:bg-gray-400" : "peer-checked:bg-green-300"
-              }`}
-            ></div>
+            <div className="w-11 h-6 bg-red-300 cursor-pointer peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-300"></div>
           </label>
         </div>
       </div>
@@ -94,38 +108,61 @@ export const PromocionCard: React.FC<PromocionCardProps> = ({ promocion, onEdit,
           <div className="mb-4">
             <div className="flex items-center gap-2 mb-2">
               <h3 className="text-2xl font-bold text-gray-800">{promocion.getTitulo()}</h3>
-              {articuloInactivo && (
+              {tieneArticulosInactivos && (
                 <div className="flex items-center gap-1 px-2 py-1 bg-orange-100 text-orange-700 rounded-full text-xs">
                   <WarningIcon fontSize="small" />
-                  <span>Artículo inactivo</span>
+                  <span>Artículos inactivos</span>
                 </div>
               )}
             </div>
             <p className="text-gray-600 text-sm leading-relaxed">{promocion.getDescripcion()}</p>
           </div>
 
-          {/* Información de la promoción */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-1">
-            {/* Artículo */}
-            <div className="rounded-lg p-1">
-              <div className="flex items-center gap-2 mb-1">
-                <OfferIcon className="text-gray-800" fontSize="small" />
-                <span className="text-xs font-medium text-gray-800 uppercase tracking-wide">Artículo</span>
-              </div>
-              <p className={`text-sm font-semibold ${articuloInactivo ? "text-orange-600" : "text-black"}`}>
-                {promocion.getNombreArticulo()}
-              </p>
+          <div className="mb-4">
+            <div className="flex items-center gap-2 mb-2">
+              <OfferIcon className="text-gray-800" fontSize="small" />
+              <span className="text-sm font-medium text-gray-800 uppercase tracking-wide">Artículos incluidos</span>
             </div>
-
-            {/* Descuento */}
-            <div className="rounded-lg p-1">
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-gray-800 font-bold text-lg">%</span>
-                <span className="text-xs font-medium text-gray-800 uppercase tracking-wide">Descuento</span>
-              </div>
-              <p className="text-sm font-semibold text-black">{formatDiscount(promocion.getDescuento())}</p>
+            <div className="space-y-1">
+              {detalles.length > 0 ? (
+                detalles.map((articulo, index) => (
+                  <div key={articulo.idArticulo || index} className="flex justify-between items-center text-sm">
+                    <span className={`${articulo.activo === false ? "text-orange-600" : "text-gray-700"}`}>
+                      {articulo.nombreArticulo} x{articulo.cantidad}
+                    </span>
+                    {articulo.precio && (
+                      <span className="text-gray-500">${(articulo.precio * articulo.cantidad).toFixed(2)}</span>
+                    )}
+                  </div>
+                ))
+              ) : (
+                <div className="text-sm text-gray-500">No hay artículos asignados</div>
+              )}
             </div>
+          </div>
 
+          <div className="grid grid-cols-2 gap-4 mb-4 p-3 bg-gray-50 rounded-lg">
+            <div>
+              <div className="text-xs font-medium text-gray-600 uppercase tracking-wide mb-1">Precio Total</div>
+              <div className="text-lg font-semibold text-gray-800 line-through">
+                ${precioTotal > 0 ? precioTotal.toFixed(2) : "0.00"}
+              </div>
+            </div>
+            <div>
+              <div className="text-xs font-medium text-gray-600 uppercase tracking-wide mb-1">Precio Promoción</div>
+              <div className="text-lg font-semibold text-green-600">${precioPromocion.toFixed(2)}</div>
+            </div>
+            {descuento > 0 && (
+              <div className="col-span-2 text-center">
+                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                  {descuento.toFixed(0)}% de descuento
+                </span>
+              </div>
+            )}
+          </div>
+
+          {/* Información de horarios */}
+          <div className="grid grid-cols-2 gap-4 mb-1">
             {/* Horario Inicio */}
             <div className="rounded-lg p-1">
               <div className="flex items-center gap-2 mb-1">
@@ -146,8 +183,8 @@ export const PromocionCard: React.FC<PromocionCardProps> = ({ promocion, onEdit,
           </div>
         </div>
 
-        {/* Botón de editar */}
-        <div className="flex justify-end pt-2 border-t border-gray-100">
+        <div className="flex justify-between pt-2 border-t border-gray-100">
+          <div></div>
           <button
             onClick={() => onEdit(promocion)}
             className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all duration-200 font-medium"

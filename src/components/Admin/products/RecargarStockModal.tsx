@@ -1,8 +1,8 @@
 "use client"
 
+import { Edit, Trash2, X } from "lucide-react"
 import type React from "react"
-import { useState, useEffect } from "react"
-import { X, Search, Edit, Trash2 } from "lucide-react"
+import { useEffect, useState } from "react"
 import { interceptorsApiClient } from "../../../services/interceptors/axios.interceptors"
 import { NotificationService } from "../../../utils/notifications"
 

@@ -1,138 +1,160 @@
-"use client";
+"use client"
 
-import { useEffect, useState } from "react";
-import { RubroInsumoDetailsModal } from "../../../components/rubrosInsumo/RubroInsumoDetailsModal";
-import { RubroInsumoForm } from "../../../components/rubrosInsumo/RubroInsumoForm";
-import { RubrosInsumoTable } from "../../../components/rubrosInsumo/RubrosInsumoTable";
-import type { RubroInsumoAbmDto } from "../../../models/dto/RubroInsumoAbmDto";
-import type { NuevoRubroInsumoDto } from "../../../models/dto/NuevoRubroInsumoDto";
-import { rubroInsumoAbmServicio } from "../../../services/rubroInsumoAbmServicio";
-import { useRubrosInsumoStore } from "../../../store/rubrosInsumo/useRubrosInsumoStore";
-import { NotificationService } from "../../../utils/notifications";
-import { PageHeader } from "../../../components/shared/PageHeader";
-import { Tapas as RubroIcon } from "@mui/icons-material";
+import { GetApp as ExcelIcon, Tapas as RubroIcon } from "@mui/icons-material"
+import { useEffect, useState } from "react"
+import { RubrosFilters } from "../../../components/rubros/RubrosFilters"
+import { RubroInsumoDetailsModal } from "../../../components/rubrosInsumo/RubroInsumoDetailsModal"
+import { RubroInsumoForm } from "../../../components/rubrosInsumo/RubroInsumoForm"
+import { RubrosInsumoTable } from "../../../components/rubrosInsumo/RubrosInsumoTable"
+import { PageHeader } from "../../../components/shared/PageHeader"
+import type { NuevoRubroInsumoDto } from "../../../models/dto/NuevoRubroInsumoDto"
+import type { RubroInsumoAbmDto } from "../../../models/dto/RubroInsumoAbmDto"
+import { rubroInsumoAbmServicio } from "../../../services/rubroInsumoAbmServicio"
+import { useRubrosInsumoStore } from "../../../store/rubrosInsumo/useRubrosInsumoStore"
+import { exportarDatosAExcel } from "../../../utils/exportUtils"
+import { NotificationService } from "../../../utils/notifications"
 
 export const RubrosInsumo = () => {
-  const { rubros, loading, error, fetchRubros, altaBajaRubro, clearError } = useRubrosInsumoStore();
+  const {
+    rubros,
+    loading,
+    error,
+    filtroActual,
+    busqueda,
+    fetchRubros,
+    altaBajaRubro,
+    clearError,
+    setFiltro,
+    setBusqueda,
+    setCurrentPage,
+    setItemsPerPage,
+    getRubrosPaginados,
+    getEstadisticas,
+    getPaginationInfo,
+  } = useRubrosInsumoStore()
 
-  const [selectedRubro, setSelectedRubro] = useState<RubroInsumoAbmDto | null>(null);
-  const [showDetailsModal, setShowDetailsModal] = useState(false);
-  const [showFormModal, setShowFormModal] = useState(false);
-  const [editingRubro, setEditingRubro] = useState<RubroInsumoAbmDto | null>(null);
-  const [formLoading, setFormLoading] = useState(false);
+  const [selectedRubro, setSelectedRubro] = useState<RubroInsumoAbmDto | null>(null)
+  const [showDetailsModal, setShowDetailsModal] = useState(false)
+  const [showFormModal, setShowFormModal] = useState(false)
+  const [editingRubro, setEditingRubro] = useState<RubroInsumoAbmDto | null>(null)
+  const [formLoading, setFormLoading] = useState(false)
 
-  // Cargar rubros al montar el componente
+  const estadisticas = getEstadisticas()
+  const paginationInfo = getPaginationInfo()
+  const rubrosPaginados = getRubrosPaginados()
+
   useEffect(() => {
-    fetchRubros();
-  }, [fetchRubros]);
+    fetchRubros()
+  }, [fetchRubros])
 
-  // Mostrar errores
   useEffect(() => {
     if (error) {
-      NotificationService.error(error);
-      clearError();
+      NotificationService.error(error)
+      clearError()
     }
-  }, [error, clearError]);
+  }, [error, clearError])
 
-  // Función recursiva para obtener todos los descendientes de un rubro
   const getAllDescendants = (parentId: number, allRubros: RubroInsumoAbmDto[]): RubroInsumoAbmDto[] => {
-    const directChildren = allRubros.filter((r) => r.getIdRubroPadre() === parentId);
-    let allDescendants: RubroInsumoAbmDto[] = [...directChildren];
+    const directChildren = allRubros.filter((r) => r.getIdRubroPadre() === parentId)
+    let allDescendants: RubroInsumoAbmDto[] = [...directChildren]
 
-    // Para cada hijo directo, obtener sus descendientes recursivamente
     for (const child of directChildren) {
-      const childDescendants = getAllDescendants(child.getIdRubroInsumo(), allRubros);
-      allDescendants = [...allDescendants, ...childDescendants];
+      const childDescendants = getAllDescendants(child.getIdRubroInsumo(), allRubros)
+      allDescendants = [...allDescendants, ...childDescendants]
     }
 
-    return allDescendants;
-  };
+    return allDescendants
+  }
 
   const handleViewDetails = (rubro: RubroInsumoAbmDto) => {
-    setSelectedRubro(rubro);
-    setShowDetailsModal(true);
-  };
+    setSelectedRubro(rubro)
+    setShowDetailsModal(true)
+  }
 
   const handleEdit = (rubro: RubroInsumoAbmDto) => {
-    setEditingRubro(rubro);
-    setShowFormModal(true);
-  };
+    setEditingRubro(rubro)
+    setShowFormModal(true)
+  }
 
   const handleNuevoRubro = () => {
-    setEditingRubro(null);
-    setShowFormModal(true);
-  };
+    setEditingRubro(null)
+    setShowFormModal(true)
+  }
 
   const handleToggleStatus = async (rubro: RubroInsumoAbmDto) => {
     try {
-      const estadoActual = rubro.isDadoDeAlta();
-      const nuevoEstado = !estadoActual;
+      const estadoActual = rubro.isDadoDeAlta()
+      const nuevoEstado = !estadoActual
 
-      // Obtener todos los descendientes del rubro
-      const descendientes = getAllDescendants(rubro.getIdRubroInsumo(), rubros);
+      const descendientes = getAllDescendants(rubro.getIdRubroInsumo(), rubros)
 
-      // Cambiar el estado del rubro actual
-      await altaBajaRubro(rubro.getIdRubroInsumo());
+      await altaBajaRubro(rubro.getIdRubroInsumo())
 
-      // Si tiene descendientes, cambiar su estado también
       if (descendientes.length > 0) {
         for (const descendiente of descendientes) {
-          // Solo cambiar si el estado del descendiente es diferente al nuevo estado del rubro
           if (descendiente.isDadoDeAlta() === estadoActual) {
-            await altaBajaRubro(descendiente.getIdRubroInsumo());
+            await altaBajaRubro(descendiente.getIdRubroInsumo())
           }
         }
       }
 
-      const accion = estadoActual ? "desactivado" : "activado";
+      const accion = estadoActual ? "desactivado" : "activado"
       const mensaje =
         descendientes.length > 0
           ? `Rubro ${accion} correctamente junto con ${descendientes.length} descendiente${
               descendientes.length !== 1 ? "s" : ""
             }`
-          : `Rubro ${accion} correctamente`;
+          : `Rubro ${accion} correctamente`
 
-      NotificationService.success(mensaje, "Estado actualizado");
+      NotificationService.success(mensaje, "Estado actualizado")
     } catch (error) {
-      NotificationService.error(error instanceof Error ? error.message : "Error al cambiar el estado del rubro");
+      NotificationService.error(error instanceof Error ? error.message : "Error al cambiar el estado del rubro")
     }
-  };
+  }
 
   const handleFormSubmit = async (rubroData: NuevoRubroInsumoDto) => {
-    setFormLoading(true);
+    setFormLoading(true)
     try {
       if (editingRubro) {
-        // Editar rubro existente
-        await rubroInsumoAbmServicio.modificarRubro(editingRubro.getIdRubroInsumo(), rubroData);
-        NotificationService.success("Rubro actualizado correctamente", "Actualización exitosa");
+        await rubroInsumoAbmServicio.modificarRubro(editingRubro.getIdRubroInsumo(), rubroData)
+        NotificationService.success("Rubro actualizado correctamente", "Actualización exitosa")
       } else {
-        // Crear nuevo rubro
-        await rubroInsumoAbmServicio.crearRubro(rubroData);
-        NotificationService.success("Rubro creado correctamente", "Creación exitosa");
+        await rubroInsumoAbmServicio.crearRubro(rubroData)
+        NotificationService.success("Rubro creado correctamente", "Creación exitosa")
       }
 
-      // Refrescar la lista
-      await fetchRubros();
+      await fetchRubros()
 
-      // Cerrar modal
-      setShowFormModal(false);
-      setEditingRubro(null);
+      setShowFormModal(false)
+      setEditingRubro(null)
     } catch (error) {
-      NotificationService.error(error instanceof Error ? error.message : "Error al guardar el rubro");
+      NotificationService.error(error instanceof Error ? error.message : "Error al guardar el rubro")
     } finally {
-      setFormLoading(false);
+      setFormLoading(false)
     }
-  };
+  }
 
   const handleCloseDetailsModal = () => {
-    setShowDetailsModal(false);
-    setSelectedRubro(null);
-  };
+    setShowDetailsModal(false)
+    setSelectedRubro(null)
+  }
 
   const handleCloseFormModal = () => {
-    setShowFormModal(false);
-    setEditingRubro(null);
-  };
+    setShowFormModal(false)
+    setEditingRubro(null)
+  }
+
+  const handleExportarExcel = () => {
+    try {
+      const nombreArchivo = exportarDatosAExcel(rubros, "Rubros")
+      NotificationService.success(`Archivo ${nombreArchivo} descargado exitosamente`, "Exportación completada")
+    } catch (error) {
+      NotificationService.error(
+        error instanceof Error ? error.message : "Error al exportar a Excel",
+        "Error de exportación",
+      )
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -142,17 +164,45 @@ export const RubrosInsumo = () => {
           subtitle="Gestiona los Rubros de productos"
           showBackButton={true}
           backTo="/admin/dashboard"
-          icon={
-            <RubroIcon
-              className="text-black mr-3"
-              fontSize="large"
-            />
-          }
+          icon={<RubroIcon className="text-black mr-3" fontSize="large" />}
           breadcrumbs={[{ label: "Dashboard", href: "/admin/dashboard" }, { label: "Rubros" }]}
         />
+
+        <div className="flex flex-col sm:flex-row gap-3 sm:justify-between sm:items-center mb-6">
+          <div className="order-2 sm:order-1">{/* Placeholder for future action buttons */}</div>
+
+          <div className="order-1 sm:order-2">
+            <button
+              onClick={handleExportarExcel}
+              disabled={loading || rubros.length === 0}
+              className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              <ExcelIcon className="h-4 w-4 mr-2" />
+              Exportar ({rubros.length})
+            </button>
+          </div>
+        </div>
+
+        <div className="mb-6">
+          <RubrosFilters
+            totalRubros={estadisticas.total}
+            rubrosActivos={estadisticas.activos}
+            rubrosInactivos={estadisticas.inactivos}
+            rubrosPadre={estadisticas.padre}
+            subrubros={estadisticas.subrubros}
+            filtroActual={filtroActual}
+            onFiltroChange={setFiltro}
+            busqueda={busqueda}
+            onBusquedaChange={setBusqueda}
+          />
+        </div>
+
         <RubrosInsumoTable
-          rubros={rubros}
+          rubros={rubrosPaginados}
           loading={loading}
+          pagination={paginationInfo}
+          onPageChange={setCurrentPage}
+          onItemsPerPageChange={setItemsPerPage}
           onEdit={handleEdit}
           onViewDetails={handleViewDetails}
           onToggleStatus={handleToggleStatus}
@@ -160,24 +210,18 @@ export const RubrosInsumo = () => {
         />
       </div>
 
-      {/* Modal de detalles */}
       {showDetailsModal && selectedRubro && (
-        <RubroInsumoDetailsModal
-          rubro={selectedRubro}
-          rubros={rubros}
-          onClose={handleCloseDetailsModal}
-        />
+        <RubroInsumoDetailsModal rubro={selectedRubro} rubros={rubros} onClose={handleCloseDetailsModal} />
       )}
 
-      {/* Modal de formulario */}
       {showFormModal && (
         <RubroInsumoForm
-          rubro={editingRubro}
+          rubro={editingRubro ?? undefined}
           onSubmit={handleFormSubmit}
           onCancel={handleCloseFormModal}
           loading={formLoading}
         />
       )}
     </div>
-  );
-};
+  )
+}

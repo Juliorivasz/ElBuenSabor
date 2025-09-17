@@ -1,14 +1,14 @@
-import type React from "react";
-import { useState, useEffect, useCallback } from "react";
-import type { PedidoRepartidorDTO } from "../../../models/dto/PedidoRepartidorDTO";
-import { RepartidorServicio } from "../../../services/repartidorServicio";
-import { DeliveryOrderCard } from "../../../components/delivery/DeliveryOrderCard";
-import { RefreshOutlined, TwoWheeler as DeliveryIcon, CheckCircleOutlined } from "@mui/icons-material";
-import Swal from "sweetalert2";
-import { useWebSocket } from "../../../hooks/useWebSocket";
+import { CheckCircleOutlined, TwoWheeler as DeliveryIcon, RefreshOutlined } from "@mui/icons-material";
 import { IMessage } from "@stomp/stompjs";
+import type React from "react";
+import { useCallback, useEffect, useState } from "react";
+import Swal from "sweetalert2";
+import { DeliveryOrderCard } from "../../../components/delivery/DeliveryOrderCard";
+import { useWebSocket } from "../../../hooks/useWebSocket";
 import type { PedidoStatusUpdateDto } from "../../../models/dto/PedidoDTO";
+import type { PedidoRepartidorDTO } from "../../../models/dto/PedidoRepartidorDTO";
 import { EstadoPedido } from "../../../models/enum/EstadoPedido";
+import { RepartidorServicio } from "../../../services/repartidorServicio";
 
 export const Delivery: React.FC = () => {
   const { isConnected, subscribe } = useWebSocket();
@@ -100,8 +100,9 @@ export const Delivery: React.FC = () => {
     }
   }, [isConnected, subscribe, cargarPedidos]);
 
-  const pedidosListos = pedidos.filter((p) => p.estadoPedido === "LISTO");
-  const pedidosEnCamino = pedidos.filter((p) => p.estadoPedido === "EN_CAMINO");
+  const pedidosListos = (pedidos ?? []).filter((p) => p.estadoPedido === EstadoPedido.LISTO);
+  const pedidosEnCamino = (pedidos ?? []).filter((p) => p.estadoPedido === EstadoPedido.EN_CAMINO);
+
 
   if (loading) {
     return (
@@ -148,13 +149,13 @@ export const Delivery: React.FC = () => {
               />
               Pedidos Listos para Retirar
             </h2>
-            {pedidosListos.length === 0 ? (
+            {pedidosListos?.length === 0 ? (
               <div className="text-center py-8">
                 <p className="text-green-700">No hay pedidos listos para retirar</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {pedidosListos.map((pedido) => (
+                {pedidosListos?.map((pedido) => (
                   <DeliveryOrderCard
                     key={pedido.idPedido}
                     pedido={pedido}
@@ -176,13 +177,13 @@ export const Delivery: React.FC = () => {
               />
               Pedidos En Camino
             </h2>
-            {pedidosEnCamino.length === 0 ? (
+            {pedidosEnCamino?.length === 0 ? (
               <div className="text-center py-8">
                 <p className="text-orange-700">No hay pedidos en camino</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {pedidosEnCamino.map((pedido) => (
+                {pedidosEnCamino?.map((pedido) => (
                   <DeliveryOrderCard
                     key={pedido.idPedido}
                     pedido={pedido}

@@ -1,19 +1,28 @@
+import type { Articulo } from "../models/Articulo";
 import { articuloMapper } from "../utils/mapper/articuloMapper";
-import { interceptorsApiClient } from "./interceptors/axios.interceptors";
-import { PaginatedApiArticulo, PaginatedArticulo } from "./types/catalog/articulos";
+import { interceptorsApiClient } from "./../services/interceptors/axios.interceptors";
 
-export const getAllArticulos = async (page: number, size: number = 6): Promise<PaginatedArticulo> => {
-  const response = await interceptorsApiClient.get(`/articulo/catalogo?page=${page}&size=${size}`);
-  const data: PaginatedApiArticulo = response.data;
-  const content = data.content.map(articuloMapper);
+export const articuloServicio = {
+  // Trae todos los artículos (para Promociones.tsx)
+  obtenerArticulos: async (): Promise<Articulo[]> => {
+    try {
+      // Endpoint correcto para ABM
+      const response = await interceptorsApiClient.get(`/articulo/listado`);
+      const data = response.data; // asumiendo array plano de artículos
+      return data.map(articuloMapper);
+    } catch (error) {
+      console.error("Error al obtener artículos:", error);
+      return [];
+    }
+  },
 
-  return {
-    ...data,
-    content: content,
-  };
-};
-
-// Función para realizar alta/baja lógica de un producto
-export const altaBajaArticulo = async (id: number): Promise<void> => {
-  interceptorsApiClient.post(`/articulo/altaBaja/${id}`);
+  // Cambia alta/baja de un artículo
+  altaBajaArticulo: async (id: number): Promise<void> => {
+    try {
+      await interceptorsApiClient.put(`/articulo/altaBaja/${id}`);
+    } catch (error) {
+      console.error("Error al cambiar estado del artículo:", error);
+      throw error;
+    }
+  },
 };

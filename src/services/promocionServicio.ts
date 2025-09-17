@@ -1,188 +1,144 @@
-import axios from "axios";
-import { API_URL } from "./index";
-import { Promocion } from "../models/Promocion";
-
-export interface PromocionData {
-  titulo: string;
-  descripcion: string;
-  descuento: number;
-  horarioInicio: string;
-  horarioFin: string;
-  activo: boolean;
-  idArticulo: number;
-}
+import type { DetallePromocionDto } from "../models/dto/DetallePromocionDTO"
+import { Promocion } from "../models/Promocion"
+import { interceptorsApiClient } from "./interceptors/axios.interceptors"
 
 export interface ArticuloListado {
-  idArticulo: number;
-  nombre: string;
+  idArticulo: number
+  nombre: string
+  precioVenta: number
+  activo: boolean
+  puedeElaborarse: boolean
+  disponible: boolean
 }
 
 class PromocionServicio {
-  private baseURL = `${API_URL}/promocion`;
-  private articuloURL = `${API_URL}/articulo`;
-
-  async obtenerPromociones(): Promise<Promocion[]> {
-    try {
-      const response = await axios.get(`${this.baseURL}/abm`);
-      return response.data.map(
-        (promo: any) =>
-          new Promocion(
-            promo.idPromocion,
-            promo.titulo,
-            promo.descripcion,
-            promo.descuento,
-            promo.horarioInicio,
-            promo.horarioFin,
-            promo.activo,
-            promo.url,
-            promo.idArticulo,
-            promo.nombreArticulo,
-            promo.articuloActivo || true, // Nuevo campo para estado del artículo
-          ),
-      );
-    } catch (error) {
-      console.error("Error al obtener promociones:", error);
-      throw error;
-    }
-  }
+  private baseURL = "/promocion"
+  private articuloURL = "/articulo"
 
   async obtenerArticulos(): Promise<ArticuloListado[]> {
     try {
-      const response = await axios.get(`${this.articuloURL}/listado`);
-      return response.data;
+      const response = await interceptorsApiClient.get<ArticuloListado[]>(
+        `${this.articuloURL}/listado-promociones`,
+      )
+      return response.data
     } catch (error) {
-      console.error("Error al obtener artículos:", error);
-      throw error;
-    }
-  }
-
-  async crearPromocion(promocionData: PromocionData, file?: File, url?: string): Promise<void> {
-    try {
-      const formData = new FormData();
-      formData.append("promocion", JSON.stringify(promocionData));
-
-      if (file) {
-        formData.append("file", file);
-      } else if (url) {
-        formData.append("url", url);
-      }
-
-      await axios.post(`${this.baseURL}/nueva`, formData);
-    } catch (error) {
-      console.error("Error al crear promoción:", error);
-      throw error;
-    }
-  }
-
-  async modificarPromocion(
-    idPromocion: number,
-    promocionData: PromocionData,
-    file?: File,
-    url?: string,
-  ): Promise<void> {
-    try {
-      const formData = new FormData();
-      formData.append("promocion", JSON.stringify(promocionData));
-
-      if (file) {
-        formData.append("file", file);
-      } else if (url) {
-        formData.append("url", url);
-      }
-
-      await axios.put(`${this.baseURL}/modificar/${idPromocion}`, formData);
-    } catch (error) {
-      console.error("Error al modificar promoción:", error);
-      throw error;
-    }
-  }
-
-  async cambiarEstadoPromocion(idPromocion: number): Promise<void> {
-    try {
-      await axios.put(`${this.baseURL}/altaBaja/${idPromocion}`);
-    } catch (error) {
-      console.error("Error al cambiar estado de promoción:", error)
-
-      // Capturar excepción específica del artículo dado de baja
-      if (error.response?.status === 400 || error.response?.status === 409) {
-        const errorMessage = error.response?.data?.message || error.response?.data || ""
-
-        // Verificar si el error es por artículo dado de baja
-        if (
-          errorMessage.toLowerCase().includes("artículo") &&
-          (errorMessage.toLowerCase().includes("baja") ||
-            errorMessage.toLowerCase().includes("inactivo") ||
-            errorMessage.toLowerCase().includes("desactivado"))
-        ) {
-          throw new Error(
-            "No se puede activar la promoción porque el artículo correspondiente se encuentra dado de baja",
-          )
-        }
-      }
-
+      console.error("Error al obtener artículos para promociones:", error)
       throw error
     }
   }
 
-  async obtenerPromocionPorArticulo(idArticulo: number): Promise<Promocion | null> {
+  async obtenerArticulosConDisponibilidad(): Promise<ArticuloListado[]> {
+    return this.obtenerArticulos()
+  }
+
+  private formatTime(time: string | [number, number]): string {
+    if (Array.isArray(time)) {
+      const [hours, minutes] = time
+      return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}`
+    }
+    if (typeof time === "string" && time.includes(":")) return time
     try {
-      const response = await axios.get(`${this.baseURL}/articulo/${idArticulo}`)
-      if (response.data) {
-        return new Promocion(
-          response.data.idPromocion,
-          response.data.titulo,
-          response.data.descripcion,
-          response.data.descuento,
-          response.data.horarioInicio,
-          response.data.horarioFin,
-          response.data.activo,
-          response.data.url,
-          response.data.idArticulo,
-          response.data.nombreArticulo,
-          response.data.articuloActivo || true,
-        )
-      }
-      return null
-    } catch (error) {
-      // Si no hay promoción o hay error, retornamos null
-      return null
+      const date = new Date(time)
+      return date.toTimeString().substring(0, 5)
+    } catch {
+      return time
     }
   }
 
-  async obtenerPromocionesActivas(): Promise<Promocion[]> {
+  async obtenerPromociones(): Promise<Promocion[]> {
     try {
-      const response = await axios.get(`${this.baseURL}/activas`)
-      return response.data.map(
-        (promo: any) =>
-          new Promocion(
-            promo.idPromocion,
-            promo.titulo,
-            promo.descripcion,
-            promo.descuento,
-            promo.horarioInicio,
-            promo.horarioFin,
-            promo.activo,
-            promo.url,
-            promo.idArticulo,
-            promo.nombreArticulo,
-            promo.articuloActivo || true,
-          ),
+      const response = await interceptorsApiClient.get<any[]>(`${this.baseURL}/abm`)
+      const articulos = await this.obtenerArticulos()
+
+      return response.data.map((item) => {
+        const promocion = new Promocion()
+        promocion.setIdPromocion(item.idPromocion)
+        promocion.setTitulo(item.titulo)
+        promocion.setDescripcion(item.descripcion)
+        promocion.setHorarioInicio(this.formatTime(item.horarioInicio))
+        promocion.setHorarioFin(this.formatTime(item.horarioFin))
+        promocion.setActivo(item.activo)
+        promocion.setUrl(item.url || "")
+        promocion.setPrecioPromocion(item.precioPromocion)
+
+        const detallesEnriquecidos = (item.detalles || []).map((detalle: any) => {
+          const articulo = articulos.find((a) => a.idArticulo === detalle.idArticulo)
+          return {
+            ...detalle,
+            nombreArticulo: articulo?.nombre || "Artículo no encontrado",
+            precio: articulo?.precioVenta || 0,
+            activo: articulo?.activo ?? true,
+          }
+        })
+
+        promocion.setDetalles(detallesEnriquecidos)
+        return promocion
+      })
+    } catch (error) {
+      console.error("Error al obtener promociones:", error)
+      throw error
+    }
+  }
+
+  // ⚡ Crear promoción con FormData
+  async crearPromocion(formData: FormData): Promise<void> {
+    try {
+      await interceptorsApiClient.post(`${this.baseURL}/nueva`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      })
+    } catch (error) {
+      console.error("Error al crear promoción:", error)
+      throw error
+    }
+  }
+
+  // ⚡ Actualizar promoción con FormData
+  async actualizarPromocion(id: number, formData: FormData): Promise<void> {
+    try {
+      await interceptorsApiClient.put(`${this.baseURL}/modificar/${id}`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      })
+    } catch (error) {
+      console.error("Error al actualizar promoción:", error)
+      throw error
+    }
+  }
+
+  async cambiarEstadoPromocion(id: number): Promise<void> {
+    try {
+      await interceptorsApiClient.put(`${this.baseURL}/altaBaja/${id}`)
+    } catch (error) {
+      console.error("Error al cambiar estado de promoción:", error)
+      throw error
+    }
+  }
+
+  async obtenerPrecioSugerido(detalles: DetallePromocionDto[]): Promise<number> {
+    try {
+      const response = await interceptorsApiClient.post<number>(
+        `${this.baseURL}/precio-sugerido`,
+        detalles,
       )
+      return response.data
     } catch (error) {
-      console.error("Error al obtener promociones activas:", error)
-      return []
+      console.error("Error al obtener precio sugerido:", error)
+      throw error
     }
   }
 
-  async verificarEstadoArticulo(idArticulo: number): Promise<boolean> {
+  async obtenerResumenPromocion(
+    idPromocion: number,
+  ): Promise<{ precioBase: number; precioPromocional: number; ahorro: number }> {
     try {
-      const response = await axios.get(`${this.articuloURL}/${idArticulo}/estado`)
-      return response.data.activo || false
+      const response = await interceptorsApiClient.get(
+        `${this.baseURL}/resumen/${idPromocion}`,
+      )
+      return response.data
     } catch (error) {
-      console.error("Error al verificar estado del artículo:", error)
-      return false
+      console.error("Error al obtener resumen de promoción:", error)
+      throw error
     }
   }
 }
 
-export const promocionServicio = new PromocionServicio();
+export const promocionServicio = new PromocionServicio()
