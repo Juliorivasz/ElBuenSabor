@@ -19,7 +19,7 @@ export const articuloServicio = {
   // Cambia alta/baja de un artículo
   altaBajaArticulo: async (id: number): Promise<void> => {
     try {
-      await interceptorsApiClient.post(`/articulo/altaBaja/${id}`);
+      await interceptorsApiClient.put(`/articulo/altaBaja/${id}`);
     } catch (error) {
       console.error("Error al cambiar estado del artículo:", error);
       throw error;

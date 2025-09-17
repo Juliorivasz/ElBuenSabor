@@ -11,7 +11,7 @@ import type { NuevoRubroInsumoDto } from "../../../models/dto/NuevoRubroInsumoDt
 import type { RubroInsumoAbmDto } from "../../../models/dto/RubroInsumoAbmDto"
 import { rubroInsumoAbmServicio } from "../../../services/rubroInsumoAbmServicio"
 import { useRubrosInsumoStore } from "../../../store/rubrosInsumo/useRubrosInsumoStore"
-import { exportarRubrosAExcel } from "../../../utils/exportUtils"
+import { exportarDatosAExcel } from "../../../utils/exportUtils"
 import { NotificationService } from "../../../utils/notifications"
 
 export const RubrosInsumo = () => {
@@ -146,7 +146,7 @@ export const RubrosInsumo = () => {
 
   const handleExportarExcel = () => {
     try {
-      const nombreArchivo = exportarRubrosAExcel(rubros)
+      const nombreArchivo = exportarDatosAExcel(rubros, "Rubros")
       NotificationService.success(`Archivo ${nombreArchivo} descargado exitosamente`, "Exportación completada")
     } catch (error) {
       NotificationService.error(

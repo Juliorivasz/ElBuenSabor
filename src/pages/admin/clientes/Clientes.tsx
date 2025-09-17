@@ -6,7 +6,7 @@ import { ClientesTable } from "../../../components/Admin/clientes/ClientesTable"
 import type { ClienteGestion } from "../../../models/ClienteGestion"
 import type { PageResponse } from "../../../models/PageResponse"
 import { ClienteGestionServicio } from "../../../services/clienteGestionServicio"
-import { exportarClientesAExcel } from "../../../utils/exportUtils"
+import { exportarDatosAExcel } from "../../../utils/exportUtils"
 
 export function Clientes() {
   const [clientesData, setClientesData] = React.useState<PageResponse<ClienteGestion> | null>(null)
@@ -39,7 +39,7 @@ export function Clientes() {
 
   const handleExportarExcel = () => {
     try {
-      const nombreArchivo = exportarClientesAExcel(clientesFiltrados)
+      const nombreArchivo = exportarDatosAExcel(clientesFiltrados, "Clientes")
       console.log(`Archivo exportado: ${nombreArchivo}`)
     } catch (error) {
       console.error("Error al exportar a Excel:", error)

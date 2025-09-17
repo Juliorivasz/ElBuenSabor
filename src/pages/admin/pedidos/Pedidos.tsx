@@ -1,19 +1,19 @@
 "use client"
 
+import { Assignment, FileDownload, Refresh } from "@mui/icons-material"
+import type { IMessage } from "@stomp/stompjs"
 import type React from "react"
-import { useState, useEffect, useMemo, useCallback } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
+import { PedidoDetailModal } from "../../../components/Admin/pedidos/PedidoDetailModal"
 import { PedidosFilters } from "../../../components/Admin/pedidos/PedidosFilters"
 import { PedidosTable } from "../../../components/Admin/pedidos/PedidosTable"
-import { PedidoDetailModal } from "../../../components/Admin/pedidos/PedidoDetailModal"
 import { Pagination } from "../../../components/Admin/products/Pagination"
-import type { PedidoDTO, PedidosPaginadosDTO, PedidoStatusUpdateDto } from "../../../models/dto/PedidoDTO"
-import { pedidoServicio } from "../../../services/pedidoServicio"
-import { EstadoPedido } from "../../../models/enum/EstadoPedido"
-import { Assignment, Refresh, FileDownload } from "@mui/icons-material"
-import { useWebSocket } from "../../../hooks/useWebSocket"
-import type { IMessage } from "@stomp/stompjs"
 import { FixedChat } from "../../../components/chat/FixedChat"
-import { exportarPedidosAExcel } from "../../../utils/exportUtils"
+import { useWebSocket } from "../../../hooks/useWebSocket"
+import type { PedidoDTO, PedidosPaginadosDTO, PedidoStatusUpdateDto } from "../../../models/dto/PedidoDTO"
+import { EstadoPedido } from "../../../models/enum/EstadoPedido"
+import { pedidoServicio } from "../../../services/pedidoServicio"
+import { exportarDatosAExcel } from "../../../utils/exportUtils"
 
 export const Pedidos: React.FC = () => {
   const { isConnected, subscribe } = useWebSocket()
@@ -238,7 +238,7 @@ export const Pedidos: React.FC = () => {
 
   const handleExportarAExcel = () => {
     try {
-      const nombreArchivo = exportarPedidosAExcel(pedidosFiltradosYOrdenados)
+      const nombreArchivo = exportarDatosAExcel(pedidosFiltradosYOrdenados, "Pedidos")
       console.log(`Archivo exportado: ${nombreArchivo}`)
     } catch (error) {
       console.error("Error al exportar a Excel:", error)

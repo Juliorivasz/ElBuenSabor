@@ -1,20 +1,20 @@
 "use client"
 
-import { useEffect, useState, useMemo } from "react"
-import { useInsumosStore } from "../../../store/insumos/useInsumosStore"
-import { InsumosFilters } from "../../../components/insumos/InsumosFilters"
-import { InsumosTable } from "../../../components/insumos/InsumosTable"
+import { Inventory2 as InsumoIcon } from "@mui/icons-material"
+import { Download, Plus, RefreshCw } from "lucide-react"
+import { useEffect, useMemo, useState } from "react"
 import { InsumoDetailsModal } from "../../../components/insumos/InsumoDetailsModal"
 import { InsumoForm } from "../../../components/insumos/InsumoForm"
+import { InsumosFilters } from "../../../components/insumos/InsumosFilters"
+import { InsumosTable } from "../../../components/insumos/InsumosTable"
 import { RecargarStockModal } from "../../../components/insumos/RecargarStockModal"
-import type { InsumoAbmDto } from "../../../models/dto/InsumoAbmDto"
-import type { NuevoInsumoDto } from "../../../models/dto/NuevoInsumoDto"
-import type { ModificarInsumoDto } from "../../../models/dto/ModificarInsumoDto"
-import { NotificationService } from "../../../utils/notifications"
-import { exportarInsumosAExcel } from "../../../utils/exportUtils"
-import { Plus, RefreshCw, Download } from "lucide-react"
 import { PageHeader } from "../../../components/shared/PageHeader"
-import { Inventory2 as InsumoIcon } from "@mui/icons-material"
+import type { InsumoAbmDto } from "../../../models/dto/InsumoAbmDto"
+import type { ModificarInsumoDto } from "../../../models/dto/ModificarInsumoDto"
+import type { NuevoInsumoDto } from "../../../models/dto/NuevoInsumoDto"
+import { useInsumosStore } from "../../../store/insumos/useInsumosStore"
+import { exportarDatosAExcel } from "../../../utils/exportUtils"
+import { NotificationService } from "../../../utils/notifications"
 
 export const Insumos = () => {
   const {
@@ -125,7 +125,7 @@ export const Insumos = () => {
         return
       }
 
-      const nombreArchivo = exportarInsumosAExcel(insumosAExportar)
+      const nombreArchivo = exportarDatosAExcel(insumosAExportar, "Insumos")
       await NotificationService.success(
         "¡Exportación exitosa!",
         `El archivo ${nombreArchivo} se ha descargado correctamente.`,
