@@ -5,9 +5,19 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
 import FolderIcon from "@mui/icons-material/Folder"
 import SubdirectoryArrowRightIcon from "@mui/icons-material/SubdirectoryArrowRight"
 import VisibilityIcon from "@mui/icons-material/Visibility"
-import { Plus } from "lucide-react"
+import { Plus, Download } from "lucide-react"
 import { useState } from "react"
 import type { RubroInsumoAbmDto } from "../../models/dto/RubroInsumoAbmDto"
+import { Pagination } from "../Admin/products/Pagination"
+import { exportarRubrosAExcel } from "../../utils/exportUtils"
+import { NotificationService } from "../../utils/notifications"
+
+interface PaginationState {
+  currentPage: number
+  itemsPerPage: number
+  totalItems: number
+  totalPages: number
+}
 
 interface RubrosInsumoTableProps {
   rubros: RubroInsumoAbmDto[]
@@ -16,6 +26,11 @@ interface RubrosInsumoTableProps {
   onViewDetails: (rubro: RubroInsumoAbmDto) => void
   onToggleStatus: (rubro: RubroInsumoAbmDto) => void
   onNuevoRubro: () => void
+  pagination: PaginationState
+  onPageChange: (page: number) => void
+  onItemsPerPageChange: (itemsPerPage: number) => void
+  filtroActual: "todos" | "activos" | "inactivos" | "padre" | "subrubros"
+  todosLosRubros: RubroInsumoAbmDto[]
 }
 
 interface RubroWithLevel {
@@ -30,8 +45,28 @@ export const RubrosInsumoTable = ({
   onViewDetails,
   onToggleStatus,
   onNuevoRubro,
+  pagination,
+  onPageChange,
+  onItemsPerPageChange,
+  filtroActual,
+  todosLosRubros,
 }: RubrosInsumoTableProps) => {
   const [expandedRubros, setExpandedRubros] = useState<Set<number>>(new Set())
+
+  const handleExport = async () => {
+    try {
+      if (todosLosRubros.length === 0) {
+        NotificationService.warning("No hay rubros para exportar")
+        return
+      }
+
+      const nombreArchivo = exportarRubrosAExcel(todosLosRubros)
+      NotificationService.success(`Archivo exportado: ${nombreArchivo}`)
+    } catch (error) {
+      console.error("Error al exportar rubros:", error)
+      NotificationService.error("Error al exportar rubros")
+    }
+  }
 
   const toggleExpanded = (idRubroInsumo: number) => {
     const newExpanded = new Set(expandedRubros)
@@ -92,6 +127,8 @@ export const RubrosInsumoTable = ({
     return names[Math.min(level, names.length - 1)]
   }
 
+  const shouldShowDropdown = filtroActual === "todos"
+
   // Obtener solo rubros principales para la vista principal
   const rubrosprincipales = rubros.filter((r) => r.esRubroPadre())
 
@@ -145,17 +182,28 @@ export const RubrosInsumoTable = ({
           <div>
             <h3 className="text-lg font-semibold text-gray-900">Gestión de Rubros de Insumo</h3>
             <p className="text-sm text-gray-600 mt-1">
-              {rubros.length} rubro{rubros.length !== 1 ? "s" : ""} registrado{rubros.length !== 1 ? "s" : ""} (vista
-              jerárquica expandible)
+              {pagination.totalItems} rubro{pagination.totalItems !== 1 ? "s" : ""} registrado
+              {pagination.totalItems !== 1 ? "s" : ""}
+              {shouldShowDropdown && " (vista jerárquica expandible)"}
             </p>
           </div>
-          <button
-            onClick={onNuevoRubro}
-            className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-blue-500 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-colors"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Nuevo Rubro
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleExport}
+              className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+              title="Exportar a Excel"
+            >
+              <Download className="h-4 w-4 mr-2" />
+              Exportar
+            </button>
+            <button
+              onClick={onNuevoRubro}
+              className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-blue-500 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-colors"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Nuevo Rubro
+            </button>
+          </div>
         </div>
       </div>
 
@@ -163,7 +211,9 @@ export const RubrosInsumoTable = ({
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-12"></th>
+              {shouldShowDropdown && (
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-12"></th>
+              )}
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rubro</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo</th>
@@ -180,7 +230,7 @@ export const RubrosInsumoTable = ({
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {rubrosprincipales.map((rubro) => {
-              const subrubros = getAllSubrubros(rubro.getIdRubroInsumo(), rubros)
+              const subrubros = getAllSubrubros(rubro.getIdRubroInsumo(), todosLosRubros)
               const isExpanded = expandedRubros.has(rubro.getIdRubroInsumo())
               const levelColors = getLevelColors(0)
 
@@ -188,26 +238,27 @@ export const RubrosInsumoTable = ({
                 <>
                   {/* Fila principal del rubro */}
                   <tr key={rubro.getIdRubroInsumo()} className="hover:bg-gray-50 transition-colors">
-                    {/* Columna de expansión */}
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {subrubros.length > 0 ? (
-                        <button
-                          onClick={() => toggleExpanded(rubro.getIdRubroInsumo())}
-                          className="p-1 rounded-full hover:bg-gray-100 transition-colors"
-                          title={isExpanded ? "Contraer subrubros" : "Expandir subrubros"}
-                        >
-                          {isExpanded ? (
-                            <ExpandLessIcon className="h-5 w-5 text-gray-600" />
-                          ) : (
-                            <ExpandMoreIcon className="h-5 w-5 text-gray-600" />
-                          )}
-                        </button>
-                      ) : (
-                        <div className="w-7 h-7 flex items-center justify-center">
-                          <div className="w-2 h-2 bg-gray-300 rounded-full"></div>
-                        </div>
-                      )}
-                    </td>
+                    {shouldShowDropdown && (
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {subrubros.length > 0 ? (
+                          <button
+                            onClick={() => toggleExpanded(rubro.getIdRubroInsumo())}
+                            className="p-1 rounded-full hover:bg-gray-100 transition-colors"
+                            title={isExpanded ? "Contraer subrubros" : "Expandir subrubros"}
+                          >
+                            {isExpanded ? (
+                              <ExpandLessIcon className="h-5 w-5 text-gray-600" />
+                            ) : (
+                              <ExpandMoreIcon className="h-5 w-5 text-gray-600" />
+                            )}
+                          </button>
+                        ) : (
+                          <div className="w-7 h-7 flex items-center justify-center">
+                            <div className="w-2 h-2 bg-gray-300 rounded-full"></div>
+                          </div>
+                        )}
+                      </td>
+                    )}
 
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
@@ -247,7 +298,7 @@ export const RubrosInsumoTable = ({
                     </td>
 
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                        {rubro.getCantInsumos()} insumo{rubro.getCantInsumos() !== 1 ? "s" : ""}
+                      {rubro.getCantInsumos()} insumo{rubro.getCantInsumos() !== 1 ? "s" : ""}
                     </td>
 
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -291,17 +342,17 @@ export const RubrosInsumoTable = ({
                     </td>
                   </tr>
 
-                  {/* Filas de subrubros expandidas */}
-                  {isExpanded &&
+                  {shouldShowDropdown &&
+                    isExpanded &&
                     subrubros.map(({ rubro: subrubro, level }) => {
                       const subLevelColors = getLevelColors(level)
-                      const tieneAncestroInactivo = hasInactiveAncestor(subrubro, rubros)
+                      const tieneAncestroInactivo = hasInactiveAncestor(subrubro, todosLosRubros)
 
                       return (
                         <tr
                           key={`sub-${subrubro.getIdRubroInsumo()}`}
                           className="bg-gray-50 hover:bg-gray-100 transition-colors"
-                          style={{ height: "56px" }} // Fila más pequeña
+                          style={{ height: "56px" }}
                         >
                           <td className="px-6 py-3 whitespace-nowrap">
                             <div className="w-7 h-7 flex items-center justify-center">
@@ -347,14 +398,16 @@ export const RubrosInsumoTable = ({
                             </span>
                           </td>
 
-                          <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-500">                            
-                              {subrubro.getCantInsumos()} insumo{subrubro.getCantInsumos() !== 1 ? "s" : ""}
+                          <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-500">
+                            {subrubro.getCantInsumos()} insumo{subrubro.getCantInsumos() !== 1 ? "s" : ""}
                           </td>
 
                           <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-500">
                             <span className="text-xs text-gray-400">
-                              {rubros.filter((r) => r.getIdRubroPadre() === subrubro.getIdRubroInsumo()).length} sub
-                              {rubros.filter((r) => r.getIdRubroPadre() === subrubro.getIdRubroInsumo()).length !== 1
+                              {todosLosRubros.filter((r) => r.getIdRubroPadre() === subrubro.getIdRubroInsumo()).length}{" "}
+                              sub
+                              {todosLosRubros.filter((r) => r.getIdRubroPadre() === subrubro.getIdRubroInsumo())
+                                .length !== 1
                                 ? "s"
                                 : ""}
                             </span>
@@ -378,10 +431,10 @@ export const RubrosInsumoTable = ({
                               </button>
                               <button
                                 onClick={() => onToggleStatus(subrubro)}
-                                disabled={tieneAncestroInactivo} // Deshabilitar si algún ancestro está inactivo
+                                disabled={tieneAncestroInactivo}
                                 className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 ${
                                   tieneAncestroInactivo
-                                    ? "bg-gray-300 cursor-not-allowed" // Estilo deshabilitado
+                                    ? "bg-gray-300 cursor-not-allowed"
                                     : subrubro.isDadoDeAlta()
                                       ? "bg-green-500 focus:ring-green-500"
                                       : "bg-red-400 focus:ring-red-400"
@@ -411,6 +464,15 @@ export const RubrosInsumoTable = ({
           </tbody>
         </table>
       </div>
+
+      <Pagination
+        currentPage={pagination.currentPage}
+        totalPages={pagination.totalPages}
+        totalItems={pagination.totalItems}
+        itemsPerPage={pagination.itemsPerPage}
+        onPageChange={onPageChange}
+        onItemsPerPageChange={onItemsPerPageChange}
+      />
     </div>
   )
 }

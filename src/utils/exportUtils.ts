@@ -2,6 +2,7 @@ import * as XLSX from "xlsx"
 import type { EmpleadoResponseDto } from "../models/dto/Empleado/EmpleadoResponseDto"
 import type { InformacionArticuloManufacturadoDto } from "../models/dto/InformacionArticuloManufacturadoDto"
 import type { InformacionArticuloNoElaboradoDto } from "../models/dto/InformacionArticuloNoElaboradoDto"
+import type { RubroInsumoAbmDto } from "../models/dto/RubroInsumoAbmDto"
 
 export const exportarEmpleadosAExcel = (empleados: EmpleadoResponseDto[]): string => {
   // Preparar los datos para exportar
@@ -159,6 +160,42 @@ export const exportarProductosNoElaboradosAExcel = (productos: InformacionArticu
   const fechaFormateada = fechaActual.toISOString().split("T")[0]
   const horaFormateada = fechaActual.toTimeString().split(" ")[0].replace(/:/g, "-")
   const nombreArchivo = `productos_no_elaborados_${fechaFormateada}_${horaFormateada}.xlsx`
+
+  XLSX.writeFile(workbook, nombreArchivo)
+  return nombreArchivo
+}
+
+export const exportarRubrosAExcel = (rubros: RubroInsumoAbmDto[]): string => {
+  const datosParaExportar = rubros.map((rubro, index) => ({
+    "N°": index + 1,
+    ID: rubro.getIdRubroInsumo(),
+    Nombre: rubro.getNombre(),
+    Tipo: rubro.esRubroPadre() ? "Principal" : "Subrubro",
+    "ID Rubro Padre": rubro.getIdRubroPadre() || "N/A",
+    "Cantidad Insumos": rubro.getCantInsumos(),
+    Estado: rubro.isDadoDeAlta() ? "Activo" : "Inactivo",
+  }))
+
+  const workbook = XLSX.utils.book_new()
+  const worksheet = XLSX.utils.json_to_sheet(datosParaExportar)
+
+  const columnWidths = [
+    { wch: 5 }, // N°
+    { wch: 8 }, // ID
+    { wch: 30 }, // Nombre
+    { wch: 15 }, // Tipo
+    { wch: 15 }, // ID Rubro Padre
+    { wch: 18 }, // Cantidad Insumos
+    { wch: 10 }, // Estado
+  ]
+
+  worksheet["!cols"] = columnWidths
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Rubros de Insumo")
+
+  const fechaActual = new Date()
+  const fechaFormateada = fechaActual.toISOString().split("T")[0]
+  const horaFormateada = fechaActual.toTimeString().split(" ")[0].replace(/:/g, "-")
+  const nombreArchivo = `rubros_insumo_${fechaFormateada}_${horaFormateada}.xlsx`
 
   XLSX.writeFile(workbook, nombreArchivo)
   return nombreArchivo
