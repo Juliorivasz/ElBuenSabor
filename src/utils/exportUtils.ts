@@ -3,6 +3,7 @@ import type { EmpleadoResponseDto } from "../models/dto/Empleado/EmpleadoRespons
 import type { InformacionArticuloManufacturadoDto } from "../models/dto/InformacionArticuloManufacturadoDto"
 import type { InformacionArticuloNoElaboradoDto } from "../models/dto/InformacionArticuloNoElaboradoDto"
 import type { RubroInsumoAbmDto } from "../models/dto/RubroInsumoAbmDto"
+import type { InsumoAbmDto } from "../models/dto/InsumoAbmDto"
 
 export const exportarEmpleadosAExcel = (empleados: EmpleadoResponseDto[]): string => {
   // Preparar los datos para exportar
@@ -196,6 +197,56 @@ export const exportarRubrosAExcel = (rubros: RubroInsumoAbmDto[]): string => {
   const fechaFormateada = fechaActual.toISOString().split("T")[0]
   const horaFormateada = fechaActual.toTimeString().split(" ")[0].replace(/:/g, "-")
   const nombreArchivo = `rubros_insumo_${fechaFormateada}_${horaFormateada}.xlsx`
+
+  XLSX.writeFile(workbook, nombreArchivo)
+  return nombreArchivo
+}
+
+export const exportarInsumosAExcel = (insumos: InsumoAbmDto[]): string => {
+  const datosParaExportar = insumos.map((insumo, index) => ({
+    "N°": index + 1,
+    ID: insumo.getIdArticuloInsumo(),
+    Nombre: insumo.getNombre(),
+    Rubro: insumo.getNombreRubro(),
+    Costo: `$${insumo.getCosto().toFixed(2)}`,
+    "Stock Actual": insumo.getStockActual(),
+    "Stock Mínimo": insumo.getStockMinimo(),
+    "Stock Máximo": insumo.getStockMaximo(),
+    "Nivel Stock": (() => {
+      const percentage = insumo.getStockPercentage()
+      if (percentage <= 25) return "Crítico"
+      if (percentage <= 50) return "Bajo"
+      if (percentage <= 75) return "Normal"
+      return "Óptimo"
+    })(),
+    "Unidad de Medida": insumo.getUnidadDeMedida(),
+    Estado: insumo.isDadoDeAlta() ? "Activo" : "Inactivo",
+  }))
+
+  const workbook = XLSX.utils.book_new()
+  const worksheet = XLSX.utils.json_to_sheet(datosParaExportar)
+
+  const columnWidths = [
+    { wch: 5 }, // N°
+    { wch: 8 }, // ID
+    { wch: 30 }, // Nombre
+    { wch: 20 }, // Rubro
+    { wch: 12 }, // Costo
+    { wch: 12 }, // Stock Actual
+    { wch: 12 }, // Stock Mínimo
+    { wch: 12 }, // Stock Máximo
+    { wch: 12 }, // Nivel Stock
+    { wch: 18 }, // Unidad de Medida
+    { wch: 10 }, // Estado
+  ]
+
+  worksheet["!cols"] = columnWidths
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Insumos")
+
+  const fechaActual = new Date()
+  const fechaFormateada = fechaActual.toISOString().split("T")[0]
+  const horaFormateada = fechaActual.toTimeString().split(" ")[0].replace(/:/g, "-")
+  const nombreArchivo = `insumos_${fechaFormateada}_${horaFormateada}.xlsx`
 
   XLSX.writeFile(workbook, nombreArchivo)
   return nombreArchivo
