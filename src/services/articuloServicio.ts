@@ -15,5 +15,5 @@ export const getAllArticulos = async (page: number, size: number = 6): Promise<P
 
 // Función para realizar alta/baja lógica de un producto
 export const altaBajaArticulo = async (id: number): Promise<void> => {
-  interceptorsApiClient.post(`/articulo/altaBaja/${id}`);
+  interceptorsApiClient.put(`/articulo/altaBaja/${id}`);
 };

@@ -20,6 +20,7 @@ const parseInformacionArticuloNoElaboradoDto = (data: InformacionArticuloNoElabo
     data.nombreCategoria,
     data.imagenUrl,
     data.stock,
+    data.costo
   )
 }
 

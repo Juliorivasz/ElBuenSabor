@@ -10,6 +10,8 @@ export const mapperInformacionArticuloNoElaboradoDtoToNuevoArticuloNoElaboradoDt
     informacion.getPrecioVenta(),
     informacion.isDadoDeAlta(),
     informacion.getIdCategoria(),
+    informacion.getCosto(),
+    informacion.getStock(),
     informacion.getImagenUrl() ?? undefined,
   );
 };

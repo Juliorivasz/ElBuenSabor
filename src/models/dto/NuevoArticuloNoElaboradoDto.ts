@@ -6,6 +6,8 @@ export class NuevoArticuloNoElaboradoDto {
   private precioVenta: number;
   private dadoDeAlta: boolean;
   private idCategoria: number;
+  private costo: number;
+  private stock: number;
   private imagenUrl?: string;
 
   constructor(
@@ -14,6 +16,8 @@ export class NuevoArticuloNoElaboradoDto {
     precioVenta: number,
     dadoDeAlta: boolean,
     idCategoria: number,
+    costo: number,
+    stock: number,
     imagenUrl?: string,
   ) {
     this.nombre = nombre;
@@ -21,6 +25,8 @@ export class NuevoArticuloNoElaboradoDto {
     this.precioVenta = precioVenta;
     this.dadoDeAlta = dadoDeAlta;
     this.idCategoria = idCategoria;
+    this.costo = costo;
+    this.stock = stock;
     this.imagenUrl = imagenUrl;
   }
   // Getters
@@ -46,6 +52,12 @@ export class NuevoArticuloNoElaboradoDto {
 
   public getImagenUrl(): string | undefined {
     return this.imagenUrl;
+  }
+  public getCosto(): number {
+    return this.costo;
+  }
+  public getStock(): number {
+    return this.stock;
   }
 
   // Setters
@@ -73,6 +85,14 @@ export class NuevoArticuloNoElaboradoDto {
     this.imagenUrl = imagenUrl;
   }
 
+  public setCosto(costo: number): void {
+    this.costo = costo;
+  }
+
+  public setStock(stock: number): void {
+    this.stock = stock;
+  }
+
   public toJSON(): NuevoArticuloNoElaboradoDtoJson {
     return {
       nombre: this.nombre,
@@ -80,6 +100,8 @@ export class NuevoArticuloNoElaboradoDto {
       precioVenta: this.precioVenta,
       dadoDeAlta: this.dadoDeAlta,
       idCategoria: this.idCategoria,
+      costo: this.costo,
+      stock: this.stock,
       imagenUrl: this.imagenUrl,
     };
   }
@@ -91,6 +113,8 @@ export class NuevoArticuloNoElaboradoDto {
       json.precioVenta,
       json.dadoDeAlta,
       json.idCategoria,
+      json.costo,
+      json.stock,
       json.imagenUrl,
     );
   }

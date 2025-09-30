@@ -189,6 +189,7 @@ export const Products: FC = () => {
     async (productData: InformacionArticuloManufacturadoDto, file?: File) => {
       try {
         if (editingManufacturado) {
+          console.log("Editing manufacturado with ID:", editingManufacturado.getidArticulo())
           const id = editingManufacturado.getidArticulo()
           if (id !== undefined) {
             await updateManufacturado(id, productData, file)
@@ -237,6 +238,7 @@ export const Products: FC = () => {
   const handleUniversalFormSubmit = useCallback(
     async (productData: ProductUnion, file?: File) => {
       if (activeTab === "manufacturados") {
+        console.log("Submitting manufacturado form")
         await handleFormSubmitManufacturado(productData as InformacionArticuloManufacturadoDto, file)
       } else {
         await handleFormSubmitNoElaborado(productData as InformacionArticuloNoElaboradoDto, file)
