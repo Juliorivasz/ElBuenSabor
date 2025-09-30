@@ -1,44 +1,50 @@
-import VisibilityIcon from "@mui/icons-material/Visibility";
-import EditIcon from "@mui/icons-material/Edit";
-import RefreshIcon from "@mui/icons-material/Refresh";
-import { useState } from "react";
-import { Pagination } from "./Pagination";
-import { interceptorsApiClient } from "../../../services/interceptors/axios.interceptors";
-import { NotificationService } from "../../../utils/notifications";
+"use client"
+
+import VisibilityIcon from "@mui/icons-material/Visibility"
+import EditIcon from "@mui/icons-material/Edit"
+import RefreshIcon from "@mui/icons-material/Refresh"
+import DownloadIcon from "@mui/icons-material/Download"
+import { useState } from "react"
+import { Pagination } from "./Pagination"
+import { interceptorsApiClient } from "../../../services/interceptors/axios.interceptors"
+import { NotificationService } from "../../../utils/notifications"
+import { exportarProductosManufacturadosAExcel, exportarProductosNoElaboradosAExcel } from "../../../utils/exportUtils"
+import type { InformacionArticuloManufacturadoDto } from "../../../models/dto/InformacionArticuloManufacturadoDto"
+import type { InformacionArticuloNoElaboradoDto } from "../../../models/dto/InformacionArticuloNoElaboradoDto"
 
 // Interfaz base para productos
 interface BaseProduct {
-  getIdArticulo?: () => number;
-  getidArticulo?: () => number;
-  getNombre: () => string;
-  getDescripcion?: () => string;
-  getPrecioVenta: () => number;
-  isDadoDeAlta: () => boolean;
-  getImagenUrl?: () => string | null;
-  getNombreCategoria?: () => string;
-  getPrecioModificado?: () => boolean;
+  getIdArticulo?: () => number
+  getidArticulo?: () => number
+  getNombre: () => string
+  getDescripcion?: () => string
+  getPrecioVenta: () => number
+  isDadoDeAlta: () => boolean
+  getImagenUrl?: () => string | null
+  getNombreCategoria?: () => string
+  getPrecioModificado?: () => boolean
 }
 
 interface PaginationState {
-  currentPage: number;
-  itemsPerPage: number;
-  totalItems: number;
-  totalPages: number;
+  currentPage: number
+  itemsPerPage: number
+  totalItems: number
+  totalPages: number
 }
 
 interface ProductsTableProps<T extends BaseProduct> {
-  products: T[];
-  loading: boolean;
-  pagination: PaginationState;
-  onPageChange: (page: number) => void;
-  onItemsPerPageChange: (itemsPerPage: number) => void;
-  onEdit: (product: T) => void;
-  onViewDetails: (product: T) => void;
-  onToggleStatus: (product: T) => void;
-  onRefresh?: () => void;
-  title?: string;
-  emptyMessage?: string;
-  emptyDescription?: string;
+  products: T[]
+  loading: boolean
+  pagination: PaginationState
+  onPageChange: (page: number) => void
+  onItemsPerPageChange: (itemsPerPage: number) => void
+  onEdit: (product: T) => void
+  onViewDetails: (product: T) => void
+  onToggleStatus: (product: T) => void
+  onRefresh?: () => void
+  title?: string
+  emptyMessage?: string
+  emptyDescription?: string
 }
 
 export function ProductsTable<T extends BaseProduct>({
@@ -55,38 +61,61 @@ export function ProductsTable<T extends BaseProduct>({
   emptyMessage = "No hay productos registrados",
   emptyDescription = "Agrega tu primer producto para comenzar",
 }: ProductsTableProps<T>) {
-  const [showUpdatePricesModal, setShowUpdatePricesModal] = useState(false);
-  const [isUpdatingPrices, setIsUpdatingPrices] = useState(false);
+  const [showUpdatePricesModal, setShowUpdatePricesModal] = useState(false)
+  const [isUpdatingPrices, setIsUpdatingPrices] = useState(false)
 
   // Función helper para obtener el ID del producto
   const getProductId = (product: T): number => {
-    return product.getIdArticulo?.() ?? product.getidArticulo?.() ?? 0;
-  };
+    return product.getIdArticulo?.() ?? product.getidArticulo?.() ?? 0
+  }
 
   // Validar que products sea un array
-  const validProducts = Array.isArray(products) ? products : [];
+  const validProducts = Array.isArray(products) ? products : []
+
+  const handleExport = () => {
+    try {
+      if (validProducts.length === 0) {
+        NotificationService.warning("No hay productos para exportar")
+        return
+      }
+
+      // Determine if products are manufactured or non-manufactured based on the title
+      const isManufactured = title.toLowerCase().includes("manufacturado")
+
+      if (isManufactured) {
+        exportarProductosManufacturadosAExcel(validProducts as unknown as InformacionArticuloManufacturadoDto[])
+        NotificationService.success("Productos manufacturados exportados exitosamente")
+      } else {
+        exportarProductosNoElaboradosAExcel(validProducts as unknown as InformacionArticuloNoElaboradoDto[])
+        NotificationService.success("Productos no elaborados exportados exitosamente")
+      }
+    } catch (error) {
+      console.error("Error al exportar productos:", error)
+      NotificationService.error("Error al exportar productos")
+    }
+  }
 
   const handleUpdatePrices = async () => {
-    setIsUpdatingPrices(true);
+    setIsUpdatingPrices(true)
     try {
-      await interceptorsApiClient.put("/articulo/actualizarPrecios");
+      await interceptorsApiClient.put("/articulo/actualizarPrecios")
 
       // Mostrar mensaje de éxito
-      NotificationService.success("Los precios fueron actualizados de manera exitosa");
+      NotificationService.success("Los precios fueron actualizados de manera exitosa")
 
       // Refrescar la tabla si se proporciona la función
       if (onRefresh) {
-        onRefresh();
+        onRefresh()
       }
-      setShowUpdatePricesModal(false);
+      setShowUpdatePricesModal(false)
     } catch (error) {
-      console.error("Error al actualizar precios:", error);
+      console.error("Error al actualizar precios:", error)
       // Mostrar mensaje de error
-      NotificationService.error("Error al actualizar los precios. Por favor, inténtelo de nuevo.");
+      NotificationService.error("Error al actualizar los precios. Por favor, inténtelo de nuevo.")
     } finally {
-      setIsUpdatingPrices(false);
+      setIsUpdatingPrices(false)
     }
-  };
+  }
 
   if (loading) {
     return (
@@ -95,25 +124,19 @@ export function ProductsTable<T extends BaseProduct>({
           <div className="h-4 bg-gray-200 rounded w-1/4"></div>
           <div className="space-y-3">
             {[...Array(5)].map((_, i) => (
-              <div
-                key={i}
-                className="h-4 bg-gray-200 rounded"></div>
+              <div key={i} className="h-4 bg-gray-200 rounded"></div>
             ))}
           </div>
         </div>
       </div>
-    );
+    )
   }
 
   if (validProducts.length === 0) {
     return (
       <div className="bg-white shadow rounded-lg p-6">
         <div className="text-center py-8">
-          <svg
-            className="mx-auto h-12 w-12 text-gray-400"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor">
+          <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -125,7 +148,7 @@ export function ProductsTable<T extends BaseProduct>({
           <p className="mt-1 text-sm text-gray-500">{emptyDescription}</p>
         </div>
       </div>
-    );
+    )
   }
 
   return (
@@ -135,8 +158,19 @@ export function ProductsTable<T extends BaseProduct>({
         <div className="px-6 py-4 border-b border-gray-200">
           <div className="flex justify-between items-center">
             <h3 className="text-lg font-medium text-gray-900">{title}</h3>
-            <div className="text-sm text-gray-500">
-              {pagination.totalItems} producto{pagination.totalItems !== 1 ? "s" : ""} total
+            <div className="flex items-center gap-3">
+              <div className="text-sm text-gray-500">
+                {pagination.totalItems} producto{pagination.totalItems !== 1 ? "s" : ""} total
+              </div>
+              <button
+                onClick={handleExport}
+                disabled={validProducts.length === 0}
+                className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                title="Exportar a Excel"
+              >
+                <DownloadIcon className="mr-1.5" fontSize="small" />
+                Exportar
+              </button>
             </div>
           </div>
         </div>
@@ -167,9 +201,7 @@ export function ProductsTable<T extends BaseProduct>({
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {validProducts.map((product) => (
-                <tr
-                  key={getProductId(product)}
-                  className="hover:bg-gray-50">
+                <tr key={getProductId(product)} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       <div className="flex-shrink-0 h-10 w-10">
@@ -216,7 +248,8 @@ export function ProductsTable<T extends BaseProduct>({
                     <span
                       className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                         product.isDadoDeAlta() ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
-                      }`}>
+                      }`}
+                    >
                       {product.isDadoDeAlta() ? "Activo" : "Inactivo"}
                     </span>
                   </td>
@@ -225,13 +258,15 @@ export function ProductsTable<T extends BaseProduct>({
                       <button
                         onClick={() => onViewDetails(product)}
                         className="text-gray-700 hover:cursor-pointer p-1 rounded-full hover:bg-blue-50"
-                        title="Ver detalles">
+                        title="Ver detalles"
+                      >
                         <VisibilityIcon fontSize="small" />
                       </button>
                       <button
                         onClick={() => onEdit(product)}
                         className="text-gray-700 hover:cursor-pointer p-1 rounded-full hover:bg-indigo-50"
-                        title="Editar">
+                        title="Editar"
+                      >
                         <EditIcon fontSize="small" />
                       </button>
                       <button
@@ -239,7 +274,8 @@ export function ProductsTable<T extends BaseProduct>({
                         className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 ${
                           product.isDadoDeAlta() ? "bg-green-500 focus:ring-green-500" : "bg-red-400 focus:ring-red-400"
                         }`}
-                        title={product.isDadoDeAlta() ? "Desactivar" : "Activar"}>
+                        title={product.isDadoDeAlta() ? "Desactivar" : "Activar"}
+                      >
                         <span
                           className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
                             product.isDadoDeAlta() ? "translate-x-6" : "translate-x-1"
@@ -278,27 +314,20 @@ export function ProductsTable<T extends BaseProduct>({
                   className="animate-spin -ml-1 mr-3 h-4 w-4 text-white"
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
-                  viewBox="0 0 24 24">
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"></circle>
+                  viewBox="0 0 24 24"
+                >
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                   <path
                     className="opacity-75"
                     fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
                 </svg>
                 Actualizando...
               </>
             ) : (
               <>
-                <RefreshIcon
-                  className="mr-2"
-                  fontSize="small"
-                />
+                <RefreshIcon className="mr-2" fontSize="small" />
                 Actualizar precios
               </>
             )}
@@ -331,7 +360,8 @@ export function ProductsTable<T extends BaseProduct>({
                     <button
                       onClick={() => setShowUpdatePricesModal(false)}
                       disabled={isUpdatingPrices}
-                      className="px-4 py-2 bg-gray-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-300 disabled:opacity-50">
+                      className="px-4 py-2 bg-gray-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-300 disabled:opacity-50"
+                    >
                       Cancelar
                     </button>
                     <button
@@ -349,5 +379,5 @@ export function ProductsTable<T extends BaseProduct>({
         </div>
       )}
     </>
-  );
+  )
 }

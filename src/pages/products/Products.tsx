@@ -2,8 +2,9 @@
 
 import { Fastfood as ProductIcon } from "@mui/icons-material"
 import { Plus, RefreshCw } from "lucide-react"
-import { useCallback, useEffect, useState, type FC } from "react"
+import { useCallback, useEffect, useState, useMemo, type FC } from "react"
 import { ProductsTable } from "../../components/Admin/products/ProductsTable"
+import { ProductsFilters } from "../../components/Admin/products/ProductsFilters"
 import { RecargarStockModal } from "../../components/Admin/products/RecargarStockModal"
 import { UniversalProductDetailsModal } from "../../components/Admin/products/UniversalProductDetailsModal"
 import { UniversalProductForm } from "../../components/Admin/products/UniversalProductForm"
@@ -56,6 +57,12 @@ export const Products: FC = () => {
   const [viewingManufacturado, setViewingManufacturado] = useState<InformacionArticuloManufacturadoDto | undefined>()
   const [viewingNoElaborado, setViewingNoElaborado] = useState<InformacionArticuloNoElaboradoDto | undefined>()
 
+  const [filtroEstado, setFiltroEstado] = useState<"todos" | "activos" | "inactivos">("todos")
+  const [categoriaSeleccionada, setCategoriaSeleccionada] = useState<number>(0)
+  const [precioMin, setPrecioMin] = useState<number>(0)
+  const [precioMax, setPrecioMax] = useState<number>(Number.MAX_SAFE_INTEGER)
+  const [busqueda, setBusqueda] = useState<string>("")
+
   // Estado para forzar re-render
   const [refreshKey, setRefreshKey] = useState(0)
 
@@ -64,6 +71,88 @@ export const Products: FC = () => {
   const validNoElaborados = Array.isArray(noElaborados) ? noElaborados : []
   const validCategories = Array.isArray(categories) ? categories : []
   const validIngredients = Array.isArray(ingredients) ? ingredients : []
+
+  const filteredManufacturados = useMemo(() => {
+    return validManufacturados.filter((producto) => {
+      // Filtro por estado
+      if (filtroEstado === "activos" && !producto.isDadoDeAlta()) return false
+      if (filtroEstado === "inactivos" && producto.isDadoDeAlta()) return false
+
+      // Filtro por categoría
+      if (categoriaSeleccionada !== 0) {
+        const categoriaProducto = validCategories.find((cat) => cat.getNombre() === producto.getNombreCategoria())
+        if (!categoriaProducto || categoriaProducto.getIdCategoria() !== categoriaSeleccionada) {
+          return false
+        }
+      }
+
+      // Filtro por precio
+      const precio = producto.getPrecioVenta()
+      if (precio < precioMin || precio > precioMax) return false
+
+      // Filtro por búsqueda
+      if (busqueda) {
+        const searchLower = busqueda.toLowerCase()
+        const nombre = producto.getNombre().toLowerCase()
+        const descripcion = (producto.getDescripcion() || "").toLowerCase()
+        if (!nombre.includes(searchLower) && !descripcion.includes(searchLower)) {
+          return false
+        }
+      }
+
+      return true
+    })
+  }, [validManufacturados, filtroEstado, categoriaSeleccionada, precioMin, precioMax, busqueda, validCategories])
+
+  const filteredNoElaborados = useMemo(() => {
+    return validNoElaborados.filter((producto) => {
+      // Filtro por estado
+      if (filtroEstado === "activos" && !producto.isDadoDeAlta()) return false
+      if (filtroEstado === "inactivos" && producto.isDadoDeAlta()) return false
+
+      // Filtro por categoría
+      if (categoriaSeleccionada !== 0) {
+        const categoriaProducto = validCategories.find((cat) => cat.getNombre() === producto.getNombreCategoria())
+        if (!categoriaProducto || categoriaProducto.getIdCategoria() !== categoriaSeleccionada) {
+          return false
+        }
+      }
+
+      // Filtro por precio
+      const precio = producto.getPrecioVenta()
+      if (precio < precioMin || precio > precioMax) return false
+
+      // Filtro por búsqueda
+      if (busqueda) {
+        const searchLower = busqueda.toLowerCase()
+        const nombre = producto.getNombre().toLowerCase()
+        const descripcion = (producto.getDescripcion() || "").toLowerCase()
+        if (!nombre.includes(searchLower) && !descripcion.includes(searchLower)) {
+          return false
+        }
+      }
+
+      return true
+    })
+  }, [validNoElaborados, filtroEstado, categoriaSeleccionada, precioMin, precioMax, busqueda, validCategories])
+
+  const manufacturadosActivos = useMemo(
+    () => validManufacturados.filter((p) => p.isDadoDeAlta()).length,
+    [validManufacturados],
+  )
+  const manufacturadosInactivos = useMemo(
+    () => validManufacturados.filter((p) => !p.isDadoDeAlta()).length,
+    [validManufacturados],
+  )
+
+  const noElaboradosActivos = useMemo(
+    () => validNoElaborados.filter((p) => p.isDadoDeAlta()).length,
+    [validNoElaborados],
+  )
+  const noElaboradosInactivos = useMemo(
+    () => validNoElaborados.filter((p) => !p.isDadoDeAlta()).length,
+    [validNoElaborados],
+  )
 
   // Cargar datos iniciales
   useEffect(() => {
@@ -84,11 +173,26 @@ export const Products: FC = () => {
     } else {
       fetchNoElaboradosPaginated(pagination.currentPage, pagination.itemsPerPage)
     }
-  }, [activeTab, refreshKey]) // Agregar refreshKey como dependencia
+  }, [activeTab, refreshKey])
 
   // Función para forzar actualización
   const forceUpdate = useCallback(() => {
     setRefreshKey((prev) => prev + 1)
+  }, [])
+
+  const handleTabChange = useCallback((tab: ProductType) => {
+    setActiveTab(tab)
+    setEditingManufacturado(undefined)
+    setEditingNoElaborado(undefined)
+    setViewingManufacturado(undefined)
+    setViewingNoElaborado(undefined)
+    setShowForm(false)
+    // Reset filters
+    setFiltroEstado("todos")
+    setCategoriaSeleccionada(0)
+    setPrecioMin(0)
+    setPrecioMax(Number.MAX_SAFE_INTEGER)
+    setBusqueda("")
   }, [])
 
   // Handlers para paginación con useCallback para evitar re-renders innecesarios
@@ -262,22 +366,17 @@ export const Products: FC = () => {
     setError(null)
   }, [setError])
 
-  const handleTabChange = useCallback((tab: ProductType) => {
-    setActiveTab(tab)
-    // Resetear estados de edición y visualización
-    setEditingManufacturado(undefined)
-    setEditingNoElaborado(undefined)
-    setViewingManufacturado(undefined)
-    setViewingNoElaborado(undefined)
-    setShowForm(false)
-  }, [])
-
   // Obtener datos según la pestaña activa
   const currentPagination = getPaginationByType(activeTab)
   const currentLoading = getLoadingByType(activeTab)
 
   // Obtener el producto que se está editando según la pestaña activa
   const currentEditingProduct = activeTab === "manufacturados" ? editingManufacturado : editingNoElaborado
+
+  const currentProducts = activeTab === "manufacturados" ? filteredManufacturados : filteredNoElaborados
+  const currentTotal = activeTab === "manufacturados" ? validManufacturados.length : validNoElaborados.length
+  const currentActivos = activeTab === "manufacturados" ? manufacturadosActivos : noElaboradosActivos
+  const currentInactivos = activeTab === "manufacturados" ? manufacturadosInactivos : noElaboradosInactivos
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
@@ -372,11 +471,30 @@ export const Products: FC = () => {
           </div>
         )}
 
+        <ProductsFilters
+          totalProductos={currentTotal}
+          productosActivos={currentActivos}
+          productosInactivos={currentInactivos}
+          categorias={validCategories}
+          filtroActual={filtroEstado}
+          categoriaSeleccionada={categoriaSeleccionada}
+          precioMin={precioMin}
+          precioMax={precioMax}
+          onFiltroChange={setFiltroEstado}
+          onCategoriaChange={setCategoriaSeleccionada}
+          onPrecioChange={(min, max) => {
+            setPrecioMin(min)
+            setPrecioMax(max)
+          }}
+          busqueda={busqueda}
+          onBusquedaChange={setBusqueda}
+        />
+
         {/* Tabla Universal de Productos */}
         {activeTab === "manufacturados" ? (
           <ProductsTable
-            key={`manufacturados-${refreshKey}`} // Key para forzar re-render
-            products={validManufacturados}
+            key={`manufacturados-${refreshKey}`}
+            products={currentProducts as InformacionArticuloManufacturadoDto[]}
             loading={currentLoading}
             pagination={currentPagination}
             onPageChange={handlePageChange}
@@ -391,8 +509,8 @@ export const Products: FC = () => {
           />
         ) : (
           <ProductsTable
-            key={`noElaborados-${refreshKey}`} // Key para forzar re-render
-            products={validNoElaborados}
+            key={`noElaborados-${refreshKey}`}
+            products={currentProducts as InformacionArticuloNoElaboradoDto[]}
             loading={currentLoading}
             pagination={currentPagination}
             onPageChange={handlePageChange}
