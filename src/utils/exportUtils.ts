@@ -104,7 +104,6 @@ export const exportarProductosManufacturadosAExcel = (productos: InformacionArti
     { wch: 35 }, // Descripción
     { wch: 20 }, // Categoría
     { wch: 12 }, // Precio Venta
-    { wch: 12 }, // Costo Total
     { wch: 18 }, // Tiempo Cocina
     { wch: 10 }, // Estado
     { wch: 15 }, // Precio Modificado
@@ -250,4 +249,29 @@ export const exportarInsumosAExcel = (insumos: InsumoAbmDto[]): string => {
 
   XLSX.writeFile(workbook, nombreArchivo)
   return nombreArchivo
+}
+
+export const exportarDatosGraficoAExcel = (
+  datos: any[],
+  nombreHoja: string,
+  nombreArchivo: string,
+  columnWidths?: Array<{ wch: number }>,
+): string => {
+  const workbook = XLSX.utils.book_new()
+  const worksheet = XLSX.utils.json_to_sheet(datos)
+
+  if (columnWidths) {
+    worksheet["!cols"] = columnWidths
+  }
+
+  XLSX.utils.book_append_sheet(workbook, worksheet, nombreHoja)
+
+  const fechaActual = new Date()
+  const fechaFormateada = fechaActual.toISOString().split("T")[0]
+  const horaFormateada = fechaActual.toTimeString().split(" ")[0].replace(/:/g, "-")
+  const archivo = `${nombreArchivo}_${fechaFormateada}_${horaFormateada}.xlsx`
+
+  XLSX.writeFile(workbook, archivo)
+
+  return archivo
 }
