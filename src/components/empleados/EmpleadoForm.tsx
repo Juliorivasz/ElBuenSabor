@@ -104,20 +104,26 @@ export const EmpleadoForm: React.FC<IEmpleadoFormProps> = ({
     return Object.keys(nuevosErrores).length === 0;
   };
 
+
+  
   const manejarCambio = (campo: keyof IEmpleadoFormData, valor: string) => {
     setFormData((prev) => ({ ...prev, [campo]: valor }));
-
+    
     // Limpiar error del campo cuando el usuario empiece a escribir
     if (errores[campo]) {
       setErrores((prev) => ({ ...prev, [campo]: undefined }));
     }
   };
-
+  
   const manejarSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
+    
     if (!validarFormulario()) {
       return;
+    }
+    
+    if (roles.find((rol) => rol.getNombre() === formData.rol)?.getAuth0RoleId()) {
+      formData.rol = roles.find((rol) => rol.getNombre() === formData.rol)?.getAuth0RoleId() || "";
     }
 
     try {

@@ -155,6 +155,7 @@ class EmpleadoServicio {
 
   // 5. Actualizar empleado (PUT /empleado/{id}) - Solo devuelve status
   async actualizarEmpleado(id: number, actualizarEmpleadoDto: ActualizarEmpleadoDto): Promise<void> {
+    console.log("Actualizar empleado DTO:", actualizarEmpleadoDto)
     try {
       await interceptorsApiClient.put(`${this.baseUrl}/${id}`, actualizarEmpleadoDto.toJson())
     } catch (error) {
