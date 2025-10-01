@@ -1,17 +1,15 @@
 import { CategoriaDTO } from "../models/dto/CategoriaDTO";
-import { ImagenDTO } from "../models/dto/ImagenDTO";
-import { ImagenApi } from "./types/abm/InformacionArticulosManufacturadoDto";
 
 type CategoriaAbmApi = {
   idCategoria: number;
   nombre: string;
   idCategoriaPadre: number;
-  imagenDto: ImagenApi;
+  margenGanancia: number;
+  fechaBaja?: Date;
 };
 
 export const parseCategoriaAbm = (data: CategoriaAbmApi) => {
-  const imagenDto = new ImagenDTO(data.imagenDto?.url);
-  return new CategoriaDTO(data.idCategoria, data.nombre, data.idCategoriaPadre, imagenDto);
+  return new CategoriaDTO(data.idCategoria, data.nombre, data.idCategoriaPadre, data.margenGanancia, data.fechaBaja);
 };
 
 export const fetchCategoriasAbm = async (): Promise<CategoriaDTO[]> => {

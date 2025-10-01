@@ -64,6 +64,8 @@ export const UniversalProductForm: FC<UniversalProductFormProps> = ({
     costo: 0,
   });
 
+  console.log(categories)
+
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [activeTab, setActiveTab] = useState<"general" | "detalles">("general");
   const [availableSubcategories, setAvailableSubcategories] = useState<CategoriaDTO[]>([]);
@@ -75,26 +77,32 @@ export const UniversalProductForm: FC<UniversalProductFormProps> = ({
 
   // Obtener categorías principales y subcategorías
   const mainCategories = categories.filter((cat) => cat.getIdCategoriaPadre() === 0 || !cat.getIdCategoriaPadre());
+  const categoryCurrent = categories.find((cat) => cat.getIdCategoria() === formData.idCategoria);
+
+
 
   // Calcular precio sugerido basado en ingredientes (solo para manufacturados)
   useEffect(() => {
-    setMargenGanancia(2);
+    const margen = categoryCurrent?.getMargenGanancia() ?? 1;
+    setMargenGanancia(margen);
+    let newSuggestedPrice = 0;
+
     if (type === "manufacturado" && formData.detalles && formData.detalles.length > 0) {
-      // Por ahora, usar un precio base fijo o lógica alternativa
-      // ya que no tenemos acceso a precios de ingredientes
-
       const basePrice = calcularPrecioSugerido();
-      setSuggestedPrice(basePrice);
-      console.log("precio base: ", basePrice, margenGanancia)
+      newSuggestedPrice = basePrice;
+      // setSuggestedPrice(basePrice);
 
-      // // Si no es precio modificado (es sugerido), actualizar el precio automáticamente
-      // if (!formData.precioModificado) {
-      //   setFormData((prev) => ({ ...prev, precioVenta: basePrice }) );
-      // }
-    } else {
-      setSuggestedPrice(formData.costo ? formData.costo * 2 : 0);
+    } else if (type === "noElaborado") {
+      newSuggestedPrice = (formData.costo ?? 0) * (margen + 1);
+      // setSuggestedPrice(formData.costo ? formData.costo * (categoryCurrent?.getMargenGanancia() ?? 1) : 0);
     }
-  }, [formData.detalles, formData.precioModificado, type]);
+    setSuggestedPrice(newSuggestedPrice);
+    // Si el precio NO está modificado (es decir, es sugerido), actualiza el precioVenta
+    // con el nuevo precio sugerido calculado.
+    if (!formData.precioModificado) {
+        setFormData((prev) => ({ ...prev, precioVenta: newSuggestedPrice }));
+    }
+  }, [formData.detalles, formData.costo, formData.precioModificado, type, categoryCurrent, ingredients]);
 
   // Obtener subcategorías de la categoría seleccionada
   useEffect(() => {
@@ -312,8 +320,8 @@ export const UniversalProductForm: FC<UniversalProductFormProps> = ({
   const calcularPrecioSugerido = (): number => {
     if (!formData.detalles || !formData.idCategoria) return 0;
 
-    // const margen = formData.categoria.margenGanancia || 1;
-    const margen = margenGanancia;
+    const margen = categories.find((cat) => cat.getIdCategoria() === formData.idCategoria)?.getMargenGanancia() || 1;
+    // const margen = margenGanancia;
 
     const costoTotal = formData.detalles.reduce((acc, detalle) => {
       const insumo = ingredients.find((i) => i.getIdArticuloInsumo() === detalle.idArticuloInsumo);
@@ -323,7 +331,7 @@ export const UniversalProductForm: FC<UniversalProductFormProps> = ({
     console.log("costo total: ", costoTotal,margen)
     setCostoTotal(costoTotal);
 
-    return costoTotal * margen;
+    return costoTotal * (margen + 1);
   };
 
   const handleInputChange = (field: keyof FormData, value: string | number | boolean) => {
@@ -563,11 +571,11 @@ export const UniversalProductForm: FC<UniversalProductFormProps> = ({
                         Precio sugerido: ${suggestedPrice.toFixed(2)}
                         {isManufacturado ? (
                           <span className="block text-xs mt-1">
-                            Basado en costo de ingredientes + {(margenGanancia - 1) * 100}% de margen
+                            Basado en costo de ingredientes + {(margenGanancia) * 100}% de margen
                           </span>
                         ) : (
                           <span className="block text-xs mt-1">
-                                Basado en el costo del producto + 100% de margen<br />({" "}
+                                Basado en el costo del producto + {(margenGanancia) * 100}% de margen<br />({" "}
                             <strong>se recomienda colocar un precio manual</strong> )
                           </span>
                         )}
@@ -888,7 +896,7 @@ export const UniversalProductForm: FC<UniversalProductFormProps> = ({
                   <h5 className="font-medium text-gray-900 mb-2">Resumen de Costos</h5>
                   <div className="text-sm text-gray-600 space-y-1">
                     <p>Costo total de ingredientes: ${costoTotal.toFixed(2)}</p>
-                    <p>Margen de ganancia: {(margenGanancia - 1) * 100}%</p>
+                    <p>Margen de ganancia: {(margenGanancia) * 100}%</p>
                     <p className="font-medium text-gray-900">Precio sugerido: ${suggestedPrice.toFixed(2)}</p>
                   </div>
                 </div>
