@@ -22,7 +22,7 @@ export const Kitchen = () => {
     setLoading(true);
     try {
       const response = await cocineroServicio.obtenerPedidosCocinero();
-      setPedidos(response.pedidos);
+      setPedidos(response);
     } catch (error) {
       console.error("Error al cargar pedidos:", error);
       Swal.fire({

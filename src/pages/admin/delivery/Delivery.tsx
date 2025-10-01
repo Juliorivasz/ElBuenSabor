@@ -20,7 +20,7 @@ export const Delivery: React.FC = () => {
   const cargarPedidos = useCallback(async () => {
     try {
       const response = await repartidorServicio.obtenerPedidosRepartidor();
-      setPedidos(response.pedidos);
+      setPedidos(response);
     } catch (error) {
       console.error("Error al cargar pedidos:", error);
       Swal.fire({
