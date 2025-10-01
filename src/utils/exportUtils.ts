@@ -251,6 +251,40 @@ export const exportarInsumosAExcel = (insumos: InsumoAbmDto[]): string => {
   return nombreArchivo
 }
 
+export const exportarClientesAExcel = (clientes: any[]): string => {
+  const datosParaExportar = clientes.map((cliente, index) => ({
+    "N°": index + 1,
+    "ID Usuario": cliente.idUsuario,
+    "Nombre y Apellido": cliente.nombreYApellido,
+    Email: cliente.email,
+    Teléfono: cliente.telefono,
+    "Cantidad de Pedidos": cliente.cantidadPedidos,
+  }))
+
+  const workbook = XLSX.utils.book_new()
+  const worksheet = XLSX.utils.json_to_sheet(datosParaExportar)
+
+  const columnWidths = [
+    { wch: 5 }, // N°
+    { wch: 12 }, // ID Usuario
+    { wch: 30 }, // Nombre y Apellido
+    { wch: 30 }, // Email
+    { wch: 15 }, // Teléfono
+    { wch: 20 }, // Cantidad de Pedidos
+  ]
+
+  worksheet["!cols"] = columnWidths
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Clientes")
+
+  const fechaActual = new Date()
+  const fechaFormateada = fechaActual.toISOString().split("T")[0]
+  const horaFormateada = fechaActual.toTimeString().split(" ")[0].replace(/:/g, "-")
+  const nombreArchivo = `clientes_${fechaFormateada}_${horaFormateada}.xlsx`
+
+  XLSX.writeFile(workbook, nombreArchivo)
+  return nombreArchivo
+}
+
 export const exportarDatosGraficoAExcel = (
   datos: any[],
   nombreHoja: string,

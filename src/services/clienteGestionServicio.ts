@@ -16,4 +16,14 @@ export class ClienteGestionServicio {
       throw error
     }
   }
+
+  static async obtenerTodosLosClientes(): Promise<ClienteGestion[]> {
+    try {
+      const response = await axios.get<ClienteGestion[]>(`${API_URL}/todos`)
+      return response.data
+    } catch (error) {
+      console.error("Error fetching all clients:", error)
+      throw error
+    }
+  }
 }
