@@ -105,8 +105,10 @@ export const Kitchen = () => {
     }
   }, [isConnected, subscribe, cargarPedidos]);
 
-  const pedidosEnPreparacion = pedidos.filter((pedido) => pedido.estadoPedido === EstadoPedido.EN_PREPARACION);
-  const pedidosListos = pedidos.filter((pedido) => pedido.estadoPedido === EstadoPedido.LISTO);
+  console.log(pedidos)
+
+  const pedidosEnPreparacion = pedidos?.filter((pedido) => pedido.estadoPedido === EstadoPedido.EN_PREPARACION);
+  const pedidosListos = pedidos?.filter((pedido) => pedido.estadoPedido === EstadoPedido.LISTO);
 
   if (loading) {
     return (
@@ -156,13 +158,13 @@ export const Kitchen = () => {
               />
               Pedidos en Preparación
             </h2>
-            {pedidosEnPreparacion.length === 0 ? (
+            {pedidosEnPreparacion?.length === 0 ? (
               <div className="text-center py-8">
                 <p className="text-yellow-700">No hay pedidos en preparación en este momento</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {pedidosEnPreparacion.map((pedido) => (
+                {pedidosEnPreparacion?.map((pedido) => (
                   <KitchenOrderCard
                     key={pedido.idPedido}
                     pedido={pedido}
@@ -184,13 +186,13 @@ export const Kitchen = () => {
               />
               Pedidos Listos
             </h2>
-            {pedidosListos.length === 0 ? (
+            {pedidosListos?.length === 0 ? (
               <div className="text-center py-8">
                 <p className="text-green-700">No hay pedidos listos en este momento</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {pedidosListos.map((pedido) => (
+                {pedidosListos?.map((pedido) => (
                   <KitchenOrderCard
                     key={pedido.idPedido}
                     pedido={pedido}
