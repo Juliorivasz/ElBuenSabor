@@ -74,7 +74,8 @@ export const exportarDatosAExcel = (datos: any[], nombreHoja: string, nombreArch
 
   const fechaActual = new Date()
   const fechaFormateada = fechaActual.toISOString().split("T")[0]
-  const archivo = nombreArchivo || `${nombreHoja.toLowerCase()}_${fechaFormateada}.xlsx`
+  const horaFormateada = fechaActual.toTimeString().split(" ")[0].replace(/:/g, "-")
+  const archivo = nombreArchivo || `${nombreHoja.toLowerCase()}_${fechaFormateada}_${horaFormateada}.xlsx`
 
   XLSX.writeFile(workbook, archivo)
 
@@ -251,6 +252,106 @@ export const exportarInsumosAExcel = (insumos: InsumoAbmDto[]): string => {
   return nombreArchivo
 }
 
+export const exportarPedidosCompletadosAExcel = (pedidos: any[]): string => {
+  const datosParaExportar = pedidos.map((pedido, index) => {
+    const total = pedido.detalles.reduce((sum: number, detalle: any) => sum + detalle.subtotal, 0)
+    const cantidadProductos = pedido.detalles.reduce((sum: number, detalle: any) => sum + detalle.cantidad, 0)
+
+    return {
+      "N°": index + 1,
+      "ID Pedido": pedido.idPedido,
+      "Fecha y Hora": new Date(pedido.fechaYHora).toLocaleString("es-ES"),
+      "Hora Entrega": pedido.horaEntrega ? new Date(pedido.horaEntrega).toLocaleString("es-ES") : "N/A",
+      Estado: pedido.estadoPedido,
+      "Tipo Envío": pedido.tipoEnvio === "RETIRO_EN_LOCAL" ? "Retiro en Local" : pedido.tipoEnvio,
+      "Método de Pago": pedido.metodoDePago,
+      Cliente: pedido.emailCliente,
+      "Cantidad Productos": cantidadProductos,
+      Total: `$${total.toFixed(2)}`,
+    }
+  })
+
+  const workbook = XLSX.utils.book_new()
+  const worksheet = XLSX.utils.json_to_sheet(datosParaExportar)
+
+  // Define colors for each status
+  const colorMap: { [key: string]: { fgColor: { rgb: string } } } = {
+    CANCELADO: { fgColor: { rgb: "FFCCCC" } }, // Red background
+    ENTREGADO: { fgColor: { rgb: "CCFFCC" } }, // Green background
+    RECHAZADO: { fgColor: { rgb: "FFE5CC" } }, // Orange background
+  }
+
+  // Apply colors to each row based on status
+  pedidos.forEach((pedido, index) => {
+    const rowNumber = index + 2 // +2 because row 1 is header, data starts at row 2
+    const estado = pedido.estadoPedido
+    const color = colorMap[estado]
+
+    if (color) {
+      // Apply color to all cells in the row
+      const columns = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"]
+      columns.forEach((col) => {
+        const cellAddress = `${col}${rowNumber}`
+        if (!worksheet[cellAddress]) return
+
+        worksheet[cellAddress].s = {
+          fill: color,
+          alignment: { vertical: "center", horizontal: "left" },
+        }
+      })
+    }
+  })
+
+  const columnWidths = [
+    { wch: 5 }, // N°
+    { wch: 10 }, // ID Pedido
+    { wch: 20 }, // Fecha y Hora
+    { wch: 20 }, // Hora Entrega
+    { wch: 15 }, // Estado
+    { wch: 18 }, // Tipo Envío
+    { wch: 18 }, // Método de Pago
+    { wch: 30 }, // Cliente
+    { wch: 18 }, // Cantidad Productos
+    { wch: 12 }, // Total
+  ]
+
+  worksheet["!cols"] = columnWidths
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Pedidos Completados")
+
+  const fechaActual = new Date()
+  const fechaFormateada = fechaActual.toISOString().split("T")[0]
+  const horaFormateada = fechaActual.toTimeString().split(" ")[0].replace(/:/g, "-")
+  const nombreArchivo = `pedidos_completados_${fechaFormateada}_${horaFormateada}.xlsx`
+
+  XLSX.writeFile(workbook, nombreArchivo, { cellStyles: true })
+  return nombreArchivo
+}
+
+export const exportarDatosGraficoAExcel = (
+  datos: any[],
+  nombreHoja: string,
+  nombreArchivo: string,
+  columnWidths?: Array<{ wch: number }>,
+): string => {
+  const workbook = XLSX.utils.book_new()
+  const worksheet = XLSX.utils.json_to_sheet(datos)
+
+  if (columnWidths) {
+    worksheet["!cols"] = columnWidths
+  }
+
+  XLSX.utils.book_append_sheet(workbook, worksheet, nombreHoja)
+
+  const fechaActual = new Date()
+  const fechaFormateada = fechaActual.toISOString().split("T")[0]
+  const horaFormateada = fechaActual.toTimeString().split(" ")[0].replace(/:/g, "-")
+  const archivo = `${nombreArchivo}_${fechaFormateada}_${horaFormateada}.xlsx`
+
+  XLSX.writeFile(workbook, archivo)
+
+  return archivo
+}
+
 export const exportarClientesAExcel = (clientes: any[]): string => {
   const datosParaExportar = clientes.map((cliente, index) => ({
     "N°": index + 1,
@@ -283,29 +384,4 @@ export const exportarClientesAExcel = (clientes: any[]): string => {
 
   XLSX.writeFile(workbook, nombreArchivo)
   return nombreArchivo
-}
-
-export const exportarDatosGraficoAExcel = (
-  datos: any[],
-  nombreHoja: string,
-  nombreArchivo: string,
-  columnWidths?: Array<{ wch: number }>,
-): string => {
-  const workbook = XLSX.utils.book_new()
-  const worksheet = XLSX.utils.json_to_sheet(datos)
-
-  if (columnWidths) {
-    worksheet["!cols"] = columnWidths
-  }
-
-  XLSX.utils.book_append_sheet(workbook, worksheet, nombreHoja)
-
-  const fechaActual = new Date()
-  const fechaFormateada = fechaActual.toISOString().split("T")[0]
-  const horaFormateada = fechaActual.toTimeString().split(" ")[0].replace(/:/g, "-")
-  const archivo = `${nombreArchivo}_${fechaFormateada}_${horaFormateada}.xlsx`
-
-  XLSX.writeFile(workbook, archivo)
-
-  return archivo
 }
