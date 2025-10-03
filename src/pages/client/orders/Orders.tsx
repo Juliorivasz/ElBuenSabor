@@ -89,7 +89,7 @@ export const Orders: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<StatusFilterType>("todos");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [totalElements, setTotalElements] = useState(0);
+  const [,setTotalElements] = useState(0);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [cancellingOrderId, setCancellingOrderId] = useState<number | null>(null);
@@ -425,44 +425,6 @@ export const Orders: React.FC = () => {
     );
   }
 
-  // Si no hay órdenes
-  if (!loading && orders.length === 0 && totalElements === 0) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 pt-20 pb-16">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-center">
-            <div className="bg-white rounded-2xl shadow-lg p-8 sm:p-12 max-w-md mx-auto">
-              <div className="w-20 h-20 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <ShoppingCartOutlined
-                  className="text-orange-600"
-                  sx={{ fontSize: 40 }}
-                />
-              </div>
-              <h2 className="text-2xl font-bold text-gray-800 mb-4">
-                {activeTab === "en_curso" ? "No tienes órdenes en curso" : "No tienes órdenes pasadas"}
-              </h2>
-              <p className="text-gray-600 mb-8">
-                {activeTab === "en_curso"
-                  ? "¡Explora nuestro delicioso catálogo y haz tu primer pedido!"
-                  : "Cuando realices pedidos, aparecerán aquí tu historial."}
-              </p>
-              {activeTab === "en_curso" && (
-                <button
-                  onClick={() => navigateTo("/catalog")}
-                  className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200">
-                  Ir al Catálogo
-                </button>
-              )}
-            </div>
-          </motion.div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 pt-20 pb-16 text-black">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
@@ -479,7 +441,16 @@ export const Orders: React.FC = () => {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="flex justify-end mb-4">
+          className="flex justify-between mb-4">
+          <button
+            className="flex items-center space-x-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold cursor-pointer px-3 sm:px-4 py-2 rounded-lg shadow-md transition-colors duration-200 text-sm"
+            onClick={() => navigateTo("/catalog")}>
+            <ShoppingCartOutlined
+              className="text-white"
+              sx={{ fontSize: 20 }}
+            />
+            <span className="hidden sm:inline">Ir al Catalogo</span>
+          </button>
           <button className="flex items-center space-x-2 bg-white hover:bg-gray-50 text-gray-700 px-3 sm:px-4 py-2 rounded-lg shadow-md transition-colors duration-200 text-sm">
             <SupportAgentOutlined sx={{ fontSize: { xs: 18, sm: 20 } }} />
             <span className="hidden sm:inline">Soporte</span>

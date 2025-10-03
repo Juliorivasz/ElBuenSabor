@@ -66,7 +66,6 @@ export const useNavigation = () => {
         );
 
         if (isAdminOrEmployee) {
-          console.log("[useNavigation] Usuario es admin/empleado, marcando perfil como completo");
           setIsProfileComplete(true);
           hasFetchedProfileRef.current = true;
           return;
@@ -81,7 +80,6 @@ export const useNavigation = () => {
           (zustandUser?.roles && zustandUser.roles.length === 0);
 
         if (isProfileComplete && !needsBackendData) {
-          console.log("[useNavigation] Perfil ya completo y con datos en Zustand. No se busca en backend.");
           hasFetchedProfileRef.current = true;
           return;
         }
@@ -89,8 +87,6 @@ export const useNavigation = () => {
         setIsProfileDataLoading(true);
         try {
           const backendProfile: ClienteProfileResponse = await fetchUserProfile();
-
-          console.log("[useNavigation] Perfil de cliente encontrado en backend:", backendProfile);
 
           setProfileData({
             apellido: backendProfile.apellido,

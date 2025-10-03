@@ -5,7 +5,7 @@ import type React from "react"
 import { useState, useEffect } from "react"
 import { ChevronLeft, ChevronRight, ShoppingCart } from "@mui/icons-material"
 import { motion, AnimatePresence } from "framer-motion"
-import axios from "axios"
+import { interceptorsApiClient } from "../../services/interceptors/axios.interceptors"
 
 interface Advertisement {
   id: string
@@ -38,7 +38,7 @@ export const AdvertisementCarousel: React.FC = () => {
   useEffect(() => {
     const fetchPromociones = async () => {
       try {
-        const response = await axios.get<PromocionCatalogo[]>("https://localhost:8080/promocion/catalogo")
+        const response = await interceptorsApiClient.get<PromocionCatalogo[]>("/promocion/catalogo")
 
         const promocionesFormateadas: Advertisement[] = response.data.map((promo) => ({
           id: promo.idPromocion.toString(),
@@ -54,8 +54,9 @@ export const AdvertisementCarousel: React.FC = () => {
         setAdvertisements(promocionesFormateadas)
         setLoading(false)
       } catch (error) {
-        console.error("Error al cargar promociones:", error)
-        setLoading(false)
+        console.error("Error al cargar promociones:", error);
+        setAdvertisements([]);
+        setLoading(false);
       }
     }
 
@@ -107,7 +108,7 @@ export const AdvertisementCarousel: React.FC = () => {
 
     try {
       // Fetch article information
-      const response = await axios.get(`https://localhost:8080/articulo/informacion/${advertisement.idArticulo}`)
+      const response = await interceptorsApiClient.get(`/articulo/informacion/${advertisement.idArticulo}`)
       const articleData = response.data
 
       // Create ArticuloDTO with promotional discount
