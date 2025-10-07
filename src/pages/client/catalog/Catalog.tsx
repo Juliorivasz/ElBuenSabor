@@ -9,12 +9,14 @@ import { useAuth0 } from "@auth0/auth0-react";
 import type { ArticuloDTO } from "../../../models/dto/ArticuloDTO";
 import { OrdersInProgressCarousel } from "../../../components/orderInProgress/OrdersInProgressCarousel";
 import { useOrderInProgress } from "../../../hooks/useOrderInProgress";
+import { useAuth0Store } from "../../../store/auth/useAuth0Store";
 
 export const Catalog = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [products, setProducts] = useState<ArticuloDTO[]>([]);
   const { addItem } = useCartStore();
   const { isAuthenticated, loginWithRedirect, user } = useAuth0();
+  const { isTokenReady } = useAuth0Store();
 
   // Asegurarse de que clienteId se derive de forma estable
   const clienteId = user?.sub ? parseInt(user.sub.split("|")[1] || "0") : null;
@@ -22,6 +24,7 @@ export const Catalog = () => {
   const { ordersInProgress, loading, error, hasActiveOrders, fetchOrdersInProgress } = useOrderInProgress({
     clienteId: clienteId,
     autoCheck: true,
+    isTokenReady: isTokenReady,
   });
 
   const handleOpenChat = (repartidorTelefono?: string) => {
