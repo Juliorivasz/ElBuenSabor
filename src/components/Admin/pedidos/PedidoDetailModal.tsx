@@ -327,16 +327,16 @@ export const PedidoDetailModal: React.FC<PedidoDetailModalProps> = ({
               Productos Pedidos
             </h3>
             <div className="space-y-3">
-              {pedido.detalles.map((detalle, index) => (
+              {pedido.detalles.map((detalle) => (
                 <div
-                  key={index}
+                  key={detalle.idDetallePedido}
                   className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                   <div className="flex items-center space-x-3 flex-1">
                     <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
                       <span className="text-orange-600 font-semibold">{detalle.cantidad}x</span>
                     </div>
                     <div className="flex-1">
-                      <h4 className="font-medium text-gray-800">{detalle.nombreArticulo}</h4>
+                      <h4 className="font-medium text-gray-800">{detalle.idArticulo ? detalle.nombreArticulo : detalle.tituloPromocion}</h4>
                       <p className="text-sm text-gray-600">${(detalle.subtotal / detalle.cantidad).toFixed(2)} c/u</p>
                     </div>
                   </div>

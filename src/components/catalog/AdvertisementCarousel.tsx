@@ -1,36 +1,37 @@
-"use client";
+"use client"
 
-import type React from "react";
+import type React from "react"
 
-import { useState, useEffect } from "react";
-import { ChevronLeft, ChevronRight, ShoppingCart } from "@mui/icons-material";
-import { motion, AnimatePresence } from "framer-motion";
-import { interceptorsApiClient } from "../../services/interceptors/axios.interceptors";
-import { PromocionCatalogoDto } from "../../models/dto/Promociones/PromocionCatalogoDto";
-import { promocionServicio } from "../../services/promocionServicio";
+import { useState, useEffect } from "react"
+import { ChevronLeft, ChevronRight, ShoppingCart } from "@mui/icons-material"
+import { motion, AnimatePresence } from "framer-motion"
+import { interceptorsApiClient } from "../../services/interceptors/axios.interceptors"
+import type { PromocionCatalogoDto } from "../../models/dto/Promociones/PromocionCatalogoDto"
+import { promocionServicio } from "../../services/promocionServicio"
+import { IDetallePromocionJson } from "../../models/interface/PromocionJson"
 
 interface Advertisement {
-  id: string;
-  titulo: string;
-  descripcion: string;
-  url: string;
-  horarioInicio: string;
-  horarioFin: string;
-  precioBase: number;
-  precioPromocional: number;
-  descuento: number;
+  id: string
+  titulo: string
+  descripcion: string
+  url: string
+  horarioInicio: string
+  horarioFin: string
+  precioBase: number
+  precioPromocional: number
+  descuento: number
 }
 
 export const AdvertisementCarousel: React.FC = () => {
-  const [advertisements, setAdvertisements] = useState<Advertisement[]>([]);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [isAutoPlaying, setIsAutoPlaying] = useState(true);
-  const [loading, setLoading] = useState(true);
+  const [advertisements, setAdvertisements] = useState<Advertisement[]>([])
+  const [currentIndex, setCurrentIndex] = useState(0)
+  const [isAutoPlaying, setIsAutoPlaying] = useState(true)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const fetchPromociones = async () => {
       try {
-        const response: PromocionCatalogoDto[] = await promocionServicio.obtenerPromocionesCatalogo();
+        const response: PromocionCatalogoDto[] = await promocionServicio.obtenerPromocionesCatalogo()
 
         const promocionesFormateadas: Advertisement[] = response.map((promo) => ({
           id: promo.getIdPromocion().toString(),
@@ -42,97 +43,109 @@ export const AdvertisementCarousel: React.FC = () => {
           precioBase: promo.getPrecioBase(),
           precioPromocional: promo.getPrecioPromocion(),
           descuento: promo.getDescuento(),
-        }));
+        }))
 
-        setAdvertisements(promocionesFormateadas);
-        setLoading(false);
+        setAdvertisements(promocionesFormateadas)
+        setLoading(false)
       } catch (error) {
-        console.error("Error al cargar promociones:", error);
-        setAdvertisements([]);
-        setLoading(false);
+        console.error("Error al cargar promociones:", error)
+        setAdvertisements([])
+        setLoading(false)
       }
-    };
+    }
 
-    fetchPromociones();
-  }, []);
+    fetchPromociones()
+  }, [])
 
   useEffect(() => {
-    if (!isAutoPlaying || advertisements.length === 0) return;
+    if (!isAutoPlaying || advertisements.length === 0) return
 
     const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % advertisements.length);
-    }, 5000);
+      setCurrentIndex((prev) => (prev + 1) % advertisements.length)
+    }, 5000)
 
-    return () => clearInterval(interval);
-  }, [isAutoPlaying, advertisements.length]);
+    return () => clearInterval(interval)
+  }, [isAutoPlaying, advertisements.length])
 
   const goToSlide = (index: number) => {
-    setCurrentIndex(index);
-  };
+    setCurrentIndex(index)
+  }
 
   const goToPrevious = () => {
-    setCurrentIndex((prev) => (prev - 1 + advertisements.length) % advertisements.length);
-  };
+    setCurrentIndex((prev) => (prev - 1 + advertisements.length) % advertisements.length)
+  }
 
   const goToNext = () => {
-    setCurrentIndex((prev) => (prev + 1) % advertisements.length);
-  };
+    setCurrentIndex((prev) => (prev + 1) % advertisements.length)
+  }
 
   const isWithinPromotionHours = (horarioInicio: string, horarioFin: string): boolean => {
-    const now = new Date();
-    const currentTime = now.getHours() * 60 + now.getMinutes();
+    const now = new Date()
+    const currentTime = now.getHours() * 60 + now.getMinutes()
 
-    const [inicioHour, inicioMin] = horarioInicio.split(":").map(Number);
-    const [finHour, finMin] = horarioFin.split(":").map(Number);
+    const [inicioHour, inicioMin] = horarioInicio.split(":").map(Number)
+    const [finHour, finMin] = horarioFin.split(":").map(Number)
 
-    const inicioMinutes = inicioHour * 60 + inicioMin;
-    const finMinutes = finHour * 60 + finMin;
+    const inicioMinutes = inicioHour * 60 + inicioMin
+    const finMinutes = finHour * 60 + finMin
 
     if (inicioMinutes <= finMinutes) {
-      return currentTime >= inicioMinutes && currentTime <= finMinutes;
+      return currentTime >= inicioMinutes && currentTime <= finMinutes
     } else {
-      return currentTime >= inicioMinutes || currentTime <= finMinutes;
+      return currentTime >= inicioMinutes || currentTime <= finMinutes
     }
-  };
+  }
 
   const handleAddToCart = async (advertisement: Advertisement) => {
-    const isValidTime = isWithinPromotionHours(advertisement.horarioInicio, advertisement.horarioFin);
+    const isValidTime = isWithinPromotionHours(advertisement.horarioInicio, advertisement.horarioFin)
 
     if (!isValidTime) {
-      console.log("Promoción fuera del horario válido");
-      return;
+      console.log("Promoción fuera del horario válido")
+      return
     }
 
     try {
-      // Fetch article information
-      const response = await interceptorsApiClient.get(`/articulo/informacion/${advertisement.id}`);
-      const articleData = response.data;
+      const promocionResponse = await interceptorsApiClient.get(`/promocion/detalle/${advertisement.id}`)
+      const promocionData = promocionResponse.data
 
-      // Create ArticuloDTO with promotional discount
-      const articuloDTO = new (await import("../../models/dto/ArticuloDTO")).ArticuloDTO(
-        articleData.idArticulo,
-        articleData.nombre,
-        articleData.descripcion,
-        articleData.precioVenta,
-        articleData.tiempoDeCocina,
-        articleData.idCategoria,
-        articleData.url,
-        articleData.puedeElaborarse,
-      );
+      // Import necessary classes
+      const { PromocionCatalogoDto } = await import("../../models/dto/Promociones/PromocionCatalogoDto")
+      const { DetallePromocionDTO } = await import("../../models/dto/Promociones/DetallePromocionDto")
+      const { useCartStore } = await import("../../store/cart/useCartStore")
 
-      // Add to cart with promotional discount
-      const { useCartStore } = await import("../../store/cart/useCartStore");
-      useCartStore.getState().addItem(articuloDTO, articleData.url, advertisement.descuento);
+      // Create PromocionCatalogoDto instance
+      const detalles = promocionData.detalles.map(
+        (detalle: IDetallePromocionJson) =>
+          new DetallePromocionDTO(detalle.idArticulo, detalle.cantidad, detalle.nombreArticulo, detalle.precio),
+      )
 
-      console.log(
-        `Artículo ${advertisement.id} añadido al carrito con descuento del ${Math.round(
-          advertisement.descuento * 100,
-        )}%`,
-      );
+      const calcularDescuento = (): number => {
+        if (promocionData.precioBase === 0) return 0;
+        const descuentoReal = ((promocionData.precioBase - promocionData.precioPromocion) / promocionData.precioBase) * 100;
+        return Math.round(descuentoReal / 5) * 5;
+      };
+
+      const promocionDTO = new PromocionCatalogoDto(
+        promocionData.idPromocion,
+        promocionData.titulo,
+        promocionData.descripcion,
+        promocionData.url || advertisement.url,
+        promocionData.horarioInicio,
+        promocionData.horarioFin,
+        detalles,
+        promocionData.precioPromocion,
+        promocionData.precioBase,
+        calcularDescuento(),
+      )
+
+      // Add promotion to cart as a single item
+      useCartStore.getState().addPromotion(promocionDTO)
+
+      console.log(`Promoción "${advertisement.titulo}" añadida al carrito`)
     } catch (error) {
-      console.error("Error al añadir al carrito:", error);
+      console.error("Error al añadir promoción al carrito:", error)
     }
-  };
+  }
 
   if (loading) {
     return (
@@ -141,7 +154,7 @@ export const AdvertisementCarousel: React.FC = () => {
           <span className="text-gray-500">Cargando promociones...</span>
         </div>
       </div>
-    );
+    )
   }
 
   if (advertisements.length === 0) {
@@ -151,7 +164,7 @@ export const AdvertisementCarousel: React.FC = () => {
           <span className="text-gray-500">No hay promociones disponibles</span>
         </div>
       </div>
-    );
+    )
   }
 
   return (
@@ -161,7 +174,8 @@ export const AdvertisementCarousel: React.FC = () => {
         animate={{ opacity: 1, y: 0 }}
         className="relative h-80 sm:h-64 lg:h-80 rounded-2xl overflow-hidden shadow-xl bg-white"
         onMouseEnter={() => setIsAutoPlaying(false)}
-        onMouseLeave={() => setIsAutoPlaying(true)}>
+        onMouseLeave={() => setIsAutoPlaying(true)}
+      >
         <AnimatePresence mode="wait">
           <motion.div
             key={currentIndex}
@@ -169,7 +183,8 @@ export const AdvertisementCarousel: React.FC = () => {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -300 }}
             transition={{ duration: 0.5, ease: "easeInOut" }}
-            className="absolute inset-0 flex">
+            className="absolute inset-0 flex"
+          >
             {/* Imagen a la izquierda */}
             <div className="w-2/5 h-full">
               {advertisements[currentIndex].url ? (
@@ -200,7 +215,8 @@ export const AdvertisementCarousel: React.FC = () => {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.3 }}
-                  className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 text-gray-900 leading-tight">
+                  className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 text-gray-900 leading-tight"
+                >
                   {advertisements[currentIndex].titulo}
                 </motion.h2>
 
@@ -209,7 +225,8 @@ export const AdvertisementCarousel: React.FC = () => {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.4 }}
-                  className="text-base sm:text-lg text-gray-600 mb-4 leading-relaxed">
+                  className="text-base sm:text-lg text-gray-600 mb-4 leading-relaxed"
+                >
                   {advertisements[currentIndex].descripcion}
                 </motion.p>
 
@@ -222,7 +239,8 @@ export const AdvertisementCarousel: React.FC = () => {
                     )
                       ? "border-green-500 bg-green-50 text-green-700"
                       : "border-red-500 bg-red-50 text-red-700"
-                  }`}>
+                  }`}
+                >
                   <p className="font-semibold text-sm">
                     Horario de promoción: {advertisements[currentIndex].horarioInicio} -{" "}
                     {advertisements[currentIndex].horarioFin}
@@ -238,7 +256,8 @@ export const AdvertisementCarousel: React.FC = () => {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.3, duration: 0.5 }}
-                  className="flex items-center justify-between p-3 bg-white rounded-xl mb-3 gap-7">
+                  className="flex items-center justify-between p-3 bg-white rounded-xl mb-3 gap-7"
+                >
                   <motion.button
                     onClick={() => handleAddToCart(advertisements[currentIndex])}
                     disabled={
@@ -254,7 +273,8 @@ export const AdvertisementCarousel: React.FC = () => {
                       )
                         ? "bg-white hover:bg-gray-50 text-gray-700 border-black hover:shadow-xl cursor-pointer"
                         : "bg-gray-300 text-gray-500 border-gray-400 cursor-not-allowed opacity-50"
-                    }`}>
+                    }`}
+                  >
                     <ShoppingCart sx={{ fontSize: 20 }} />
                     {isWithinPromotionHours(
                       advertisements[currentIndex].horarioInicio,
@@ -283,7 +303,8 @@ export const AdvertisementCarousel: React.FC = () => {
                   initial={{ scale: 0, rotate: -180 }}
                   animate={{ scale: 1, rotate: 0 }}
                   transition={{ delay: 0.5, type: "spring", stiffness: 200 }}
-                  className="bg-gray-800 text-white rounded-full w-20 h-20 sm:w-24 sm:h-24 lg:w-28 lg:h-28 flex items-center justify-center shadow-lg">
+                  className="bg-gray-800 text-white rounded-full w-20 h-20 sm:w-24 sm:h-24 lg:w-28 lg:h-28 flex items-center justify-center shadow-lg"
+                >
                   <span className="text-xl sm:text-2xl lg:text-3xl font-bold">
                     {Math.round(advertisements[currentIndex].descuento)}%
                   </span>
@@ -296,12 +317,14 @@ export const AdvertisementCarousel: React.FC = () => {
         {/* Navigation Arrows */}
         <button
           onClick={goToPrevious}
-          className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black/50 backdrop-blur-sm hover:bg-black/70 text-white p-2 rounded-full transition-all duration-200 cursor-pointer z-10">
+          className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black/50 backdrop-blur-sm hover:bg-black/70 text-white p-2 rounded-full transition-all duration-200 cursor-pointer z-10"
+        >
           <ChevronLeft sx={{ fontSize: 24 }} />
         </button>
         <button
           onClick={goToNext}
-          className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black/50 backdrop-blur-sm hover:bg-black/70 text-white p-2 rounded-full transition-all duration-200 cursor-pointer z-10">
+          className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black/50 backdrop-blur-sm hover:bg-black/70 text-white p-2 rounded-full transition-all duration-200 cursor-pointer z-10"
+        >
           <ChevronRight sx={{ fontSize: 24 }} />
         </button>
 
@@ -319,5 +342,5 @@ export const AdvertisementCarousel: React.FC = () => {
         </div>
       </motion.div>
     </div>
-  );
-};
+  )
+}

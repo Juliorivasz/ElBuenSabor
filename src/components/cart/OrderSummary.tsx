@@ -1,98 +1,133 @@
-"use client";
+"use client"
 
-import { useState } from "react";
-import { useCartStore } from "../../store/cart/useCartStore";
-import type { DeliveryType } from "./DeliverySelector";
-import type { PaymentMethod } from "./PaymentMethodSelector";
-import type { Direccion } from "../../models/Direccion";
-import { MercadoPagoButton } from "./MercadoPagoButton";
-import { pedidoServicio, type NuevoPedidoRequest } from "../../services/pedidoServicio";
-import { TipoEnvio } from "../../models/enum/TipoEnvio";
-import { MetodoDePago } from "../../models/enum/MetodoDePago";
+import { useState } from "react"
+import { useCartStore } from "../../store/cart/useCartStore"
+import type { DeliveryType } from "./DeliverySelector"
+import type { PaymentMethod } from "./PaymentMethodSelector"
+import type { Direccion } from "../../models/Direccion"
+import { MercadoPagoButton } from "./MercadoPagoButton"
+import { DetalleRequest, pedidoServicio, type NuevoPedidoRequest } from "../../services/pedidoServicio"
+import { TipoEnvio } from "../../models/enum/TipoEnvio"
+import { MetodoDePago } from "../../models/enum/MetodoDePago"
 
 interface OrderSummaryProps {
-  deliveryType: DeliveryType;
-  paymentMethod: PaymentMethod;
-  selectedAddress?: Direccion;
-  onConfirmOrder: () => void;
+  deliveryType: DeliveryType
+  paymentMethod: PaymentMethod
+  selectedAddress?: Direccion
+  onConfirmOrder: () => void
 }
 
 export const OrderSummary = ({ deliveryType, paymentMethod, selectedAddress, onConfirmOrder }: OrderSummaryProps) => {
-  const { items, getTotalPrice, getTotalItems, clearCart, isPromocionalDiscount } = useCartStore();
-  const [isOrderConfirmed, setIsOrderConfirmed] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
+  const { items, getTotalPrice, getTotalItems, clearCart, isPromocionalDiscount } = useCartStore()
+  const [isOrderConfirmed, setIsOrderConfirmed] = useState(false)
+  const [isProcessing, setIsProcessing] = useState(false)
 
-  const subtotal = getTotalPrice();
-  const deliveryCost = deliveryType === "delivery" ? 2000 : 0;
-  const total = subtotal + deliveryCost;
-  const totalItems = getTotalItems();
+  const subtotal = getTotalPrice()
+  const deliveryCost = deliveryType === "delivery" ? 2000 : 0
+  const total = subtotal + deliveryCost
+  const totalItems = getTotalItems()
 
   // Validar si se puede confirmar el pedido
   const canConfirmOrder = () => {
-    if (totalItems === 0) return false;
-    if (deliveryType === "delivery" && !selectedAddress) return false;
-    return true;
-  };
+    if (totalItems === 0) return false
+    if (deliveryType === "delivery" && !selectedAddress) return false
+    return true
+  }
 
   const handleConfirmOrder = async () => {
-    if (!canConfirmOrder() || isProcessing) return;
+    if (!canConfirmOrder() || isProcessing) return
 
     // Si es Mercado Pago, solo confirmar y mostrar botón de pago
     if (paymentMethod === "mercado_pago") {
       try {
+        const detalles = items.flatMap((item) => {
+          if (item.type === "product" && item.articulo) {
+            return [
+              {
+                idArticulo: item.articulo.getIdArticulo(),
+                cantidad: item.quantity,
+                idPromocion: null,
+              },
+            ]
+          } else if (item.type === "promotion" && item.promocion) {
+            // Expandir la promoción en sus artículos individuales
+            return [{
+              idArticulo: null,
+              cantidad: item.quantity,
+              idPromocion: item.promocion ? item.promocion.getIdPromocion() : null,
+            }]
+          }
+          return [] as DetalleRequest[]
+        })
+
         const nuevoPedido: NuevoPedidoRequest = {
           tipoEnvio: deliveryType === "delivery" ? TipoEnvio.DELIVERY : TipoEnvio.RETIRO_EN_LOCAL,
           metodoDePago: MetodoDePago.MERCADO_PAGO,
           idDireccion: deliveryType === "delivery" && selectedAddress ? selectedAddress.idDireccion : null,
-          detalles: items.map((item) => ({
-            idArticulo: item.articulo.getIdArticulo(),
-            cantidad: item.quantity,
-          })),
-        };
+          detalles,
+        }
 
-        await pedidoServicio.crearNuevoPedido(nuevoPedido);
+        await pedidoServicio.crearNuevoPedido(nuevoPedido)
 
         // Limpiar carrito y confirmar pedido
-        onConfirmOrder();
-        setIsOrderConfirmed(true);
+        onConfirmOrder()
+        setIsOrderConfirmed(true)
       } catch (error) {
-        console.error("Error al crear el pedido:", error);
-        alert("Hubo un error al procesar tu pedido. Por favor, intenta nuevamente.");
+        console.error("Error al crear el pedido:", error)
+        alert("Hubo un error al procesar tu pedido. Por favor, intenta nuevamente.")
       } finally {
-        setIsProcessing(false);
+        setIsProcessing(false)
       }
-      return;
+      return
     }
 
     // Si es efectivo, crear el pedido
-    setIsProcessing(true);
+    setIsProcessing(true)
 
     try {
+      const detalles = items.flatMap((item) => {
+        if (item.type === "product" && item.articulo) {
+          return [
+            {
+              idArticulo: item.articulo.getIdArticulo(),
+              cantidad: item.quantity,
+              idPromocion: null,
+            },
+          ]
+        } else if (item.type === "promotion" && item.promocion) {
+          // Expandir la promoción en sus artículos individuales
+          return [{
+            idArticulo: null,
+            cantidad: item.quantity,
+            idPromocion: item.promocion ? item.promocion.getIdPromocion() : null,
+          }]
+        }
+        return [] as DetalleRequest[]
+      })
+      
       const nuevoPedido: NuevoPedidoRequest = {
         tipoEnvio: deliveryType === "delivery" ? TipoEnvio.DELIVERY : TipoEnvio.RETIRO_EN_LOCAL,
         metodoDePago: MetodoDePago.EFECTIVO,
         idDireccion: deliveryType === "delivery" && selectedAddress ? selectedAddress.idDireccion : null,
-        detalles: items.map((item) => ({
-          idArticulo: item.articulo.getIdArticulo(),
-          cantidad: item.quantity,
-        })),
-      };
-
-      await pedidoServicio.crearNuevoPedido(nuevoPedido);
+        detalles: detalles,
+      }
+      
+      console.log(nuevoPedido)
+      await pedidoServicio.crearNuevoPedido(nuevoPedido)
 
       // Limpiar carrito y confirmar pedido
-      clearCart();
-      onConfirmOrder();
-      setIsOrderConfirmed(true);
+      clearCart()
+      onConfirmOrder()
+      setIsOrderConfirmed(true)
 
-      alert("¡Pedido creado exitosamente! Gracias por tu compra.");
+      alert("¡Pedido creado exitosamente! Gracias por tu compra.")
     } catch (error) {
-      console.error("Error al crear el pedido:", error);
-      alert("Hubo un error al procesar tu pedido. Por favor, intenta nuevamente.");
+      console.error("Error al crear el pedido:", error)
+      alert("Hubo un error al procesar tu pedido. Por favor, intenta nuevamente.")
     } finally {
-      setIsProcessing(false);
+      setIsProcessing(false)
     }
-  };
+  }
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
@@ -101,17 +136,30 @@ export const OrderSummary = ({ deliveryType, paymentMethod, selectedAddress, onC
       {/* Lista de productos con subtotales */}
       <div className="space-y-3 mb-6">
         {items.map((item) => {
-          const itemSubtotal = item.articulo.getPrecioVenta() * item.quantity * (1 - (item.promocionalDiscount ?? 0));
+          let itemName = ""
+          let itemSubtotal = 0
+
+          if (item.type === "product" && item.articulo) {
+            itemName = item.articulo.getDescripcion()
+            itemSubtotal = item.articulo.getPrecioVenta() * item.quantity * (1 - (item.promocionalDiscount ?? 0))
+          } else if (item.type === "promotion" && item.promocion) {
+            itemName = item.promocion.getTitulo()
+            itemSubtotal = item.promocion.getPrecioPromocion() * item.quantity
+          }
+
+          const itemKey =
+            item.type === "product"
+              ? `summary-product-${item.articulo?.getIdArticulo()}`
+              : `summary-promotion-${item.promocion?.getIdPromocion()}`
+
           return (
-            <div
-              key={item.articulo.getIdArticulo()}
-              className="flex justify-between text-sm">
+            <div key={itemKey} className="flex justify-between text-sm">
               <span className="text-gray-600">
-                {item.articulo.getDescripcion()} x{item.quantity}
+                {itemName} x{item.quantity}
               </span>
               <span className="font-medium text-gray-900">${itemSubtotal.toFixed(2)}</span>
             </div>
-          );
+          )
         })}
       </div>
 
@@ -160,7 +208,8 @@ export const OrderSummary = ({ deliveryType, paymentMethod, selectedAddress, onC
         <button
           onClick={handleConfirmOrder}
           disabled={!canConfirmOrder() || isProcessing}
-          className="w-full bg-yellow-500 hover:bg-yellow-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-semibold py-4 px-6 rounded-lg transition-colors text-lg shadow-sm hover:shadow-md">
+          className="w-full bg-yellow-500 hover:bg-yellow-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-semibold py-4 px-6 rounded-lg transition-colors text-lg shadow-sm hover:shadow-md"
+        >
           {isProcessing ? "Procesando..." : "Confirmar Pedido"}
         </button>
       ) : (
@@ -174,5 +223,5 @@ export const OrderSummary = ({ deliveryType, paymentMethod, selectedAddress, onC
         </div>
       )}
     </div>
-  );
-};
+  )
+}

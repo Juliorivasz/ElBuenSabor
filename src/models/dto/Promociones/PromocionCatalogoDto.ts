@@ -96,4 +96,10 @@ export class PromocionCatalogoDto {
   setDescuento(descuento: number): void {
     this.descuento = descuento;
   }
+
+  calcularDescuentoAplicado(): number {
+    if (this.precioBase === 0) return 0;
+    const descuentoReal = ((this.precioBase - this.precioPromocion) / this.precioBase) * 100;
+    return Math.round(descuentoReal / 5) * 5;
+  }
 }

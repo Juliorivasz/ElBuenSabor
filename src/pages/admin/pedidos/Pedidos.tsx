@@ -6,7 +6,7 @@ import { PedidosFilters } from "../../../components/Admin/pedidos/PedidosFilters
 import { PedidosTable } from "../../../components/Admin/pedidos/PedidosTable"
 import { PedidoDetailModal } from "../../../components/Admin/pedidos/PedidoDetailModal"
 import { Pagination } from "../../../components/Admin/products/Pagination"
-import type { PedidoDTO, PedidosPaginadosDTO, PedidoStatusUpdateDto } from "../../../models/dto/PedidoDTO"
+import type { PedidoDTO, PedidosCajeroPaginadosDTO, PedidoStatusUpdateDto } from "../../../models/dto/PedidoDTO"
 import { pedidoServicio } from "../../../services/pedidoServicio"
 import { EstadoPedido } from "../../../models/enum/EstadoPedido"
 import { Assignment, Refresh, FileDownload } from "@mui/icons-material"
@@ -15,6 +15,7 @@ import type { IMessage } from "@stomp/stompjs"
 import { FixedChat } from "../../../components/chat/FixedChat"
 import { exportarPedidosCompletadosAExcel } from "../../../utils/exportUtils"
 import Swal from "sweetalert2"
+import { mapperPedidosCajeroDtoToPedidoDTO } from "../../../utils/mapper/PedidoMapper"
 
 export const Pedidos: React.FC = () => {
   const { isConnected, subscribe } = useWebSocket()
@@ -125,13 +126,14 @@ export const Pedidos: React.FC = () => {
     setLoading(true)
     try {
       // Obtener todos los pedidos sin filtro
-      const response: PedidosPaginadosDTO = await pedidoServicio.obtenerPedidosPaginados(
+      const response: PedidosCajeroPaginadosDTO = await pedidoServicio.obtenerPedidosPaginados(
         0, // Primera página
         1000, // Número grande para obtener todos los pedidos
         "TODOS",
       )
 
-      setTodosPedidos(response.content)
+      const pedidosDtoMappeado = response.content.map((pedido) => mapperPedidosCajeroDtoToPedidoDTO(pedido))
+      setTodosPedidos(pedidosDtoMappeado)
     } catch (error) {
       console.error("Error al cargar pedidos:", error)
       setTodosPedidos([])

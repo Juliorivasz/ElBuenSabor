@@ -59,7 +59,7 @@ export const PromocionCard: React.FC<PromocionCardProps> = ({ promocion, onEdit,
   }
 
   return (
-    <div className="relative w-100 h-auto bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100">
+    <div className="relative w-100 h-auto bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100">
       {/* Imagen - Full width */}
       <div className="w-full h-auto object-cover">
         <img
@@ -81,7 +81,7 @@ export const PromocionCard: React.FC<PromocionCardProps> = ({ promocion, onEdit,
           {tieneArticulosInactivos && (
             <div className="relative group">
               <WarningIcon className="text-orange-500" fontSize="small" />
-              <div className="absolute bottom-full right-0 mb-2 w-48 p-2 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity z-10">
+              <div className="absolute bottom-full z-index-99 right-0 mb-2 w-48 p-2 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity">
                 Uno o más artículos están dados de baja
               </div>
             </div>

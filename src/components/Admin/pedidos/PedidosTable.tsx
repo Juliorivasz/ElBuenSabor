@@ -1,7 +1,7 @@
 import React from "react";
 
 import { Visibility, DeliveryDining, Store } from "@mui/icons-material";
-import type { PedidoDTO } from "../../../models/dto/PedidoDTO";
+import type { DetallePedidoDTO, PedidoDTO } from "../../../models/dto/PedidoDTO";
 import { EstadoPedido } from "../../../models/enum/EstadoPedido";
 
 interface PedidosTableProps {
@@ -90,7 +90,7 @@ export const PedidosTable: React.FC<PedidosTableProps> = ({
     return fecha.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" });
   };
 
-  const calcularTotal = (detalles: any[]) => {
+  const calcularTotal = (detalles: DetallePedidoDTO[]) => {
     return detalles.reduce((total, detalle) => total + detalle.subtotal, 0);
   };
 

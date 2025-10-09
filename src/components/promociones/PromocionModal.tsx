@@ -3,7 +3,7 @@
 import { Close as CloseIcon, CloudUpload as UploadIcon } from "@mui/icons-material"
 import type React from "react"
 import { useEffect, useState } from "react"
-import type { DetallePromocionDto } from "../../models/dto/DetallePromocionDto"
+import type { DetallePromocionDto } from "../../models/dto/DetallePromocionDTO"
 import type { Promocion } from "../../models/Promocion"
 import { promocionServicio, type ArticuloListado } from "../../services/promocionServicio"
 import { NotificationService } from "../../utils/notifications"
