@@ -502,3 +502,49 @@ export const exportarPromocionesAExcel = (promociones: any[]): string => {
   XLSX.writeFile(workbook, nombreArchivo)
   return nombreArchivo
 }
+
+export const exportarPedidosCocinaAExcel = (pedidos: any[]): string => {
+  const datosParaExportar = pedidos.map((pedido, index) => {
+    // Crear lista de productos del pedido
+    const productos = pedido.detalles
+      .map((detalle: any) => {
+        const nombre = detalle.nombreArticulo || detalle.tituloPromocion || "Sin nombre"
+        return `${nombre} x${detalle.cantidad}`
+      })
+      .join(", ")
+
+    return {
+      "N°": index + 1,
+      "ID Pedido": pedido.idPedido,
+      Estado: pedido.estadoPedido === "EN_PREPARACION" ? "En Preparación" : "Listo",
+      "Tipo de Envío": pedido.tipoEnvio === "RETIRO_EN_LOCAL" ? "Retiro en Local" : "Delivery",
+      "Hora de Entrega": new Date(pedido.horaEntrega).toLocaleString("es-ES"),
+      Productos: productos,
+      "Cantidad de Productos": pedido.detalles.reduce((sum: number, d: any) => sum + d.cantidad, 0),
+    }
+  })
+
+  const workbook = XLSX.utils.book_new()
+  const worksheet = XLSX.utils.json_to_sheet(datosParaExportar)
+
+  const columnWidths = [
+    { wch: 5 }, // N°
+    { wch: 10 }, // ID Pedido
+    { wch: 15 }, // Estado
+    { wch: 18 }, // Tipo de Envío
+    { wch: 20 }, // Hora de Entrega
+    { wch: 60 }, // Productos
+    { wch: 20 }, // Cantidad de Productos
+  ]
+
+  worksheet["!cols"] = columnWidths
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Pedidos Cocina")
+
+  const fechaActual = new Date()
+  const fechaFormateada = fechaActual.toISOString().split("T")[0]
+  const horaFormateada = fechaActual.toTimeString().split(" ")[0].replace(/:/g, "-")
+  const nombreArchivo = `pedidos_cocina_${fechaFormateada}_${horaFormateada}.xlsx`
+
+  XLSX.writeFile(workbook, nombreArchivo)
+  return nombreArchivo
+}
