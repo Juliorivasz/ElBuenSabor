@@ -385,3 +385,58 @@ export const exportarClientesAExcel = (clientes: any[]): string => {
   XLSX.writeFile(workbook, nombreArchivo)
   return nombreArchivo
 }
+
+export const exportarCategoriasAExcel = (categorias: any[]): string => {
+  const datosParaExportar = categorias.map((categoria, index) => {
+    // Determinar el tipo de categoría
+    let tipo = "Principal"
+    let nivel = 0
+
+    if (categoria.getIdCategoriaPadre && categoria.getIdCategoriaPadre() !== 0) {
+      tipo = "Subcategoría"
+      nivel = 1
+    }
+
+    return {
+      "N°": index + 1,
+      ID: categoria.getIdCategoria(),
+      Nombre: categoria.getNombre(),
+      Tipo: tipo,
+      "ID Categoría Padre":
+        categoria.getIdCategoriaPadre && categoria.getIdCategoriaPadre() !== 0
+          ? categoria.getIdCategoriaPadre()
+          : "N/A",
+      "Margen de Ganancia": `${(categoria.getMargenGanancia() * 100).toFixed(2)}%`,
+      Estado: categoria.isActiva() ? "Activa" : "Inactiva",
+      "Fecha Baja":
+        categoria.getFechaBaja() && categoria.getFechaBaja() !== null
+          ? new Date(categoria.getFechaBaja()).toLocaleDateString("es-AR")
+          : "N/A",
+    }
+  })
+
+  const workbook = XLSX.utils.book_new()
+  const worksheet = XLSX.utils.json_to_sheet(datosParaExportar)
+
+  const columnWidths = [
+    { wch: 5 }, // N°
+    { wch: 8 }, // ID
+    { wch: 30 }, // Nombre
+    { wch: 15 }, // Tipo
+    { wch: 18 }, // ID Categoría Padre
+    { wch: 20 }, // Margen de Ganancia
+    { wch: 10 }, // Estado
+    { wch: 15 }, // Fecha Baja
+  ]
+
+  worksheet["!cols"] = columnWidths
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Categorías")
+
+  const fechaActual = new Date()
+  const fechaFormateada = fechaActual.toISOString().split("T")[0]
+  const horaFormateada = fechaActual.toTimeString().split(" ")[0].replace(/:/g, "-")
+  const nombreArchivo = `categorias_${fechaFormateada}_${horaFormateada}.xlsx`
+
+  XLSX.writeFile(workbook, nombreArchivo)
+  return nombreArchivo
+}
