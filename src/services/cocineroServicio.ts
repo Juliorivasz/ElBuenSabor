@@ -1,13 +1,13 @@
 import axios from "axios";
-import type { PedidosCocineroResponse } from "../models/dto/PedidoCocineroDTO";
+import type { PedidoCocineroDTO } from "../models/dto/PedidoCocineroDTO";
 
 class CocineroServicio {
   private baseURL = "https://localhost:8080";
 
-  async obtenerPedidosCocinero(): Promise<PedidosCocineroResponse> {
+  async obtenerPedidosCocinero(): Promise<PedidoCocineroDTO[]> {
     try {
-      const response = await axios.get<PedidosCocineroResponse>(`${this.baseURL}/pedido/cocinero`);
-      return response.data;
+      const response = await axios.get<PedidoCocineroDTO[]>(`${this.baseURL}/pedido/cocinero`);
+      return response.data ;
     } catch (error) {
       console.error("Error al obtener pedidos del cocinero:", error);
       throw error;

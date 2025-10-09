@@ -237,10 +237,6 @@ export const EmpleadosTable: React.FC<IEmpleadosTableProps> = ({ empleados, onEm
                             className="h-10 w-10 rounded-full object-cover"
                             src={obtenerUrlImagen(empleado) || "/placeholder.svg"}
                             alt={nombreCompleto}
-                            onError={(e) => {
-                              const target = e.target as HTMLImageElement;
-                              target.src = "/placeholder.svg?height=40&width=40";
-                            }}
                           />
                         </div>
                         <div className="ml-4">

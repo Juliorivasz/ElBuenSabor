@@ -12,6 +12,7 @@ export interface BackendDireccion {
 
 export interface BackendDetallePedido {
   nombreArticulo: string;
+  tituloPromocion: string | null;
   cantidad: number;
   subtotal: number;
 }

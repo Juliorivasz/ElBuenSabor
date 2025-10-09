@@ -1,74 +1,74 @@
-"use client";
+"use client"
 
-import type React from "react";
-import { useState, useEffect } from "react";
-import { Search, Filter, Users, UserCheck, UserX, X, ChevronDown, ChevronUp } from "lucide-react";
-import type { EmpleadoResponseDto } from "../../models/dto/Empleado/EmpleadoResponseDto";
+import type React from "react"
+import { useState, useEffect } from "react"
+import { Search, Filter, Users, UserCheck, UserX, X, ChevronDown, ChevronUp } from "lucide-react"
+import type { EmpleadoResponseDto } from "../../models/dto/Empleado/EmpleadoResponseDto"
 
 interface IEmpleadosFiltersProps {
-  empleados: EmpleadoResponseDto[];
-  onFiltrar: (empleadosFiltrados: EmpleadoResponseDto[]) => void;
+  empleados: EmpleadoResponseDto[]
+  onFiltrar: (empleadosFiltrados: EmpleadoResponseDto[]) => void
+  totalEmpleados?: number
 }
 
-export const EmpleadosFilters: React.FC<IEmpleadosFiltersProps> = ({ empleados, onFiltrar }) => {
-  const [busqueda, setBusqueda] = useState("");
-  const [rolSeleccionado, setRolSeleccionado] = useState("");
-  const [estadoSeleccionado, setEstadoSeleccionado] = useState("");
-  const [mostrarFiltros, setMostrarFiltros] = useState(false);
+export const EmpleadosFilters: React.FC<IEmpleadosFiltersProps> = ({ empleados, onFiltrar, totalEmpleados }) => {
+  const [busqueda, setBusqueda] = useState("")
+  const [rolSeleccionado, setRolSeleccionado] = useState("")
+  const [estadoSeleccionado, setEstadoSeleccionado] = useState("")
+  const [mostrarFiltros, setMostrarFiltros] = useState(false)
 
   // Aplicar filtros cuando cambien los criterios
   useEffect(() => {
-    let empleadosFiltrados = [...empleados];
+    let empleadosFiltrados = [...empleados]
 
     // Filtro por búsqueda (nombre, apellido, email)
     if (busqueda.trim() !== "") {
-      const terminoBusqueda = busqueda.toLowerCase().trim();
+      const terminoBusqueda = busqueda.toLowerCase().trim()
       empleadosFiltrados = empleadosFiltrados.filter(
         (empleado) =>
           empleado.getNombre().toLowerCase().includes(terminoBusqueda) ||
           empleado.getApellido().toLowerCase().includes(terminoBusqueda) ||
           empleado.getEmail().toLowerCase().includes(terminoBusqueda),
-      );
+      )
     }
 
     // Filtro por rol
     if (rolSeleccionado !== "") {
-      empleadosFiltrados = empleadosFiltrados.filter((empleado) => empleado.getRol() === rolSeleccionado);
+      empleadosFiltrados = empleadosFiltrados.filter((empleado) => empleado.getRol() === rolSeleccionado)
     }
 
     // Filtro por estado
     if (estadoSeleccionado !== "") {
       empleadosFiltrados = empleadosFiltrados.filter((empleado) => {
-        const estaActivo = empleado.getFechaBaja() === null || new Date(empleado.getFechaBaja()).getTime() === 0;
-        return estadoSeleccionado === "activo" ? estaActivo : !estaActivo;
-      });
+        const estaActivo = empleado.getFechaBaja() === null || new Date(empleado.getFechaBaja()).getTime() === 0
+        return estadoSeleccionado === "activo" ? estaActivo : !estaActivo
+      })
     }
 
-    onFiltrar(empleadosFiltrados);
-  }, [busqueda, rolSeleccionado, estadoSeleccionado, empleados, onFiltrar]);
+    onFiltrar(empleadosFiltrados)
+  }, [busqueda, rolSeleccionado, estadoSeleccionado, empleados, onFiltrar])
 
-  // Calcular estadísticas
-  const totalEmpleados = empleados.length;
+  const totalEmpleadosActual = empleados.length
   const empleadosActivos = empleados.filter((emp) => {
-    const fechaBaja = emp.getFechaBaja();
-    return fechaBaja === null || new Date(fechaBaja).getTime() === 0;
-  }).length;
-  const empleadosInactivos = totalEmpleados - empleadosActivos;
+    const fechaBaja = emp.getFechaBaja()
+    return fechaBaja === null || new Date(fechaBaja).getTime() === 0
+  }).length
+  const empleadosInactivos = totalEmpleadosActual - empleadosActivos
 
   // Obtener roles únicos de los empleados
-  const rolesUnicos = Array.from(new Set(empleados.map((emp) => emp.getRol()).filter(Boolean)));
+  const rolesUnicos = Array.from(new Set(empleados.map((emp) => emp.getRol()).filter(Boolean)))
 
   const limpiarFiltros = () => {
-    setBusqueda("");
-    setRolSeleccionado("");
-    setEstadoSeleccionado("");
-  };
+    setBusqueda("")
+    setRolSeleccionado("")
+    setEstadoSeleccionado("")
+  }
 
-  const hayFiltrosActivos = busqueda !== "" || rolSeleccionado !== "" || estadoSeleccionado !== "";
+  const hayFiltrosActivos = busqueda !== "" || rolSeleccionado !== "" || estadoSeleccionado !== ""
 
   const toggleFiltros = () => {
-    setMostrarFiltros(!mostrarFiltros);
-  };
+    setMostrarFiltros(!mostrarFiltros)
+  }
 
   return (
     <div className="space-y-4">
@@ -78,8 +78,10 @@ export const EmpleadosFilters: React.FC<IEmpleadosFiltersProps> = ({ empleados, 
           <div className="flex items-center">
             <Users className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600 flex-shrink-0" />
             <div className="ml-3 min-w-0 flex-1">
-              <p className="text-xs sm:text-sm font-medium text-gray-500 truncate">Total</p>
-              <p className="text-lg sm:text-2xl font-bold text-gray-900">{totalEmpleados}</p>
+              <p className="text-xs sm:text-sm font-medium text-gray-500 truncate">
+                {totalEmpleados ? "Total (Sistema)" : "En esta página"}
+              </p>
+              <p className="text-lg sm:text-2xl font-bold text-gray-900">{totalEmpleados || totalEmpleadosActual}</p>
             </div>
           </div>
         </div>
@@ -88,7 +90,7 @@ export const EmpleadosFilters: React.FC<IEmpleadosFiltersProps> = ({ empleados, 
           <div className="flex items-center">
             <UserCheck className="h-6 w-6 sm:h-8 sm:w-8 text-green-600 flex-shrink-0" />
             <div className="ml-3 min-w-0 flex-1">
-              <p className="text-xs sm:text-sm font-medium text-gray-500 truncate">Activos</p>
+              <p className="text-xs sm:text-sm font-medium text-gray-500 truncate">Activos (Página)</p>
               <p className="text-lg sm:text-2xl font-bold text-green-600">{empleadosActivos}</p>
             </div>
           </div>
@@ -98,7 +100,7 @@ export const EmpleadosFilters: React.FC<IEmpleadosFiltersProps> = ({ empleados, 
           <div className="flex items-center">
             <UserX className="h-6 w-6 sm:h-8 sm:w-8 text-red-600 flex-shrink-0" />
             <div className="ml-3 min-w-0 flex-1">
-              <p className="text-xs sm:text-sm font-medium text-gray-500 truncate">Inactivos</p>
+              <p className="text-xs sm:text-sm font-medium text-gray-500 truncate">Inactivos (Página)</p>
               <p className="text-lg sm:text-2xl font-bold text-red-600">{empleadosInactivos}</p>
             </div>
           </div>
@@ -131,13 +133,15 @@ export const EmpleadosFilters: React.FC<IEmpleadosFiltersProps> = ({ empleados, 
               {hayFiltrosActivos && (
                 <button
                   onClick={limpiarFiltros}
-                  className="text-sm text-blue-600 hover:text-blue-800 font-medium transition-colors">
+                  className="text-sm text-blue-600 hover:text-blue-800 font-medium transition-colors"
+                >
                   Limpiar
                 </button>
               )}
               <button
                 onClick={toggleFiltros}
-                className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-md transition-colors">
+                className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
+              >
                 {mostrarFiltros ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
               </button>
             </div>
@@ -148,13 +152,12 @@ export const EmpleadosFilters: React.FC<IEmpleadosFiltersProps> = ({ empleados, 
         <div
           className={`transition-all duration-300 ease-in-out overflow-hidden ${
             mostrarFiltros ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
-          }`}>
+          }`}
+        >
           <div className="p-4 space-y-4">
             {/* Búsqueda */}
             <div className="space-y-2">
-              <label
-                htmlFor="busqueda"
-                className="block text-sm font-medium text-gray-700">
+              <label htmlFor="busqueda" className="block text-sm font-medium text-gray-700">
                 Buscar empleado
               </label>
               <div className="relative">
@@ -170,7 +173,8 @@ export const EmpleadosFilters: React.FC<IEmpleadosFiltersProps> = ({ empleados, 
                 {busqueda && (
                   <button
                     onClick={() => setBusqueda("")}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  >
                     <X className="h-4 w-4" />
                   </button>
                 )}
@@ -181,21 +185,18 @@ export const EmpleadosFilters: React.FC<IEmpleadosFiltersProps> = ({ empleados, 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {/* Filtro por rol */}
               <div className="space-y-2">
-                <label
-                  htmlFor="rol"
-                  className="block text-sm font-medium text-gray-700">
+                <label htmlFor="rol" className="block text-sm font-medium text-gray-700">
                   Rol
                 </label>
                 <select
                   id="rol"
                   value={rolSeleccionado}
                   onChange={(e) => setRolSeleccionado(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900">
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+                >
                   <option value="">Todos los roles</option>
                   {rolesUnicos.map((rol) => (
-                    <option
-                      key={rol}
-                      value={rol}>
+                    <option key={rol} value={rol}>
                       {rol}
                     </option>
                   ))}
@@ -204,16 +205,15 @@ export const EmpleadosFilters: React.FC<IEmpleadosFiltersProps> = ({ empleados, 
 
               {/* Filtro por estado */}
               <div className="space-y-2">
-                <label
-                  htmlFor="estado"
-                  className="block text-sm font-medium text-gray-700">
+                <label htmlFor="estado" className="block text-sm font-medium text-gray-700">
                   Estado
                 </label>
                 <select
                   id="estado"
                   value={estadoSeleccionado}
                   onChange={(e) => setEstadoSeleccionado(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900">
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+                >
                   <option value="">Todos los estados</option>
                   <option value="activo">Activos</option>
                   <option value="inactivo">Inactivos</option>
@@ -228,9 +228,7 @@ export const EmpleadosFilters: React.FC<IEmpleadosFiltersProps> = ({ empleados, 
                   {busqueda && (
                     <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                       Búsqueda: "{busqueda}"
-                      <button
-                        onClick={() => setBusqueda("")}
-                        className="ml-1 text-blue-600 hover:text-blue-800">
+                      <button onClick={() => setBusqueda("")} className="ml-1 text-blue-600 hover:text-blue-800">
                         <X className="h-3 w-3" />
                       </button>
                     </span>
@@ -240,7 +238,8 @@ export const EmpleadosFilters: React.FC<IEmpleadosFiltersProps> = ({ empleados, 
                       Rol: {rolSeleccionado}
                       <button
                         onClick={() => setRolSeleccionado("")}
-                        className="ml-1 text-green-600 hover:text-green-800">
+                        className="ml-1 text-green-600 hover:text-green-800"
+                      >
                         <X className="h-3 w-3" />
                       </button>
                     </span>
@@ -250,7 +249,8 @@ export const EmpleadosFilters: React.FC<IEmpleadosFiltersProps> = ({ empleados, 
                       Estado: {estadoSeleccionado === "activo" ? "Activos" : "Inactivos"}
                       <button
                         onClick={() => setEstadoSeleccionado("")}
-                        className="ml-1 text-purple-600 hover:text-purple-800">
+                        className="ml-1 text-purple-600 hover:text-purple-800"
+                      >
                         <X className="h-3 w-3" />
                       </button>
                     </span>
@@ -262,5 +262,5 @@ export const EmpleadosFilters: React.FC<IEmpleadosFiltersProps> = ({ empleados, 
         </div>
       </div>
     </div>
-  );
-};
+  )
+}

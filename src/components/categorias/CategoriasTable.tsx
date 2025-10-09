@@ -6,9 +6,11 @@ import SubdirectoryArrowRightIcon from "@mui/icons-material/SubdirectoryArrowRig
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import { Plus } from "lucide-react";
 import { useState } from "react";
+import DescriptionIcon from "@mui/icons-material/Description"
 import type { CategoriaExtendidaDto } from "../../models/dto/CategoriaExtendidaDto";
 import { useCategoriasStore } from "../../store/categorias/useCategoriasStore";
 import { Pagination } from "../Admin/products/Pagination";
+import { exportarCategoriasAExcel } from "../../utils/exportUtils";
 
 interface PaginationState {
   currentPage: number;
@@ -125,6 +127,15 @@ export const CategoriasTable = ({
 
   const categoriasAMostrar = getCategoriasToShow();
 
+  const handleExportarExcel = () => {
+    try {
+      const nombreArchivo = exportarCategoriasAExcel(categoriasAMostrar)
+      console.log(`Categorías exportadas exitosamente: ${nombreArchivo}`)
+    } catch (error) {
+      console.error("Error al exportar categorías:", error)
+    }
+  }
+
   if (loading) {
     return (
       <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6">
@@ -181,12 +192,22 @@ export const CategoriasTable = ({
               {shouldShowDropdown && " (vista jerárquica expandible)"}
             </p>
           </div>
-          <button
-            onClick={onNuevaCategoria}
-            className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-orange-500 hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-colors">
-            <Plus className="h-4 w-4 mr-2" />
-            Nueva Categoría
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={handleExportarExcel}
+              className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-colors"
+              title="Exportar a Excel"
+            >
+              <DescriptionIcon className="h-4 w-4 mr-2" />
+              Exportar Excel
+            </button>
+            <button
+              onClick={onNuevaCategoria}
+              className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-orange-500 hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-colors">
+              <Plus className="h-4 w-4 mr-2" />
+              Nueva Categoría
+            </button>
+          </div>
         </div>
       </div>
 

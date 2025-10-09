@@ -12,6 +12,7 @@ export type InformacionArticuloNoElaboradoApi = {
   nombreCategoria: string;
   imagenUrl: string;
   stock: number;
+  costo: number;
 };
 
 export type PaginatedResponseAbmNoElaboradoApi = {

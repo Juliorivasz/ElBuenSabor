@@ -2,8 +2,11 @@
 
 import VisibilityIcon from "@mui/icons-material/Visibility"
 import EditIcon from "@mui/icons-material/Edit"
+import { Download } from "lucide-react"
 import { Pagination } from "../Admin/products/Pagination"
 import type { InsumoAbmDto } from "../../models/dto/InsumoAbmDto"
+import { exportarInsumosAExcel } from "../../utils/exportUtils"
+import { NotificationService } from "../../utils/notifications"
 
 interface PaginationState {
   currentPage: number
@@ -33,10 +36,24 @@ export function InsumosTable({
   onEdit,
   onViewDetails,
   onToggleStatus,
-  onRefresh,
+ 
 }: InsumosTableProps) {
   // Validar que insumos sea un array
   const validInsumos = Array.isArray(insumos) ? insumos : []
+
+  const handleExport = () => {
+    try {
+      if (validInsumos.length === 0) {
+        NotificationService.warning("No hay insumos para exportar")
+        return
+      }
+      const nombreArchivo = exportarInsumosAExcel(validInsumos)
+      NotificationService.success(`Archivo ${nombreArchivo} descargado correctamente`)
+    } catch (error) {
+      console.error("Error al exportar insumos:", error)
+      NotificationService.error("Error al exportar los insumos")
+    }
+  }
 
   const getStockLevelStatus = (insumo: InsumoAbmDto) => {
     const percentage = insumo.getStockPercentage()
@@ -93,8 +110,19 @@ export function InsumosTable({
         <div className="px-6 py-4 border-b border-gray-200">
           <div className="flex justify-between items-center">
             <h3 className="text-lg font-medium text-gray-900">Insumos</h3>
-            <div className="text-sm text-gray-500">
-              {pagination.totalItems} insumo{pagination.totalItems !== 1 ? "s" : ""} total
+            <div className="flex items-center gap-4">
+              <div className="text-sm text-gray-500">
+                {pagination.totalItems} insumo{pagination.totalItems !== 1 ? "s" : ""} total
+              </div>
+              <button
+                onClick={handleExport}
+                disabled={loading || validInsumos.length === 0}
+                className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                title="Exportar a Excel"
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Exportar
+              </button>
             </div>
           </div>
         </div>
@@ -146,7 +174,7 @@ export function InsumosTable({
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       <div className="flex items-center">
-                        <span className="font-medium">{insumo.getStockActual()}</span>                        
+                        <span className="font-medium">{insumo.getStockActual()}</span>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">

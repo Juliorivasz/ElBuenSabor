@@ -161,6 +161,19 @@ export const UniversalProductDetailsModal: React.FC<UniversalProductDetailsModal
     }
   }
 
+  const getCosto = () => {
+    try {
+      if (!isManufacturado) {
+        const noElaborado = product as InformacionArticuloNoElaboradoDto
+        return noElaborado.getCosto?.() || 0
+      }
+      return 0
+    } catch (error) {
+      console.error("Error getting stock:", error)
+      return 0
+    }
+  }
+
   return (
     <div className="fixed inset-0 bg-black/30 backdrop-blur-sm overflow-y-auto h-full w-full z-50">
       <div className="relative top-10 mx-auto p-6 border w-11/12 max-w-4xl shadow-lg rounded-lg bg-white">
@@ -243,6 +256,10 @@ export const UniversalProductDetailsModal: React.FC<UniversalProductDetailsModal
                 </div>
                 {!isManufacturado && (
                   <div>
+                    <div>
+                        <span className="text-sm font-medium text-gray-500">Costo</span>
+                        <p className="text-gray-900 mb-2 leading-relaxed">$ {getCosto()}</p>
+                    </div>
                     <span className="text-sm font-medium text-gray-500">Stock Disponible</span>
                     <div className="flex items-center mt-1">
                       <span className={`text-lg font-semibold text-gray-700`}>

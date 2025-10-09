@@ -1,7 +1,7 @@
 import React from "react";
 
 import { Visibility, DeliveryDining, Store } from "@mui/icons-material";
-import type { PedidoDTO } from "../../../models/dto/PedidoDTO";
+import type { DetallePedidoDTO, PedidoDTO } from "../../../models/dto/PedidoDTO";
 import { EstadoPedido } from "../../../models/enum/EstadoPedido";
 
 interface PedidosTableProps {
@@ -90,7 +90,10 @@ export const PedidosTable: React.FC<PedidosTableProps> = ({
     return fecha.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" });
   };
 
-  const calcularTotal = (detalles: any[]) => {
+  const calcularTotal = (pedido: PedidoDTO, detalles: DetallePedidoDTO[]) => {
+    if (pedido.tipoEnvio === "DELIVERY") {
+      return detalles.reduce((total, detalle) => total + detalle.subtotal, 0) + 2000;
+    }
     return detalles.reduce((total, detalle) => total + detalle.subtotal, 0);
   };
 
@@ -158,7 +161,7 @@ export const PedidosTable: React.FC<PedidosTableProps> = ({
                     {getDeliveryIcon(pedido.tipoEnvio)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    ${calcularTotal(pedido.detalles)}
+                    ${calcularTotal(pedido,pedido.detalles)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{pedido.emailCliente}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">

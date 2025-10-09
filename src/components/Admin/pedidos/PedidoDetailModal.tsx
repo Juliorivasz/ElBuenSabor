@@ -83,6 +83,9 @@ export const PedidoDetailModal: React.FC<PedidoDetailModalProps> = ({
   };
 
   const calcularTotal = () => {
+    if(pedido.tipoEnvio === "DELIVERY") {
+      return pedido.detalles.reduce((total, detalle) => total + detalle.subtotal, 0) + 2000;
+    }
     return pedido.detalles.reduce((total, detalle) => total + detalle.subtotal, 0);
   };
 
@@ -327,16 +330,16 @@ export const PedidoDetailModal: React.FC<PedidoDetailModalProps> = ({
               Productos Pedidos
             </h3>
             <div className="space-y-3">
-              {pedido.detalles.map((detalle, index) => (
+              {pedido.detalles.map((detalle) => (
                 <div
-                  key={index}
+                  key={detalle.idDetallePedido}
                   className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                   <div className="flex items-center space-x-3 flex-1">
                     <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
                       <span className="text-orange-600 font-semibold">{detalle.cantidad}x</span>
                     </div>
                     <div className="flex-1">
-                      <h4 className="font-medium text-gray-800">{detalle.nombreArticulo}</h4>
+                      <h4 className="font-medium text-gray-800">{detalle.idArticulo ? detalle.nombreArticulo : detalle.tituloPromocion}</h4>
                       <p className="text-sm text-gray-600">${(detalle.subtotal / detalle.cantidad).toFixed(2)} c/u</p>
                     </div>
                   </div>
@@ -370,6 +373,14 @@ export const PedidoDetailModal: React.FC<PedidoDetailModalProps> = ({
                 Método de Pago
               </h3>
               <p className="text-gray-700">{pedido.metodoDePago}</p>
+            </div>
+          </div>
+
+          {/* costo de envio */}
+          <div className="bg-gray-50 rounded-xl p-4 border">
+            <div className="flex justify-between items-center">
+              <span className="text-lg font-semibold text-gray-800">Costo de Envio</span>
+              <span className="font-semibold text-gray-800">{pedido.tipoEnvio === "DELIVERY" ? "$2000" : "GRATIS"}</span>
             </div>
           </div>
 

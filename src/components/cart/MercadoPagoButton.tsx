@@ -25,9 +25,9 @@ export const MercadoPagoButton = ({ costoEnvio }: MercadoPagoButtonProps) => {
     try {
       // Convertir los items del carrito al formato esperado por el backend
       const mercadoPagoItems: ItemDTO[] = items.map((item) => ({
-        title: item.articulo.getDescripcion(),
+        title: item.articulo?.getDescripcion() ?? item.promocion?.getTitulo() ?? "",
         quantity: item.quantity,
-        unitPrice: item.articulo.getPrecioVenta() * (1 - (item.promocionalDiscount ?? 0)),
+        unitPrice: (item.articulo?.getPrecioVenta() ?? item.promocion?.getPrecioPromocion() ?? 0) * (1 - (item.promocionalDiscount ?? 0)),
       }));
 
       // Llamar al servicio para crear la preferencia de pago

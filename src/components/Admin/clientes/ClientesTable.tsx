@@ -13,7 +13,10 @@ export function ClientesTable({ data, onPageChange, onPageSizeChange }: Clientes
     return <div>Cargando clientes...</div>
   }
 
-  const { content, number, size, totalPages, totalElements } = data;
+  
+  const { content, page } = data;
+  const { size, number, totalElements, totalPages } = page;
+  console.log("Page info:", page);
 
   return (
     <div className="space-y-4">
@@ -53,11 +56,11 @@ export function ClientesTable({ data, onPageChange, onPageSizeChange }: Clientes
         </table>
       </div>
       <Pagination
-        currentPage={number}
+        currentPage={number+1}
         totalPages={totalPages}
         onPageChange={onPageChange}
-        totalItems={totalElements}     // <--- Aquí va la cantidad total, no el size
-        itemsPerPage={size}             // <--- Este es el tamaño real de página
+        totalItems={totalElements}     
+        itemsPerPage={size}            
         onItemsPerPageChange={onPageSizeChange}
       />
     </div>

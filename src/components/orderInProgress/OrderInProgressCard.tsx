@@ -56,7 +56,7 @@ export const OrderInProgressCard: React.FC<OrderInProgressCardProps> = ({ order,
               </p>
             </div>
             <div className="text-right lg:text-left lg:w-full">
-              <p className="text-2xl font-bold lg:text-3xl">${total}</p>
+              <p className="text-2xl font-bold lg:text-3xl">${order.tipoEnvio === "DELIVERY" ? total + 2000 : total}</p>
               <p className="text-orange-100 text-sm lg:text-base">
                 {order.detalles.length} {order.detalles.length === 1 ? "producto" : "productos"}
               </p>
@@ -104,7 +104,8 @@ export const OrderInProgressCard: React.FC<OrderInProgressCardProps> = ({ order,
                 <OrderSummary
                   numeroOrden={order.idPedido}
                   productos={order.detalles}
-                  total={total}
+                  total={order.tipoEnvio === "DELIVERY" ? total + 2000 : total}
+                  tipoEnvio={order.tipoEnvio}
                 />
               </div>
             </div>

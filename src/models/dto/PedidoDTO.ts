@@ -1,21 +1,33 @@
+import { PedidosCajeroDto } from "./Pedido/PedidoCajeroDto";
+
 export interface IDetallePedidoDTO {
   idDetallePedido: number;
   cantidad: number;
   subtotal: number;
-  nombreArticulo: string;
+  idArticulo?: number | null;
+  nombreArticulo?: string | null;
+  idPromocion?: number | null;
+  tituloPromocion?: string | null;
 }
 
 export class DetallePedidoDTO implements IDetallePedidoDTO {
   idDetallePedido: number;
   cantidad: number;
   subtotal: number;
-  nombreArticulo: string;
+  idArticulo?: number | null;
+  nombreArticulo?: string | null;
+  idPromocion?: number | null;
+  tituloPromocion?: string | null;
 
-  constructor(idDetallePedido = 0, cantidad = 0, subtotal = 0, nombreArticulo = "") {
+
+  constructor(idDetallePedido = 0, cantidad = 0, subtotal = 0, idArticulo?: number | null, nombreArticulo?: string | null, tituloPromocion?: string | null, idPromocion?: number | null) {
     this.idDetallePedido = idDetallePedido;
     this.cantidad = cantidad;
     this.subtotal = subtotal;
+    this.idArticulo = idArticulo;
     this.nombreArticulo = nombreArticulo;
+    this.tituloPromocion = tituloPromocion;
+    this.idPromocion = idPromocion;
   }
 }
 
@@ -28,6 +40,7 @@ export class PedidoDTO {
   metodoDePago: string;
   emailCliente: string;
   detalles: DetallePedidoDTO[];
+  total: number;
 
   constructor(
     idPedido = 0,
@@ -38,6 +51,7 @@ export class PedidoDTO {
     detalles: DetallePedidoDTO[] = [],
     horaEntrega = "",
     metodoDePago = "",
+    total = 0
   ) {
     this.idPedido = idPedido;
     this.fechaYHora = fechaYHora;
@@ -47,6 +61,7 @@ export class PedidoDTO {
     this.detalles = detalles;
     this.horaEntrega = horaEntrega;
     this.metodoDePago = metodoDePago;
+    this.total = total;
   }
 }
 
@@ -57,6 +72,15 @@ export interface PedidosPaginadosDTO {
   size: number;
   number: number;
 }
+
+export interface PedidosCajeroPaginadosDTO {
+  content: PedidosCajeroDto[];
+  totalElements: number;
+  totalPages: number;
+  size: number;
+  number: number;
+}
+
 
 // DTO para recibir actualizaciones de estado de pedidos vía WebSocket
 export interface PedidoStatusUpdateDto {

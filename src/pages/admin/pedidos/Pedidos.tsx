@@ -1,75 +1,126 @@
-"use client";
+"use client"
 
-import type React from "react";
-import { useState, useEffect, useMemo, useCallback } from "react";
-import { PedidosFilters } from "../../../components/Admin/pedidos/PedidosFilters";
-import { PedidosTable } from "../../../components/Admin/pedidos/PedidosTable";
-import { PedidoDetailModal } from "../../../components/Admin/pedidos/PedidoDetailModal";
-import { Pagination } from "../../../components/Admin/products/Pagination";
-import type { PedidoDTO, PedidosPaginadosDTO, PedidoStatusUpdateDto } from "../../../models/dto/PedidoDTO";
-import { pedidoServicio } from "../../../services/pedidoServicio";
-import { EstadoPedido } from "../../../models/enum/EstadoPedido";
-import { Assignment, Refresh } from "@mui/icons-material";
-import { useWebSocket } from "../../../hooks/useWebSocket";
-import type { IMessage } from "@stomp/stompjs";
-import { FixedChat } from "../../../components/chat/FixedChat";
+import type React from "react"
+import { useState, useEffect, useMemo, useCallback } from "react"
+import { PedidosFilters } from "../../../components/Admin/pedidos/PedidosFilters"
+import { PedidosTable } from "../../../components/Admin/pedidos/PedidosTable"
+import { PedidoDetailModal } from "../../../components/Admin/pedidos/PedidoDetailModal"
+import { Pagination } from "../../../components/Admin/products/Pagination"
+import type { PedidoDTO, PedidosCajeroPaginadosDTO, PedidoStatusUpdateDto } from "../../../models/dto/PedidoDTO"
+import { pedidoServicio } from "../../../services/pedidoServicio"
+import { EstadoPedido } from "../../../models/enum/EstadoPedido"
+import { Assignment, Refresh, FileDownload } from "@mui/icons-material"
+import { useWebSocket } from "../../../hooks/useWebSocket"
+import type { IMessage } from "@stomp/stompjs"
+import { FixedChat } from "../../../components/chat/FixedChat"
+import { exportarPedidosCompletadosAExcel } from "../../../utils/exportUtils"
+import Swal from "sweetalert2"
+import { mapperPedidosCajeroDtoToPedidoDTO } from "../../../utils/mapper/PedidoMapper"
 
 export const Pedidos: React.FC = () => {
-  const { isConnected, subscribe } = useWebSocket();
-  const [todosPedidos, setTodosPedidos] = useState<PedidoDTO[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
-  const [estadoSeleccionado, setEstadoSeleccionado] = useState("TODOS");
-  const [pedidoSeleccionado, setPedidoSeleccionado] = useState<PedidoDTO | null>(null);
-  const [modalOpen, setModalOpen] = useState(false);
+  const { isConnected, subscribe } = useWebSocket()
+  const [todosPedidos, setTodosPedidos] = useState<PedidoDTO[]>([])
+  const [loading, setLoading] = useState(false)
+  const [refreshing, setRefreshing] = useState(false)
+  const [estadoSeleccionado, setEstadoSeleccionado] = useState("TODOS")
+  const [searchTerm, setSearchTerm] = useState("")
+  const [tipoEnvioSeleccionado, setTipoEnvioSeleccionado] = useState("TODOS")
+  const [pedidoSeleccionado, setPedidoSeleccionado] = useState<PedidoDTO | null>(null)
+  const [modalOpen, setModalOpen] = useState(false)
 
   // Paginación
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [currentPage, setCurrentPage] = useState(1)
+  const [itemsPerPage, setItemsPerPage] = useState(10)
 
   // Filtrar y ordenar pedidos
   const pedidosFiltradosYOrdenados = useMemo(() => {
-    let pedidosFiltrados = todosPedidos;
+    let pedidosFiltrados = todosPedidos
+
+    if (searchTerm.trim() !== "") {
+      const searchLower = searchTerm.toLowerCase().trim()
+      pedidosFiltrados = pedidosFiltrados.filter((pedido) => {
+        // Search by order ID
+        const matchOrderId = pedido.idPedido.toString().includes(searchLower)
+
+        // Search by customer email
+        const matchCustomer = pedido.emailCliente?.toLowerCase().includes(searchLower)
+
+        // Search by date (format: YYYY-MM-DD or DD/MM/YYYY)
+        const fechaStr = new Date(pedido.fechaYHora).toLocaleDateString("es-ES")
+        const matchDate = fechaStr.includes(searchLower) || pedido.fechaYHora.includes(searchLower)
+
+        // Search by time (format: HH:MM)
+        const horaStr = new Date(pedido.fechaYHora).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })
+        const matchTime = horaStr.includes(searchLower) || pedido.horaEntrega?.includes(searchLower)
+
+        // Search by total price
+        const matchPrice = pedido.total.toString().includes(searchLower)
+
+        // Search by item ID or item name in details
+        const matchDetails = pedido.detalles.some((detalle) => {
+          const matchItemId = detalle.idArticulo?.toString().includes(searchLower)
+          const matchItemName = detalle.nombreArticulo?.toLowerCase().includes(searchLower)
+          const matchPromoName = detalle.tituloPromocion?.toLowerCase().includes(searchLower)
+          const matchSubtotal = detalle.subtotal.toString().includes(searchLower)
+          return matchItemId || matchItemName || matchPromoName || matchSubtotal
+        })
+
+        return matchOrderId || matchCustomer || matchDate || matchTime || matchPrice || matchDetails
+      })
+    }
+
+    // Filter by delivery type
+    if (tipoEnvioSeleccionado !== "TODOS") {
+      pedidosFiltrados = pedidosFiltrados.filter((pedido) => {
+        const tipoEnvio = pedido.tipoEnvio.toLowerCase()
+        if (tipoEnvioSeleccionado === "DELIVERY") {
+          return tipoEnvio.includes("delivery") || tipoEnvio.includes("envio")
+        } else if (tipoEnvioSeleccionado === "RETIRO") {
+          return tipoEnvio.includes("retiro") || tipoEnvio.includes("local") || tipoEnvio.includes("takeaway")
+        }
+        return true
+      })
+    }
 
     // Filtrar por estado si no es "TODOS"
     if (estadoSeleccionado !== "TODOS") {
-      pedidosFiltrados = todosPedidos.filter((pedido) => pedido.estadoPedido === estadoSeleccionado);
+      pedidosFiltrados = pedidosFiltrados.filter((pedido) => pedido.estadoPedido === estadoSeleccionado)
     }
 
     // Separar pedidos en tres grupos
-    const pedidosAConfirmar = pedidosFiltrados.filter((pedido) => pedido.estadoPedido === EstadoPedido.A_CONFIRMAR);
+    const pedidosAConfirmar = pedidosFiltrados.filter((pedido) => pedido.estadoPedido === EstadoPedido.A_CONFIRMAR)
     const pedidosActivos = pedidosFiltrados.filter(
       (pedido) =>
         pedido.estadoPedido === EstadoPedido.EN_PREPARACION ||
         pedido.estadoPedido === EstadoPedido.LISTO ||
         pedido.estadoPedido === EstadoPedido.EN_CAMINO,
-    );
+    )
     const pedidosFinalizados = pedidosFiltrados.filter(
       (pedido) =>
         pedido.estadoPedido === EstadoPedido.ENTREGADO ||
         pedido.estadoPedido === EstadoPedido.RECHAZADO ||
         pedido.estadoPedido === EstadoPedido.CANCELADO,
-    );
+    )
 
     // Ordenar cada grupo por fecha y hora (más recientes primero)
     const ordenarPorFecha = (a: PedidoDTO, b: PedidoDTO) => {
-      return new Date(b.fechaYHora).getTime() - new Date(a.fechaYHora).getTime();
-    };
+      return new Date(b.fechaYHora).getTime() - new Date(a.fechaYHora).getTime()
+    }
 
-    pedidosAConfirmar.sort(ordenarPorFecha);
-    pedidosActivos.sort(ordenarPorFecha);
-    pedidosFinalizados.sort(ordenarPorFecha);
+    pedidosAConfirmar.sort(ordenarPorFecha)
+    pedidosActivos.sort(ordenarPorFecha)
+    pedidosFinalizados.sort(ordenarPorFecha)
 
     // Combinar: primero A_CONFIRMAR, luego activos, luego finalizados
-    return [...pedidosAConfirmar, ...pedidosActivos, ...pedidosFinalizados];
-  }, [todosPedidos, estadoSeleccionado]);
+    return [...pedidosAConfirmar, ...pedidosActivos, ...pedidosFinalizados]
+  }, [todosPedidos, estadoSeleccionado, searchTerm, tipoEnvioSeleccionado])
 
   // Calcular paginación para los pedidos filtrados y ordenados
-  const totalItems = pedidosFiltradosYOrdenados.length;
-  const totalPages = Math.ceil(totalItems / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const pedidosPaginados = pedidosFiltradosYOrdenados.slice(startIndex, endIndex);
+  const totalItems = pedidosFiltradosYOrdenados.length
+  const totalPages = Math.ceil(totalItems / itemsPerPage)
+  const startIndex = (currentPage - 1) * itemsPerPage
+  const endIndex = startIndex + itemsPerPage
+  const pedidosPaginados = pedidosFiltradosYOrdenados.slice(startIndex, endIndex)
 
   // Determinar si hay divisiones entre los grupos en la página actual
   const { indicePrimeraDivision, indiceSegundaDivision } = useMemo(() => {
@@ -77,33 +128,33 @@ export const Pedidos: React.FC = () => {
       return {
         indicePrimeraDivision: -1,
         indiceSegundaDivision: -1,
-      };
+      }
 
-    const pedidosAConfirmarEnPagina = pedidosPaginados.filter((p) => p.estadoPedido === EstadoPedido.A_CONFIRMAR);
+    const pedidosAConfirmarEnPagina = pedidosPaginados.filter((p) => p.estadoPedido === EstadoPedido.A_CONFIRMAR)
     const pedidosActivosEnPagina = pedidosPaginados.filter(
       (p) =>
         p.estadoPedido === EstadoPedido.EN_PREPARACION ||
         p.estadoPedido === EstadoPedido.LISTO ||
         p.estadoPedido === EstadoPedido.EN_CAMINO,
-    );
+    )
     const pedidosFinalizadosEnPagina = pedidosPaginados.filter(
       (p) =>
         p.estadoPedido === EstadoPedido.ENTREGADO ||
         p.estadoPedido === EstadoPedido.RECHAZADO ||
         p.estadoPedido === EstadoPedido.CANCELADO,
-    );
+    )
 
     // Estas variables se usan internamente para la lógica de los índices
     const hayPrimeraDivisionLocal =
       pedidosAConfirmarEnPagina.length > 0 &&
-      (pedidosActivosEnPagina.length > 0 || pedidosFinalizadosEnPagina.length > 0);
-    const haySegundaDivisionLocal = pedidosActivosEnPagina.length > 0 && pedidosFinalizadosEnPagina.length > 0;
+      (pedidosActivosEnPagina.length > 0 || pedidosFinalizadosEnPagina.length > 0)
+    const haySegundaDivisionLocal = pedidosActivosEnPagina.length > 0 && pedidosFinalizadosEnPagina.length > 0
 
-    let indicePrimeraDivision = -1;
-    let indiceSegundaDivision = -1;
+    let indicePrimeraDivision = -1
+    let indiceSegundaDivision = -1
 
     if (hayPrimeraDivisionLocal) {
-      indicePrimeraDivision = pedidosPaginados.findLastIndex((p) => p.estadoPedido === EstadoPedido.A_CONFIRMAR);
+      indicePrimeraDivision = pedidosPaginados.findLastIndex((p) => p.estadoPedido === EstadoPedido.A_CONFIRMAR)
     }
 
     if (haySegundaDivisionLocal) {
@@ -112,150 +163,207 @@ export const Pedidos: React.FC = () => {
           p.estadoPedido === EstadoPedido.EN_PREPARACION ||
           p.estadoPedido === EstadoPedido.LISTO ||
           p.estadoPedido === EstadoPedido.EN_CAMINO,
-      );
+      )
     }
 
-    return { indicePrimeraDivision, indiceSegundaDivision };
-  }, [pedidosPaginados, estadoSeleccionado]);
+    return { indicePrimeraDivision, indiceSegundaDivision }
+  }, [pedidosPaginados, estadoSeleccionado])
 
   // Envuelve cargarTodosPedidos en useCallback
   const cargarTodosPedidos = useCallback(async () => {
-    setLoading(true);
+    setLoading(true)
     try {
       // Obtener todos los pedidos sin filtro
-      const response: PedidosPaginadosDTO = await pedidoServicio.obtenerPedidosPaginados(
+      const response: PedidosCajeroPaginadosDTO = await pedidoServicio.obtenerPedidosPaginados(
         0, // Primera página
         1000, // Número grande para obtener todos los pedidos
         "TODOS",
-      );
+      )
 
-      setTodosPedidos(response.content);
+      const pedidosDtoMappeado = response.content.map((pedido) => mapperPedidosCajeroDtoToPedidoDTO(pedido))
+      setTodosPedidos(pedidosDtoMappeado)
     } catch (error) {
-      console.error("Error al cargar pedidos:", error);
-      setTodosPedidos([]);
+      console.error("Error al cargar pedidos:", error)
+      setTodosPedidos([])
     } finally {
-      setLoading(false);
-      setRefreshing(false);
+      setLoading(false)
+      setRefreshing(false)
     }
-  }, []); // Dependencias vacías porque no depende de ningún estado o prop que cambie
+  }, []) // Dependencias vacías porque no depende de ningún estado o prop que cambie
 
   const handleRefresh = async () => {
-    setRefreshing(true);
-    await cargarTodosPedidos();
-  };
+    setRefreshing(true)
+    await cargarTodosPedidos()
+  }
+
+  const handleExportarPedidosCompletados = () => {
+    try {
+      // Filter completed orders: ENTREGADO, CANCELADO, RECHAZADO
+      const pedidosCompletados = todosPedidos.filter(
+        (pedido) =>
+          pedido.estadoPedido === EstadoPedido.ENTREGADO ||
+          pedido.estadoPedido === EstadoPedido.CANCELADO ||
+          pedido.estadoPedido === EstadoPedido.RECHAZADO,
+      )
+
+      if (pedidosCompletados.length === 0) {
+        Swal.fire({
+          title: "Sin pedidos completados",
+          text: "No hay pedidos completados para exportar.",
+          icon: "info",
+          confirmButtonColor: "#3b82f6",
+        })
+        return
+      }
+
+      const nombreArchivo = exportarPedidosCompletadosAExcel(pedidosCompletados)
+
+      Swal.fire({
+        title: "¡Exportación exitosa!",
+        text: `Se exportaron ${pedidosCompletados.length} pedidos completados en el archivo ${nombreArchivo}`,
+        icon: "success",
+        confirmButtonColor: "#10b981",
+      })
+    } catch (error) {
+      console.error("Error al exportar pedidos:", error)
+      Swal.fire({
+        title: "Error",
+        text: "Hubo un error al exportar los pedidos. Inténtalo de nuevo.",
+        icon: "error",
+        confirmButtonColor: "#ef4444",
+      })
+    }
+  }
 
   useEffect(() => {
-    cargarTodosPedidos();
-  }, [cargarTodosPedidos]); // Ahora depende de la versión estable de cargarTodosPedidos
+    cargarTodosPedidos()
+  }, [cargarTodosPedidos]) // Ahora depende de la versión estable de cargarTodosPedidos
 
   // --- Integración WebSocket ---
   useEffect(() => {
     if (isConnected) {
-      console.log("Cajero: Suscribiéndose a /topic/cashier/orders");
+      console.log("Cajero: Suscribiéndose a /topic/cashier/orders")
       const unsubscribe = subscribe("/topic/cashier/orders", (message: IMessage) => {
         try {
-          const update: PedidoStatusUpdateDto = JSON.parse(message.body);
-          console.log("Cajero: Recibido update por WebSocket:", update);
+          const update: PedidoStatusUpdateDto = JSON.parse(message.body)
+          console.log("Cajero: Recibido update por WebSocket:", update)
 
           setTodosPedidos((prevPedidos) => {
-            const existingPedidoIndex = prevPedidos.findIndex((p) => p.idPedido === update.idPedido);
+            const existingPedidoIndex = prevPedidos.findIndex((p) => p.idPedido === update.idPedido)
 
             if (existingPedidoIndex !== -1) {
               // Si el pedido ya existe, lo actualizamos
-              const updatedPedidos = [...prevPedidos];
-              const pedidoToUpdate = { ...updatedPedidos[existingPedidoIndex] };
+              const updatedPedidos = [...prevPedidos]
+              const pedidoToUpdate = { ...updatedPedidos[existingPedidoIndex] }
 
-              pedidoToUpdate.estadoPedido = update.estadoPedido;
+              pedidoToUpdate.estadoPedido = update.estadoPedido
               if (update.horaEntrega) {
                 // Ahora 'horaEntrega' es una propiedad válida en PedidoDTO
-                pedidoToUpdate.horaEntrega = update.horaEntrega;
+                pedidoToUpdate.horaEntrega = update.horaEntrega
               }
               // Puedes actualizar otros campos si los incluyes en PedidoStatusUpdateDto
               // Por ejemplo, si el backend envía el emailCliente actualizado, etc.
 
-              updatedPedidos[existingPedidoIndex] = pedidoToUpdate;
-              return updatedPedidos;
+              updatedPedidos[existingPedidoIndex] = pedidoToUpdate
+              return updatedPedidos
             } else {
               // Si es un nuevo pedido (y no estaba en la lista), lo añadimos.
               // Esto es crucial para los pedidos A_CONFIRMAR que llegan.
               // Aquí necesitaríamos más detalles del pedido para construir un PedidoDTO completo.
               // Por ahora, solo si el estado es A_CONFIRMAR y no existe, lo marcamos para recarga completa.
-              // Idealmente, el backend enviaría un PedidoDTO completo para nuevos pedidos.
+              // Idealmente, el backend debería enviar un PedidoDTO completo para nuevos pedidos.
               // Como workaround, si llega un nuevo pedido A_CONFIRMAR, forzamos una recarga completa.
               // O mejor, si el backend envía el DTO completo, lo parseamos y añadimos.
               // Para un sistema robusto, el PedidoStatusUpdateDto debería ser más completo o
               // el backend debería enviar un DTO diferente para "nuevo pedido".
               // Por ahora, para un nuevo pedido A_CONFIRMAR, recargamos.
               if (update.estadoPedido === EstadoPedido.A_CONFIRMAR) {
-                console.log("Cajero: Nuevo pedido A_CONFIRMAR recibido, recargando todos los pedidos.");
-                cargarTodosPedidos(); // Forzar recarga completa para obtener el nuevo pedido con todos sus detalles
-                return prevPedidos; // No modificar el estado aquí, la recarga lo hará
+                console.log("Cajero: Nuevo pedido A_CONFIRMAR recibido, recargando todos los pedidos.")
+                cargarTodosPedidos() // Forzar recarga completa para obtener el nuevo pedido con todos sus detalles
+                return prevPedidos // No modificar el estado aquí, la recarga lo hará
               }
               // Si el pedido no existe y no es un nuevo A_CONFIRMAR, no hacemos nada (podría ser un update de un pedido ya filtrado/paginado)
-              return prevPedidos;
+              return prevPedidos
             }
-          });
+          })
         } catch (error) {
-          console.error("Cajero: Error al parsear mensaje WebSocket:", error, message.body);
+          console.error("Cajero: Error al parsear mensaje WebSocket:", error, message.body)
         }
-      });
+      })
 
       return () => {
-        console.log("Cajero: Desuscribiéndose de /topic/cashier/orders");
-        unsubscribe();
-      };
+        console.log("Cajero: Desuscribiéndose de /topic/cashier/orders")
+        unsubscribe()
+      }
     }
-  }, [isConnected, subscribe, cargarTodosPedidos]);
+  }, [isConnected, subscribe, cargarTodosPedidos])
 
   const handleEstadoChange = (estado: string) => {
-    setEstadoSeleccionado(estado);
-    setCurrentPage(1); // Resetear a la primera página cuando cambia el filtro
-  };
+    setEstadoSeleccionado(estado)
+    setCurrentPage(1) // Resetear a la primera página cuando cambia el filtro
+  }
+
+  const handleSearchChange = (search: string) => {
+    setSearchTerm(search)
+    setCurrentPage(1)
+  }
+
+  const handleTipoEnvioChange = (tipo: string) => {
+    setTipoEnvioSeleccionado(tipo)
+    setCurrentPage(1)
+  }
 
   const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-  };
+    setCurrentPage(page)
+  }
 
   const handleItemsPerPageChange = (items: number) => {
-    setItemsPerPage(items);
-    setCurrentPage(1); // Resetear a la primera página
-  };
+    setItemsPerPage(items)
+    setCurrentPage(1) // Resetear a la primera página
+  }
 
   const handleVerDetalles = (pedido: PedidoDTO) => {
-    setPedidoSeleccionado(pedido);
-    setModalOpen(true);
-  };
+    setPedidoSeleccionado(pedido)
+    setModalOpen(true)
+  }
 
   const handleCloseModal = () => {
-    setModalOpen(false);
-    setPedidoSeleccionado(null);
-  };
+    setModalOpen(false)
+    setPedidoSeleccionado(null)
+  }
 
   const handlePedidoActualizado = () => {
-    cargarTodosPedidos(); // Recargar todos los pedidos después de actualizar uno
-  };
+    cargarTodosPedidos() // Recargar todos los pedidos después de actualizar uno
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center">
-            <Assignment
-              className="text-black mr-3"
-              fontSize="large"
-            />
+            <Assignment className="text-black mr-3" fontSize="large" />
             <div>
               <h1 className="text-3xl font-bold text-gray-800">Panel de Cajero</h1>
               <p className="text-gray-600 mt-1">Gestiona los pedidos en preparación y listos</p>
             </div>
           </div>
-          <button
-            onClick={handleRefresh}
-            disabled={refreshing}
-            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors duration-200 font-semibold disabled:opacity-50">
-            <Refresh className={`w-5 h-5 ${refreshing ? "animate-spin" : ""}`} />
-            {refreshing ? "Actualizando..." : "Actualizar"}
-          </button>
+          <div className="flex gap-3">
+            <button
+              onClick={handleExportarPedidosCompletados}
+              className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors duration-200 font-semibold"
+            >
+              <FileDownload className="w-5 h-5" />
+              Exportar Completados
+            </button>
+            <button
+              onClick={handleRefresh}
+              disabled={refreshing}
+              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors duration-200 font-semibold disabled:opacity-50"
+            >
+              <Refresh className={`w-5 h-5 ${refreshing ? "animate-spin" : ""}`} />
+              {refreshing ? "Actualizando..." : "Actualizar"}
+            </button>
+          </div>
         </div>
 
         <PedidosFilters
@@ -263,6 +371,10 @@ export const Pedidos: React.FC = () => {
           onEstadoChange={handleEstadoChange}
           onRefresh={handleRefresh}
           refreshing={refreshing}
+          searchTerm={searchTerm}
+          onSearchChange={handleSearchChange}
+          tipoEnvioSeleccionado={tipoEnvioSeleccionado}
+          onTipoEnvioChange={handleTipoEnvioChange}
         />
 
         {loading ? (
@@ -314,5 +426,5 @@ export const Pedidos: React.FC = () => {
         <FixedChat userRole="Cajero" />
       </div>
     </div>
-  );
-};
+  )
+}

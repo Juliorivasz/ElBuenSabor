@@ -5,28 +5,21 @@ import type React from "react"
 import { useState, useEffect } from "react"
 import { ChevronLeft, ChevronRight, ShoppingCart } from "@mui/icons-material"
 import { motion, AnimatePresence } from "framer-motion"
-import axios from "axios"
+import { interceptorsApiClient } from "../../services/interceptors/axios.interceptors"
+import type { PromocionCatalogoDto } from "../../models/dto/Promociones/PromocionCatalogoDto"
+import { promocionServicio } from "../../services/promocionServicio"
+import { IDetallePromocionJson } from "../../models/interface/PromocionJson"
 
 interface Advertisement {
   id: string
   titulo: string
   descripcion: string
-  idArticulo: number
-  descuento: number
   url: string
   horarioInicio: string
   horarioFin: string
-}
-
-interface PromocionCatalogo {
-  idPromocion: number
-  titulo: string
-  descripcion: string
-  idArticulo: number
+  precioBase: number
+  precioPromocional: number
   descuento: number
-  url: string
-  horarioInicio: string
-  horarioFin: string
 }
 
 export const AdvertisementCarousel: React.FC = () => {
@@ -38,23 +31,25 @@ export const AdvertisementCarousel: React.FC = () => {
   useEffect(() => {
     const fetchPromociones = async () => {
       try {
-        const response = await axios.get<PromocionCatalogo[]>("https://localhost:8080/promocion/catalogo")
+        const response: PromocionCatalogoDto[] = await promocionServicio.obtenerPromocionesCatalogo()
 
-        const promocionesFormateadas: Advertisement[] = response.data.map((promo) => ({
-          id: promo.idPromocion.toString(),
-          titulo: promo.titulo,
-          descripcion: promo.descripcion,
-          idArticulo: promo.idArticulo,
-          descuento: promo.descuento,
-          url: promo.url,
-          horarioInicio: promo.horarioInicio,
-          horarioFin: promo.horarioFin,
+        const promocionesFormateadas: Advertisement[] = response.map((promo) => ({
+          id: promo.getIdPromocion().toString(),
+          titulo: promo.getTitulo(),
+          descripcion: promo.getDescripcion(),
+          url: promo.getUrl() || "",
+          horarioInicio: promo.getHorarioInicio().replace("T", " ").substring(0, 5),
+          horarioFin: promo.getHorarioFin().replace("T", " ").substring(0, 5),
+          precioBase: promo.getPrecioBase(),
+          precioPromocional: promo.getPrecioPromocion(),
+          descuento: promo.getDescuento(),
         }))
 
         setAdvertisements(promocionesFormateadas)
         setLoading(false)
       } catch (error) {
         console.error("Error al cargar promociones:", error)
+        setAdvertisements([])
         setLoading(false)
       }
     }
@@ -86,7 +81,7 @@ export const AdvertisementCarousel: React.FC = () => {
 
   const isWithinPromotionHours = (horarioInicio: string, horarioFin: string): boolean => {
     const now = new Date()
-    const currentTime = now.getHours() * 60 + now.getMinutes() // Convert to minutes
+    const currentTime = now.getHours() * 60 + now.getMinutes()
 
     const [inicioHour, inicioMin] = horarioInicio.split(":").map(Number)
     const [finHour, finMin] = horarioFin.split(":").map(Number)
@@ -94,7 +89,11 @@ export const AdvertisementCarousel: React.FC = () => {
     const inicioMinutes = inicioHour * 60 + inicioMin
     const finMinutes = finHour * 60 + finMin
 
-    return currentTime >= inicioMinutes && currentTime <= finMinutes
+    if (inicioMinutes <= finMinutes) {
+      return currentTime >= inicioMinutes && currentTime <= finMinutes
+    } else {
+      return currentTime >= inicioMinutes || currentTime <= finMinutes
+    }
   }
 
   const handleAddToCart = async (advertisement: Advertisement) => {
@@ -106,31 +105,45 @@ export const AdvertisementCarousel: React.FC = () => {
     }
 
     try {
-      // Fetch article information
-      const response = await axios.get(`https://localhost:8080/articulo/informacion/${advertisement.idArticulo}`)
-      const articleData = response.data
+      const promocionResponse = await interceptorsApiClient.get(`/promocion/detalle/${advertisement.id}`)
+      const promocionData = promocionResponse.data
 
-      // Create ArticuloDTO with promotional discount
-      const articuloDTO = new (await import("../../models/dto/ArticuloDTO")).ArticuloDTO(
-        articleData.idArticulo,
-        articleData.nombre,
-        articleData.descripcion,
-        articleData.precioVenta,
-        articleData.tiempoDeCocina,
-        articleData.idCategoria,
-        articleData.url,
-        articleData.puedeElaborarse,
-      )
-
-      // Add to cart with promotional discount
+      // Import necessary classes
+      const { PromocionCatalogoDto } = await import("../../models/dto/Promociones/PromocionCatalogoDto")
+      const { DetallePromocionDTO } = await import("../../models/dto/Promociones/DetallePromocionDto")
       const { useCartStore } = await import("../../store/cart/useCartStore")
-      useCartStore.getState().addItem(articuloDTO, articleData.url, advertisement.descuento)
 
-      console.log(
-        `Artículo ${advertisement.idArticulo} añadido al carrito con descuento del ${Math.round(advertisement.descuento * 100)}%`,
+      // Create PromocionCatalogoDto instance
+      const detalles = promocionData.detalles.map(
+        (detalle: IDetallePromocionJson) =>
+          new DetallePromocionDTO(detalle.idArticulo, detalle.cantidad, detalle.nombreArticulo, detalle.precio),
       )
+
+      const calcularDescuento = (): number => {
+        if (promocionData.precioBase === 0) return 0;
+        const descuentoReal = ((promocionData.precioBase - promocionData.precioPromocion) / promocionData.precioBase) * 100;
+        return Math.round(descuentoReal / 5) * 5;
+      };
+
+      const promocionDTO = new PromocionCatalogoDto(
+        promocionData.idPromocion,
+        promocionData.titulo,
+        promocionData.descripcion,
+        promocionData.url || advertisement.url,
+        promocionData.horarioInicio,
+        promocionData.horarioFin,
+        detalles,
+        promocionData.precioPromocion,
+        promocionData.precioBase,
+        calcularDescuento(),
+      )
+
+      // Add promotion to cart as a single item
+      useCartStore.getState().addPromotion(promocionDTO)
+
+      console.log(`Promoción "${advertisement.titulo}" añadida al carrito`)
     } catch (error) {
-      console.error("Error al añadir al carrito:", error)
+      console.error("Error al añadir promoción al carrito:", error)
     }
   }
 
@@ -174,14 +187,24 @@ export const AdvertisementCarousel: React.FC = () => {
           >
             {/* Imagen a la izquierda */}
             <div className="w-2/5 h-full">
-              <motion.img
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.2 }}
-                src={advertisements[currentIndex].url}
-                alt={advertisements[currentIndex].titulo}
-                className="w-full h-full object-cover"
-              />
+              {advertisements[currentIndex].url ? (
+                <motion.img
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.2 }}
+                  // La URL aquí ya no debería ser una cadena vacía si se aplica el chequeo.
+                  src={advertisements[currentIndex].url}
+                  alt={advertisements[currentIndex].titulo}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                // Alternativa si no hay URL: renderizar un placeholder visual.
+                <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                  <span className="text-gray-500 text-center p-4">
+                    {advertisements[currentIndex].titulo} (Sin Imagen)
+                  </span>
+                </div>
+              )}
             </div>
 
             {/* Contenido a la derecha */}
@@ -208,7 +231,7 @@ export const AdvertisementCarousel: React.FC = () => {
                 </motion.p>
 
                 {/* Horario de la promoción */}
-                <motion.div          
+                <motion.div
                   className={`mb-3 mt-0 p-2 rounded-lg border-2 ${
                     isWithinPromotionHours(
                       advertisements[currentIndex].horarioInicio,
@@ -228,32 +251,50 @@ export const AdvertisementCarousel: React.FC = () => {
                   ) && <p className="text-xs mt-1">Esta promoción no está disponible en este momento</p>}
                 </motion.div>
 
-                {/* Botón más abajo */}
-                <motion.button                                    
-                  onClick={() => handleAddToCart(advertisements[currentIndex])}
-                  disabled={
-                    !isWithinPromotionHours(
-                      advertisements[currentIndex].horarioInicio,
-                      advertisements[currentIndex].horarioFin,
-                    )
-                  }
-                  className={`font-semibold mt-0 mb-0 py-3 px-6 rounded-xl transition-all duration-200 shadow-lg flex items-center gap-2 border-2 w-fit ${
-                    isWithinPromotionHours(
-                      advertisements[currentIndex].horarioInicio,
-                      advertisements[currentIndex].horarioFin,
-                    )
-                      ? "bg-white hover:bg-gray-50 text-gray-700 border-black hover:shadow-xl cursor-pointer"
-                      : "bg-gray-300 text-gray-500 border-gray-400 cursor-not-allowed opacity-50"
-                  }`}
+                {/* precio promocional */}
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3, duration: 0.5 }}
+                  className="flex items-center justify-between p-3 bg-white rounded-xl mb-3 gap-7"
                 >
-                  <ShoppingCart sx={{ fontSize: 20 }} />
-                  {isWithinPromotionHours(
-                    advertisements[currentIndex].horarioInicio,
-                    advertisements[currentIndex].horarioFin,
-                  )
-                    ? "Añadir al carrito"
-                    : "No disponible"}
-                </motion.button>
+                  <motion.button
+                    onClick={() => handleAddToCart(advertisements[currentIndex])}
+                    disabled={
+                      !isWithinPromotionHours(
+                        advertisements[currentIndex].horarioInicio,
+                        advertisements[currentIndex].horarioFin,
+                      )
+                    }
+                    className={`font-semibold mt-0 mb-0 py-3 px-6 rounded-xl transition-all duration-200 shadow-lg flex items-center gap-2 border-2 w-fit ${
+                      isWithinPromotionHours(
+                        advertisements[currentIndex].horarioInicio,
+                        advertisements[currentIndex].horarioFin,
+                      )
+                        ? "bg-white hover:bg-gray-50 text-gray-700 border-black hover:shadow-xl cursor-pointer"
+                        : "bg-gray-300 text-gray-500 border-gray-400 cursor-not-allowed opacity-50"
+                    }`}
+                  >
+                    <ShoppingCart sx={{ fontSize: 20 }} />
+                    {isWithinPromotionHours(
+                      advertisements[currentIndex].horarioInicio,
+                      advertisements[currentIndex].horarioFin,
+                    )
+                      ? "Añadir al carrito"
+                      : "No disponible"}
+                  </motion.button>
+                  <div className="flex flex-col">
+                    <p className="text-gray-500 text-xs line-through">
+                      Precio Base: ${advertisements[currentIndex].precioBase.toFixed(2)}
+                    </p>
+                    <p className="text-4xl font-extrabold text-orange-600 leading-none">
+                      ${advertisements[currentIndex].precioPromocional.toFixed(2)}
+                    </p>
+                    <p className="text-sm text-gray-700 mt-1">¡Precio por tiempo limitado!</p>
+                  </div>
+                </motion.div>
+
+                {/* Botón más abajo */}
               </div>
 
               {/* Porcentaje de descuento más centrado */}
@@ -265,7 +306,7 @@ export const AdvertisementCarousel: React.FC = () => {
                   className="bg-gray-800 text-white rounded-full w-20 h-20 sm:w-24 sm:h-24 lg:w-28 lg:h-28 flex items-center justify-center shadow-lg"
                 >
                   <span className="text-xl sm:text-2xl lg:text-3xl font-bold">
-                    {Math.round(advertisements[currentIndex].descuento * 100)}%
+                    {Math.round(advertisements[currentIndex].descuento)}%
                   </span>
                 </motion.div>
               </div>

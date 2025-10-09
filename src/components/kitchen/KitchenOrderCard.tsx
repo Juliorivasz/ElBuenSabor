@@ -148,7 +148,7 @@ export const KitchenOrderCard: React.FC<KitchenOrderCardProps> = ({ pedido, onPe
     }
   }
 
-  const horaEntregaCalculada = calcularHoraEntrega(pedido.horaEntrega, pedido.tipoEnvio)
+  calcularHoraEntrega(pedido.horaEntrega, pedido.tipoEnvio) 
 
   return (
     <div
@@ -187,7 +187,7 @@ export const KitchenOrderCard: React.FC<KitchenOrderCardProps> = ({ pedido, onPe
                   <span className="text-orange-600 font-bold text-sm">{detalle.cantidad}x</span>
                 </div>
                 <div>
-                  <h5 className="font-medium text-gray-800 text-sm">{detalle.nombreArticulo}</h5>
+                  <h5 className="font-medium text-gray-800 text-sm">{detalle.nombreArticulo ?? detalle.tituloPromocion}</h5>
                 </div>
               </div>
             </div>

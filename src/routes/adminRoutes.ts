@@ -81,7 +81,7 @@ export const adminRoutes = [
     element: lazy(() =>
       import("../pages/admin/rubrosInsumo/RubrosInsumo").then((module) => ({ default: module.RubrosInsumo })),
     ),
-    allowedRoles: ["administrador"],
+    allowedRoles: ["administrador", "cocinero"],
     title: "Gestión de Rubros",
   },
   {

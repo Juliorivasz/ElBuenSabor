@@ -4,5 +4,7 @@ export interface NuevoArticuloNoElaboradoDtoJson {
   precioVenta: number;
   dadoDeAlta: boolean;
   idCategoria: number;
+  costo: number;
+  stock: number;
   imagenUrl?: string;
 }

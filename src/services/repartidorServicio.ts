@@ -1,5 +1,5 @@
 import axios from "axios";
-import type { PedidosRepartidorResponse } from "../models/dto/PedidoRepartidorDTO";
+import type { PedidoRepartidorDTO } from "../models/dto/PedidoRepartidorDTO";
 
 export class RepartidorServicio {
   private static instance: RepartidorServicio;
@@ -12,9 +12,9 @@ export class RepartidorServicio {
     return RepartidorServicio.instance;
   }
 
-  async obtenerPedidosRepartidor(): Promise<PedidosRepartidorResponse> {
+  async obtenerPedidosRepartidor(): Promise<PedidoRepartidorDTO[]> {
     try {
-      const response = await axios.get<PedidosRepartidorResponse>(`${this.baseUrl}/repartidor`);
+      const response = await axios.get<PedidoRepartidorDTO[]>(`${this.baseUrl}/repartidor`);
       return response.data;
     } catch (error) {
       console.error("Error al obtener pedidos del repartidor:", error);

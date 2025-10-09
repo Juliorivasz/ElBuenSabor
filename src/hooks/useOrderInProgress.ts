@@ -19,9 +19,10 @@ interface ApiResponsePage<T> {
 interface UseOrderInProgressProps {
   clienteId: number | null; // Puede ser null si el usuario no está autenticado
   autoCheck?: boolean;
+  isTokenReady: boolean;
 }
 
-export const useOrderInProgress = ({ clienteId, autoCheck = false }: UseOrderInProgressProps) => {
+export const useOrderInProgress = ({ clienteId, autoCheck = false, isTokenReady }: UseOrderInProgressProps) => {
   const [ordersInProgress, setOrdersInProgress] = useState<OrderInProgressType[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -112,13 +113,12 @@ export const useOrderInProgress = ({ clienteId, autoCheck = false }: UseOrderInP
       activeSubscriptionsRef.current.clear();
       return;
     }
+    console.log(clienteId)
 
     setLoading(true);
     setError(null);
     try {
-      const response = await interceptorsApiClient.get<ApiResponsePage<OrderInProgressType>>(`/pedido/cliente/curso`, {
-        params: { page: 0, size: 20 },
-      });
+      const response = await interceptorsApiClient.get<ApiResponsePage<OrderInProgressType>>(`/pedido/cliente/curso`);
 
       if (response.data && response.data.content) {
         const fetchedOrders = response.data.content.map((order) => ({
@@ -151,7 +151,6 @@ export const useOrderInProgress = ({ clienteId, autoCheck = false }: UseOrderInP
               const unsubscribeFn = subscribe(topic, (message: IMessage) => {
                 try {
                   const update = JSON.parse(message.body);
-                  console.log(`📨 Mensaje recibido para pedido ${update.idPedido} (estado: ${update.estadoPedido})`);
 
                   // Llama al manejador de actualización
                   handleOrderStatusUpdate({
@@ -182,7 +181,7 @@ export const useOrderInProgress = ({ clienteId, autoCheck = false }: UseOrderInP
       const errorMessage = err instanceof Error ? err.message : "Error desconocido al obtener pedidos en curso.";
       setError(errorMessage);
       console.error("❌ Error al obtener pedidos en curso:", err);
-      NotificationService.error("Error al cargar tus pedidos en curso");
+      // NotificationService.error("Error al cargar tus pedidos en curso");
       setOrdersInProgress([]);
       activeSubscriptionsRef.current.forEach((unsubscribeFn) => unsubscribeFn());
       activeSubscriptionsRef.current.clear();
@@ -294,18 +293,16 @@ export const useOrderInProgress = ({ clienteId, autoCheck = false }: UseOrderInP
 
   // Efecto para la carga inicial de datos y limpieza de todas las suscripciones al desmontar el hook
   useEffect(() => {
-    if (autoCheck && clienteId) {
-      console.log(`🔄 Iniciando verificación de pedidos para cliente: ${clienteId}`);
+    if (isTokenReady && autoCheck && clienteId) {
       fetchOrdersInProgress();
     }
 
     // Función de limpieza: desuscribirse de todos los tópicos al desmontar el componente.
     return () => {
-      console.log("🔌 Realizando limpieza general de suscripciones WebSocket al desmontar.");
       activeSubscriptionsRef.current.forEach((unsubscribeFn) => unsubscribeFn());
       activeSubscriptionsRef.current.clear();
     };
-  }, [autoCheck, clienteId, fetchOrdersInProgress]);
+  }, [autoCheck, clienteId, fetchOrdersInProgress, isTokenReady]);
 
   // Efecto para actualizar el tiempo transcurrido cada minuto
   useEffect(() => {

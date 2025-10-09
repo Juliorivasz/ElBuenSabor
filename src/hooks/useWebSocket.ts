@@ -105,7 +105,6 @@ export const useWebSocket = (): WebSocketService => {
 
     client.onConnect = () => {
       setIsConnected(true);
-      console.log("WebSocket Connected!");
 
       currentSubscriptionsRef.forEach((callbacksForDestination, destination) => {
         // Usa la referencia capturada

@@ -8,7 +8,6 @@ import { useAuth0Store } from "../../../store/auth/useAuth0Store";
 import { useAuth0 } from "@auth0/auth0-react";
 import { empleadoServicio, type EmpleadoType } from "../../../services/empleadoServicio";
 import {
-  Dashboard as DashboardIcon,
   PeopleAlt as PeopleIcon,
   Fastfood as ProductsIcon,
   Tapas as RubroIcon,
@@ -132,7 +131,7 @@ export const AdminSidebar = () => {
           return;
         }
 
-        const empleados = await empleadoServicio.obtenerEmpleados();
+        const empleados = await empleadoServicio.obtenerTodosLosEmpleados();
         const empleadoActual = empleados.find((emp) => emp.getAuth0Id() === user.id);
 
         if (empleadoActual) {
