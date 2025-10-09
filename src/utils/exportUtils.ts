@@ -548,3 +548,72 @@ export const exportarPedidosCocinaAExcel = (pedidos: any[]): string => {
   XLSX.writeFile(workbook, nombreArchivo)
   return nombreArchivo
 }
+
+export const exportarPedidosRepartidorAExcel = (pedidos: any[]): string => {
+  const datosParaExportar = pedidos.map((pedido, index) => {
+    // Format address
+    const direccion = pedido.direccion
+    let direccionCompleta = "N/A"
+
+    if (direccion) {
+      const calle = direccion.calle?.trim() || ""
+      const numero = direccion.numero?.trim() || ""
+      let dir = ""
+
+      if (calle && numero) {
+        dir = `${calle} ${numero}`
+      } else if (calle) {
+        dir = calle
+      } else if (numero) {
+        dir = `Nº ${numero}`
+      }
+
+      if (direccion.piso && direccion.piso.trim() !== "" && direccion.piso.toLowerCase() !== "null") {
+        dir += `, Piso ${direccion.piso.trim()}`
+      }
+
+      if (direccion.dpto && direccion.dpto.trim() !== "" && direccion.dpto.toLowerCase() !== "null") {
+        dir += `, Dpto ${direccion.dpto.trim()}`
+      }
+
+      direccionCompleta = dir || "Dirección incompleta"
+    }
+
+    return {
+      "N°": index + 1,
+      "ID Pedido": pedido.idPedido,
+      Estado:
+        pedido.estadoPedido === "LISTO"
+          ? "Listo para Retirar"
+          : pedido.estadoPedido === "EN_CAMINO"
+            ? "En Camino"
+            : pedido.estadoPedido,
+      "Hora de Entrega": new Date(pedido.horaEntrega).toLocaleString("es-ES"),
+      Dirección: direccionCompleta,
+      Departamento: pedido.direccion?.nombreDepartamento || "N/A",
+    }
+  })
+
+  const workbook = XLSX.utils.book_new()
+  const worksheet = XLSX.utils.json_to_sheet(datosParaExportar)
+
+  const columnWidths = [
+    { wch: 5 }, // N°
+    { wch: 10 }, // ID Pedido
+    { wch: 18 }, // Estado
+    { wch: 20 }, // Hora de Entrega
+    { wch: 40 }, // Dirección
+    { wch: 20 }, // Departamento
+  ]
+
+  worksheet["!cols"] = columnWidths
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Pedidos Repartidor")
+
+  const fechaActual = new Date()
+  const fechaFormateada = fechaActual.toISOString().split("T")[0]
+  const horaFormateada = fechaActual.toTimeString().split(" ")[0].replace(/:/g, "-")
+  const nombreArchivo = `pedidos_repartidor_${fechaFormateada}_${horaFormateada}.xlsx`
+
+  XLSX.writeFile(workbook, nombreArchivo)
+  return nombreArchivo
+}
