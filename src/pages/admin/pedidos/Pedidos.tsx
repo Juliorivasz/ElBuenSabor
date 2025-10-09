@@ -23,6 +23,8 @@ export const Pedidos: React.FC = () => {
   const [loading, setLoading] = useState(false)
   const [refreshing, setRefreshing] = useState(false)
   const [estadoSeleccionado, setEstadoSeleccionado] = useState("TODOS")
+  const [searchTerm, setSearchTerm] = useState("")
+  const [tipoEnvioSeleccionado, setTipoEnvioSeleccionado] = useState("TODOS")
   const [pedidoSeleccionado, setPedidoSeleccionado] = useState<PedidoDTO | null>(null)
   const [modalOpen, setModalOpen] = useState(false)
 
@@ -34,9 +36,55 @@ export const Pedidos: React.FC = () => {
   const pedidosFiltradosYOrdenados = useMemo(() => {
     let pedidosFiltrados = todosPedidos
 
+    if (searchTerm.trim() !== "") {
+      const searchLower = searchTerm.toLowerCase().trim()
+      pedidosFiltrados = pedidosFiltrados.filter((pedido) => {
+        // Search by order ID
+        const matchOrderId = pedido.idPedido.toString().includes(searchLower)
+
+        // Search by customer email
+        const matchCustomer = pedido.emailCliente?.toLowerCase().includes(searchLower)
+
+        // Search by date (format: YYYY-MM-DD or DD/MM/YYYY)
+        const fechaStr = new Date(pedido.fechaYHora).toLocaleDateString("es-ES")
+        const matchDate = fechaStr.includes(searchLower) || pedido.fechaYHora.includes(searchLower)
+
+        // Search by time (format: HH:MM)
+        const horaStr = new Date(pedido.fechaYHora).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })
+        const matchTime = horaStr.includes(searchLower) || pedido.horaEntrega?.includes(searchLower)
+
+        // Search by total price
+        const matchPrice = pedido.total.toString().includes(searchLower)
+
+        // Search by item ID or item name in details
+        const matchDetails = pedido.detalles.some((detalle) => {
+          const matchItemId = detalle.idArticulo?.toString().includes(searchLower)
+          const matchItemName = detalle.nombreArticulo?.toLowerCase().includes(searchLower)
+          const matchPromoName = detalle.tituloPromocion?.toLowerCase().includes(searchLower)
+          const matchSubtotal = detalle.subtotal.toString().includes(searchLower)
+          return matchItemId || matchItemName || matchPromoName || matchSubtotal
+        })
+
+        return matchOrderId || matchCustomer || matchDate || matchTime || matchPrice || matchDetails
+      })
+    }
+
+    // Filter by delivery type
+    if (tipoEnvioSeleccionado !== "TODOS") {
+      pedidosFiltrados = pedidosFiltrados.filter((pedido) => {
+        const tipoEnvio = pedido.tipoEnvio.toLowerCase()
+        if (tipoEnvioSeleccionado === "DELIVERY") {
+          return tipoEnvio.includes("delivery") || tipoEnvio.includes("envio")
+        } else if (tipoEnvioSeleccionado === "RETIRO") {
+          return tipoEnvio.includes("retiro") || tipoEnvio.includes("local") || tipoEnvio.includes("takeaway")
+        }
+        return true
+      })
+    }
+
     // Filtrar por estado si no es "TODOS"
     if (estadoSeleccionado !== "TODOS") {
-      pedidosFiltrados = todosPedidos.filter((pedido) => pedido.estadoPedido === estadoSeleccionado)
+      pedidosFiltrados = pedidosFiltrados.filter((pedido) => pedido.estadoPedido === estadoSeleccionado)
     }
 
     // Separar pedidos en tres grupos
@@ -65,7 +113,7 @@ export const Pedidos: React.FC = () => {
 
     // Combinar: primero A_CONFIRMAR, luego activos, luego finalizados
     return [...pedidosAConfirmar, ...pedidosActivos, ...pedidosFinalizados]
-  }, [todosPedidos, estadoSeleccionado])
+  }, [todosPedidos, estadoSeleccionado, searchTerm, tipoEnvioSeleccionado])
 
   // Calcular paginación para los pedidos filtrados y ordenados
   const totalItems = pedidosFiltradosYOrdenados.length
@@ -223,7 +271,7 @@ export const Pedidos: React.FC = () => {
               // Esto es crucial para los pedidos A_CONFIRMAR que llegan.
               // Aquí necesitaríamos más detalles del pedido para construir un PedidoDTO completo.
               // Por ahora, solo si el estado es A_CONFIRMAR y no existe, lo marcamos para recarga completa.
-              // Idealmente, el backend enviaría un PedidoDTO completo para nuevos pedidos.
+              // Idealmente, el backend debería enviar un PedidoDTO completo para nuevos pedidos.
               // Como workaround, si llega un nuevo pedido A_CONFIRMAR, forzamos una recarga completa.
               // O mejor, si el backend envía el DTO completo, lo parseamos y añadimos.
               // Para un sistema robusto, el PedidoStatusUpdateDto debería ser más completo o
@@ -253,6 +301,16 @@ export const Pedidos: React.FC = () => {
   const handleEstadoChange = (estado: string) => {
     setEstadoSeleccionado(estado)
     setCurrentPage(1) // Resetear a la primera página cuando cambia el filtro
+  }
+
+  const handleSearchChange = (search: string) => {
+    setSearchTerm(search)
+    setCurrentPage(1)
+  }
+
+  const handleTipoEnvioChange = (tipo: string) => {
+    setTipoEnvioSeleccionado(tipo)
+    setCurrentPage(1)
   }
 
   const handlePageChange = (page: number) => {
@@ -313,6 +371,10 @@ export const Pedidos: React.FC = () => {
           onEstadoChange={handleEstadoChange}
           onRefresh={handleRefresh}
           refreshing={refreshing}
+          searchTerm={searchTerm}
+          onSearchChange={handleSearchChange}
+          tipoEnvioSeleccionado={tipoEnvioSeleccionado}
+          onTipoEnvioChange={handleTipoEnvioChange}
         />
 
         {loading ? (
