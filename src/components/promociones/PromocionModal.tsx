@@ -149,6 +149,8 @@ export const PromocionModal: React.FC<PromocionModalProps> = ({
     NotificationService.success(`Precio sugerido aplicado: $${sugerido.toFixed(2)}`)
   }
 
+  const descuentoReal = ((precioTotal - precioPromocion) / precioTotal) * 100;
+
   return (
     <div className="fixed inset-0 flex items-center justify-center backdrop-blur-sm bg-white/20 z-50">
       <div className="bg-white text-gray-900 p-6 rounded-lg w-11/12 max-w-lg relative shadow-2xl border max-h-[90vh] overflow-y-auto">
@@ -297,7 +299,7 @@ export const PromocionModal: React.FC<PromocionModalProps> = ({
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Ahorro:</span>
                     <span className="font-semibold text-red-600">
-                      ${(precioTotal - precioPromocion).toFixed(2)} ({precioTotal > 0 ? (((precioTotal - precioPromocion) / precioTotal) * 100).toFixed(1) : 0}%)
+                      ${(precioTotal - precioPromocion).toFixed(2)} ({precioTotal > 0 ? (Math.round(descuentoReal / 5) * 5).toFixed(1) : 0}%)
                     </span>
                   </div>
                 </>

@@ -1,6 +1,6 @@
 "use client"
 
-import { Add as AddIcon, LocalOffer } from "@mui/icons-material"
+import { Add as AddIcon, LocalOffer, FileDownload } from "@mui/icons-material"
 import type React from "react"
 import { useEffect, useState } from "react"
 import { PromocionCard } from "../../../components/promociones/PromocionCard"
@@ -10,6 +10,7 @@ import type { Promocion } from "../../../models/Promocion"
 import type { ArticuloListado } from "../../../services/promocionServicio"
 import { promocionServicio } from "../../../services/promocionServicio"
 import { NotificationService } from "../../../utils/notifications"
+import { exportarPromocionesAExcel } from "../../../utils/exportUtils"
 
 export const Promociones: React.FC = () => {
   const [promociones, setPromociones] = useState<Promocion[]>([])
@@ -161,6 +162,20 @@ export const Promociones: React.FC = () => {
   }
 }
 
+  const handleExportarPromociones = () => {
+    try {
+      const promocionesFiltradas = getPromocionesFiltradas()
+      if (promocionesFiltradas.length === 0) {
+        NotificationService.error("No hay promociones para exportar")
+        return
+      }
+      exportarPromocionesAExcel(promocionesFiltradas)
+      NotificationService.success("Promociones exportadas correctamente")
+    } catch (error) {
+      console.error("Error al exportar promociones:", error)
+      NotificationService.error("Error al exportar las promociones")
+    }
+  }
 
   const promocionesFiltradas = getPromocionesFiltradas()
   const estadisticas = getEstadisticas()
@@ -184,13 +199,22 @@ export const Promociones: React.FC = () => {
               <p className="text-gray-600 mt-1">Administra las promociones y ofertas especiales del restaurante</p>
             </div>
           </div>
-          <button
-            onClick={handleNuevaPromocion}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 flex items-center gap-2"
-          >
-            <AddIcon fontSize="small" />
-            Nueva Promoción
-          </button>
+          <div className="flex gap-3">
+            <button
+              onClick={handleExportarPromociones}
+              className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 flex items-center gap-2"
+            >
+              <FileDownload fontSize="small" />
+              Exportar
+            </button>
+            <button
+              onClick={handleNuevaPromocion}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 flex items-center gap-2"
+            >
+              <AddIcon fontSize="small" />
+              Nueva Promoción
+            </button>
+          </div>
         </div>
 
         <div className="mb-6">

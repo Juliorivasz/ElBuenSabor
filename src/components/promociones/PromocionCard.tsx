@@ -49,8 +49,9 @@ export const PromocionCard: React.FC<PromocionCardProps> = ({ promocion, onEdit,
   }
 
   const precioTotal = calcularPrecioTotal()
-  const descuento = precioTotal > 0 ? ((precioTotal - precioPromocion) / precioTotal) * 100 : 0
-  
+  const descuentoReal = ((precioTotal - precioPromocion) / precioTotal) * 100
+  const descuento = precioTotal > 0 ? Math.round(descuentoReal / 5) * 5 : 0
+
   // Verificar si hay artículos inactivos
   const tieneArticulosInactivos = detalles.some(detalle => detalle.activo === false)
 

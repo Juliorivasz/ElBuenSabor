@@ -1,4 +1,4 @@
-import { DetallePromocionDto } from "./dto/DetallePromocionDto";
+import { DetallePromocionDto } from "./dto/DetallePromocionDTO";
 
 export class Promocion {
     private idPromocion: number;

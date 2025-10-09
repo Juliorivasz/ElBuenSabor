@@ -440,3 +440,65 @@ export const exportarCategoriasAExcel = (categorias: any[]): string => {
   XLSX.writeFile(workbook, nombreArchivo)
   return nombreArchivo
 }
+
+export const exportarPromocionesAExcel = (promociones: any[]): string => {
+  const datosParaExportar = promociones.map((promocion, index) => {
+    const detalles = promocion.getDetalles() || []
+    const precioPromocion = promocion.getPrecioPromocion() ?? 0
+
+    // Calcular precio total de los artículos
+    const precioTotal = detalles.reduce((total: number, detalle: any) => {
+      const precio = detalle.precio || 0
+      return total + precio * detalle.cantidad
+    }, 0)
+
+    const descuento = precioTotal > 0 ? ((precioTotal - precioPromocion) / precioTotal) * 100 : 0
+
+    // Crear lista de artículos incluidos
+    const articulosIncluidos = detalles
+      .map((detalle: any) => `${detalle.nombreArticulo} x${detalle.cantidad}`)
+      .join(", ")
+
+    return {
+      "N°": index + 1,
+      ID: promocion.getIdPromocion(),
+      Título: promocion.getTitulo(),
+      Descripción: promocion.getDescripcion(),
+      "Horario Inicio": promocion.getHorarioInicio() || "N/A",
+      "Horario Fin": promocion.getHorarioFin() || "N/A",
+      "Artículos Incluidos": articulosIncluidos || "Sin artículos",
+      "Precio Total": `$${precioTotal.toFixed(2)}`,
+      "Precio Promoción": `$${precioPromocion.toFixed(2)}`,
+      Descuento: `${descuento.toFixed(0)}%`,
+      Estado: promocion.getActivo() ? "Activa" : "Inactiva",
+    }
+  })
+
+  const workbook = XLSX.utils.book_new()
+  const worksheet = XLSX.utils.json_to_sheet(datosParaExportar)
+
+  const columnWidths = [
+    { wch: 5 }, // N°
+    { wch: 8 }, // ID
+    { wch: 30 }, // Título
+    { wch: 40 }, // Descripción
+    { wch: 15 }, // Horario Inicio
+    { wch: 15 }, // Horario Fin
+    { wch: 50 }, // Artículos Incluidos
+    { wch: 12 }, // Precio Total
+    { wch: 15 }, // Precio Promoción
+    { wch: 10 }, // Descuento
+    { wch: 10 }, // Estado
+  ]
+
+  worksheet["!cols"] = columnWidths
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Promociones")
+
+  const fechaActual = new Date()
+  const fechaFormateada = fechaActual.toISOString().split("T")[0]
+  const horaFormateada = fechaActual.toTimeString().split(" ")[0].replace(/:/g, "-")
+  const nombreArchivo = `promociones_${fechaFormateada}_${horaFormateada}.xlsx`
+
+  XLSX.writeFile(workbook, nombreArchivo)
+  return nombreArchivo
+}
