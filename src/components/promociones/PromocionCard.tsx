@@ -59,18 +59,16 @@ export const PromocionCard: React.FC<PromocionCardProps> = ({ promocion, onEdit,
   }
 
   return (
-    <div className="relative w-160 h-auto bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100">
+    <div className="relative w-100 h-auto bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100">
       {/* Imagen - Full width */}
-      <div className="w-full h-100 object-cover">
+      <div className="w-full h-auto object-cover">
         <img
           src={promocion.getUrl() || "/placeholder.svg?height=256&width=400&query=promocion"}
           alt={promocion.getTitulo()}
           className={`w-full h-full object-cover transition-all duration-300 ${
             !promocion.getActivo() ? "filter grayscale" : ""
           }`}
-          onError={(e) => {
-            e.currentTarget.src = "/placeholder.svg?height=256&width=400"
-          }}
+          loading="lazy"
         />
 
         {/* Toggle Switch - Positioned over image */}

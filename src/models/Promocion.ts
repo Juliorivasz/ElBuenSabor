@@ -10,6 +10,7 @@ export class Promocion {
     private url: string;
     private precioPromocion!: number;
     private detalles: DetallePromocionDto[];
+    private tiempoDeCocina!: number;
 
     // Constructor con parámetros opcionales
     constructor(params?: {
@@ -22,6 +23,7 @@ export class Promocion {
         url: string;
         precioPromocion: number;
         detalles?: DetallePromocionDto[] | null;
+        tiempoDeCocina?: number;
     }) {
         if (params) {
             this.idPromocion = params.idPromocion;
@@ -33,6 +35,7 @@ export class Promocion {
             this.url = params.url;
             this.precioPromocion = params.precioPromocion;
             this.detalles = params.detalles || [];
+            this.tiempoDeCocina = params.tiempoDeCocina || 0;
         } else {
             // Valores por defecto para constructor vacío
             this.idPromocion = 0;
@@ -43,6 +46,7 @@ export class Promocion {
             this.activo = false;
             this.url = '';
             this.detalles = [];
+            this.tiempoDeCocina = 0;
         }
     }
 
@@ -56,6 +60,7 @@ export class Promocion {
     public getUrl(): string { return this.url; }
     public getPrecioPromocion(): number | undefined { return this.precioPromocion; }
     public getDetalles(): DetallePromocionDto[] { return this.detalles; }
+    public getTiempoDeCocina(): number { return this.tiempoDeCocina; }
 
     // Setters
     public setIdPromocion(idPromocion: number): void { this.idPromocion = idPromocion; }
@@ -67,6 +72,7 @@ export class Promocion {
     public setUrl(url: string): void { this.url = url; }
     public setPrecioPromocion(precioPromocion: number): void { this.precioPromocion = precioPromocion; }
     public setDetalles(detalles: DetallePromocionDto[]): void { this.detalles = detalles; }
+    public setTiempoDeCocina(tiempoDeCocina: number): void { this.tiempoDeCocina = tiempoDeCocina; }
 
     // Método seguro para obtener detalles
     public getDetallesSeguro(): DetallePromocionDto[] {

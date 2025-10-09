@@ -174,7 +174,7 @@ export const Promociones: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+    <div className="min-h-screen w-auto bg-gradient-to-br from-slate-50 to-slate-100">
       <div className="container mx-auto py-8">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center">
@@ -205,7 +205,7 @@ export const Promociones: React.FC = () => {
           />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="flex flex-wrap gap-6">
           {promocionesFiltradas.length === 0 ? (
             <div className="col-span-full text-center py-12">
               <div className="text-gray-500 text-lg mb-4">
