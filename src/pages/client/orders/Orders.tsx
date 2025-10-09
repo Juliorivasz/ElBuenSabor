@@ -105,7 +105,7 @@ export const Orders: React.FC = () => {
       (sum: number, detalle: BackendDetallePedido) => sum + detalle.subtotal,
       0,
     );
-    const costoEnvio = backendOrder.tipoEnvio === "DELIVERY" ? 300 : 0; // Valor estimado
+    const costoEnvio = backendOrder.tipoEnvio === "DELIVERY" ? 2000 : 0; // Valor estimado
     const total = subtotal + costoEnvio;
 
     // Mapear items

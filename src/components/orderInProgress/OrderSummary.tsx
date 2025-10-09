@@ -8,9 +8,10 @@ interface OrderSummaryProps {
   numeroOrden: number;
   productos: DetallePedidoCliente[];
   total: number;
+  tipoEnvio: string;
 }
 
-export const OrderSummary: React.FC<OrderSummaryProps> = ({ productos, total }) => {
+export const OrderSummary: React.FC<OrderSummaryProps> = ({ productos, total, tipoEnvio }) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
   return (
@@ -77,6 +78,11 @@ export const OrderSummary: React.FC<OrderSummaryProps> = ({ productos, total }) 
                   </div>
                 </motion.div>
               ))}
+              {tipoEnvio === "DELIVERY" && (
+                <div className="text-right">
+                  <p className="font-semibold text-gray-800">+ $2000 (envío)</p>
+                </div>
+              )}
 
               {/* Total */}
               <div className="border-t border-gray-200 pt-3 mt-3">

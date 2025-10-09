@@ -83,6 +83,9 @@ export const PedidoDetailModal: React.FC<PedidoDetailModalProps> = ({
   };
 
   const calcularTotal = () => {
+    if(pedido.tipoEnvio === "DELIVERY") {
+      return pedido.detalles.reduce((total, detalle) => total + detalle.subtotal, 0) + 2000;
+    }
     return pedido.detalles.reduce((total, detalle) => total + detalle.subtotal, 0);
   };
 
@@ -370,6 +373,14 @@ export const PedidoDetailModal: React.FC<PedidoDetailModalProps> = ({
                 Método de Pago
               </h3>
               <p className="text-gray-700">{pedido.metodoDePago}</p>
+            </div>
+          </div>
+
+          {/* costo de envio */}
+          <div className="bg-gray-50 rounded-xl p-4 border">
+            <div className="flex justify-between items-center">
+              <span className="text-lg font-semibold text-gray-800">Costo de Envio</span>
+              <span className="font-semibold text-gray-800">{pedido.tipoEnvio === "DELIVERY" ? "$2000" : "GRATIS"}</span>
             </div>
           </div>
 
